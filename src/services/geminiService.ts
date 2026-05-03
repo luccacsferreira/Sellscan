@@ -6,7 +6,18 @@
 import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { ProductAnalysis } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let genAI: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not set. Please add it to your environment variables.");
+    }
+    genAI = new GoogleGenAI({ apiKey });
+  }
+  return genAI;
+}
 
 const ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
@@ -91,7 +102,7 @@ export async function analyzeProduct(image?: string, description?: string): Prom
   
   Output the results in the requested JSON format.`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: "gemini-3-flash-preview",
     contents: { parts: [...parts, { text: prompt }] },
     tools: [
@@ -127,7 +138,7 @@ export async function chatAboutProduct(
     "updatedAnalysis": { ... updated full analysis object ... } (OPTIONAL, only if a change was requested)
   }`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: "gemini-3-flash-preview",
     contents: history.map(h => ({ role: h.role, parts: [{ text: h.content }] })),
     config: {
