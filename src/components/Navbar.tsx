@@ -6,6 +6,8 @@
 import React from 'react';
 import { Camera, Search, User, LogIn, Menu, Sun, Moon } from 'lucide-react';
 import { cn } from '../lib/utils';
+import logoWhite from '../assets/logo_white_cropped.png';
+import logoBlack from '../assets/logo_black_cropped.png';
 
 interface NavbarProps {
   onNewScan?: () => void;
@@ -50,7 +52,7 @@ export function Navbar({
           onClick={onGoHome}
         >
           <img 
-            src={`${import.meta.env.BASE_URL}${theme === 'dark' ? 'logo_white_cropped.png' : 'logo_black_cropped.png'}`} 
+            src={theme === 'dark' ? logoWhite : logoBlack} 
             alt="Sellscan" 
             className="h-14 w-auto object-contain object-bottom pointer-events-none"
           />
