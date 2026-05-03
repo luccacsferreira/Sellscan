@@ -9,11 +9,11 @@ import { ProductAnalysis } from "../types";
 let genAI: GoogleGenAI | null = null;
 
 function getAI() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    return null;
+  }
   if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set. Please add it to your environment variables.");
-    }
     genAI = new GoogleGenAI({ apiKey });
   }
   return genAI;
@@ -73,6 +73,10 @@ const ANALYSIS_SCHEMA = {
 };
 
 export async function analyzeProduct(image?: string, description?: string): Promise<ProductAnalysis> {
+  const ai = getAI();
+  if (!ai) {
+    throw new Error("API_KEY_MISSING");
+  }
   const parts: any[] = [];
   
   if (image) {
@@ -102,7 +106,7 @@ export async function analyzeProduct(image?: string, description?: string): Prom
   
   Output the results in the requested JSON format.`;
 
-  const response = await getAI().models.generateContent({
+  const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: { parts: [...parts, { text: prompt }] },
     tools: [
@@ -125,6 +129,10 @@ export async function chatAboutProduct(
   history: { role: 'user' | 'assistant', content: string }[], 
   currentAnalysis: ProductAnalysis
 ): Promise<{ analysis?: ProductAnalysis; chatResponse: string }> {
+  const ai = getAI();
+  if (!ai) {
+    throw new Error("API_KEY_MISSING");
+  }
   const systemInstruction = `You are Sellscan AI, a expert reseller consultant.
   You have just analyzed a product and provided a report: ${JSON.stringify(currentAnalysis)}.
   
@@ -138,7 +146,7 @@ export async function chatAboutProduct(
     "updatedAnalysis": { ... updated full analysis object ... } (OPTIONAL, only if a change was requested)
   }`;
 
-  const response = await getAI().models.generateContent({
+  const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: history.map(h => ({ role: h.role, parts: [{ text: h.content }] })),
     config: {

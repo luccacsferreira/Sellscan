@@ -165,7 +165,11 @@ export default function App() {
       setView('dashboard');
     } catch (error) {
       console.error("Analysis failed:", error);
-      alert("Something went wrong during analysis. Please try again.");
+      if (error instanceof Error && error.message === "API_KEY_MISSING") {
+        alert("Gemini API Key is missing. If you're on GitHub Pages, make sure you've added GEMINI_API_KEY as a secret in your repository and that your build includes it. Locally, check your .env file.");
+      } else {
+        alert("Something went wrong during analysis. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
