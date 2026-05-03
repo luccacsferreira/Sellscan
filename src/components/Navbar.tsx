@@ -34,7 +34,7 @@ export function Navbar({
     return `${cleanBase}${filename}`;
   };
 
-  const logoUrl = theme === 'dark' ? getLogoUrl('logo white cropped.png') : getLogoUrl('logo black cropped.png');
+  const logoUrl = theme === 'dark' ? getLogoUrl('logo_white_cropped.png') : getLogoUrl('logo_black_cropped.png');
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
