@@ -6,8 +6,6 @@
 import React from 'react';
 import { Camera, Search, User, LogIn, Menu, Sun, Moon } from 'lucide-react';
 import { cn } from '../lib/utils';
-import logoWhite from '../assets/logo_white_cropped.png';
-import logoBlack from '../assets/logo_black_cropped.png';
 
 interface NavbarProps {
   onNewScan?: () => void;
@@ -30,6 +28,14 @@ export function Navbar({
   theme, 
   onToggleTheme 
 }: NavbarProps) {
+  const getLogoUrl = (filename: string) => {
+    const base = import.meta.env.BASE_URL || '/';
+    const cleanBase = base.endsWith('/') ? base : `${base}/`;
+    return `${cleanBase}${filename}`;
+  };
+
+  const logoUrl = theme === 'dark' ? getLogoUrl('logo white cropped.png') : getLogoUrl('logo black cropped.png');
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
       {/* Background with Opaque-to-Transparent Gradient */}
@@ -52,7 +58,7 @@ export function Navbar({
           onClick={onGoHome}
         >
           <img 
-            src={theme === 'dark' ? logoWhite : logoBlack} 
+            src={logoUrl} 
             alt="Sellscan" 
             className="h-14 w-auto object-contain object-bottom pointer-events-none"
           />
