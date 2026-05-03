@@ -50,7 +50,7 @@ export function Navbar({
           onClick={onGoHome}
         >
           <img 
-            src={theme === 'dark' ? "logo_white_cropped.png" : "logo_black_cropped.png"} 
+            src={theme === 'dark' ? "/logo_white_cropped.png" : "/logo_black_cropped.png"} 
             alt="Sellscan" 
             className="h-14 w-auto object-contain object-bottom pointer-events-none"
           />
