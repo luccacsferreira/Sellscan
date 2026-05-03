@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg: #171717;
+  --accent: #55cdd1;
+  --accent-glow: rgba(85, 205, 209, 0.2);
+  --card: #212121;
+  --border: #2B2B2B;
+  --text: #ffffff;
+  --text-muted: #A1A1AA;
+}
+
+:root.light {
+  --bg: #ffffff;
+  --card: #F9FAFB;
+  --border: #E5E7EB;
+  --text: #171717;
+  --text-muted: #666666;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-bg: var(--bg);
+  --color-brand-accent: var(--accent);
+  --color-brand-accent-glow: var(--accent-glow);
+  --color-brand-card: var(--card);
+  --color-brand-border: var(--border);
+  --color-brand-text: var(--text);
+  --color-brand-text-muted: var(--text-muted);
+}
+
+@layer base {
+  body {
+    @apply bg-brand-bg text-brand-text font-sans antialiased transition-colors duration-300;
+  }
+}
+
+.glass-card {
+  @apply bg-brand-card border border-brand-border rounded-2xl overflow-hidden;
+}
+
+.accent-glow {
+  box-shadow: 0 0 20px var(--color-brand-accent-glow);
+}

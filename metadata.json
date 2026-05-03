@@ -1,0 +1,11 @@
+{
+  "name": "Sellscan",
+  "description": "AI-powered product analysis tool for resellers. Scan any product and know exactly how to sell it with market insights, pricing, and optimized listings.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "vision",
+    "chat"
+  ]
+}
