@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Camera, Search, User, LogIn, Menu, Sun, Moon } from 'lucide-react';
+import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import logoWhite from '../assets/logo_white_cropped.png';
 import logoBlack from '../assets/logo_black_cropped.png';
@@ -30,8 +30,6 @@ export function Navbar({
   theme, 
   onToggleTheme 
 }: NavbarProps) {
-  const logoUrl = theme === 'dark' ? logoWhite : logoBlack;
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
       {/* Background with Opaque-to-Transparent Gradient */}
@@ -54,7 +52,7 @@ export function Navbar({
           onClick={onGoHome}
         >
           <img 
-            src={logoUrl} 
+            src={theme === 'dark' ? logoWhite : logoBlack} 
             alt="Sellscan" 
             className="h-14 w-auto object-contain object-bottom pointer-events-none"
           />

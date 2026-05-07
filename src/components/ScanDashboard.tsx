@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Zap, Wrench, Paintbrush, Package, Plus, ExternalLink, 
   Copy, Check, Send, Sparkles, MessageCircle, ArrowLeft,
-  DollarSign, TrendingUp, Info, Users
+  DollarSign, TrendingUp, Info, Users, X, ShoppingBag, Eye, Heart, MessageSquare as LucideMessageSquare, Share2, MoreHorizontal, User as LucideUser
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
@@ -28,6 +28,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
   const [copying, setCopying] = useState<'title' | 'description' | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
+  const [selectedMockup, setSelectedMockup] = useState<string | null>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,6 +76,16 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
 
   return (
     <div className="pt-24 pb-20 px-4 max-w-7xl mx-auto h-[calc(100vh-64px)] flex flex-col md:flex-row gap-6">
+      <AnimatePresence>
+        {selectedMockup && (
+          <PlatformMockup 
+            platform={selectedMockup} 
+            scan={scan} 
+            onClose={() => setSelectedMockup(null)} 
+          />
+        )}
+      </AnimatePresence>
+
       {/* LEFT: RESULTS DASHBOARD */}
       <div className="flex-grow overflow-y-auto pr-0 md:pr-4 space-y-6 custom-scrollbar">
         <button 
@@ -160,10 +171,14 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
              <h3 className="text-sm font-bold uppercase text-brand-text-muted tracking-wider mb-6">Best Platforms</h3>
              <div className="space-y-4">
                {analysis.platforms.map((p, i) => (
-                 <div key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-brand-bg/50 border border-brand-border hover:border-brand-accent/30 transition-all cursor-pointer group">
+                 <div 
+                  key={i} 
+                  onClick={() => setSelectedMockup(p.name)}
+                  className="flex flex-col gap-1 p-3 rounded-xl bg-brand-bg/50 border border-brand-border hover:border-brand-accent/40 active:scale-[0.98] transition-all cursor-pointer group"
+                >
                    <div className="flex items-center justify-between">
                      <div className="font-bold flex items-center gap-2">
-                       {p.name} <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                       {p.name} <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent" />
                      </div>
                      <span className={cn(
                        "text-[10px] font-bold px-2 py-0.5 rounded-full border",
@@ -173,6 +188,9 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                      </span>
                    </div>
                    <p className="text-xs text-brand-text-muted leading-relaxed">{p.reasoning}</p>
+                   <div className="mt-2 text-[10px] text-brand-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                     Click to preview listing mockup
+                   </div>
                  </div>
                ))}
              </div>
@@ -434,5 +452,204 @@ function Loader2({ className }: { className?: string }) {
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
+  );
+}
+
+function PlatformMockup({ platform, scan, onClose }: { platform: string, scan: ScanResult, onClose: () => void }) {
+  const analysis = scan.analysis;
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-hidden"
+    >
+      <div 
+        className="absolute inset-0 bg-brand-bg/80 backdrop-blur-xl" 
+        onClick={onClose}
+      />
+      
+      <motion.div
+        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, y: 20, opacity: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className="w-full max-w-4xl max-h-full bg-brand-bg border border-brand-border rounded-[32px] shadow-2xl flex flex-col relative z-10 overflow-hidden"
+      >
+        {/* Mockup Header */}
+        <div className="p-4 border-b border-brand-border flex items-center justify-between bg-brand-card">
+          <div className="flex items-center gap-3">
+             <div className="px-3 py-1 rounded-full bg-brand-bg border border-brand-border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+               <div className={cn(
+                 "w-2 h-2 rounded-full",
+                 platform.toLowerCase().includes('ebay') ? "bg-blue-500" :
+                 platform.toLowerCase().includes('vinted') ? "bg-teal-500" :
+                 platform.toLowerCase().includes('depop') ? "bg-red-500" :
+                 "bg-green-500"
+               )} />
+               {platform} MOCKUP
+             </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-10 h-10 rounded-full hover:bg-brand-bg flex items-center justify-center transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-grow overflow-y-auto p-4 md:p-8 custom-scrollbar">
+          <div className="max-w-2xl mx-auto space-y-8">
+            {/* Generic Listing Layout Based on Platform */}
+            {platform.toLowerCase().includes('ebay') ? (
+              <EbayMockup scan={scan} />
+            ) : platform.toLowerCase().includes('vinted') ? (
+              <VintedMockup scan={scan} />
+            ) : platform.toLowerCase().includes('depop') ? (
+              <DepopMockup scan={scan} />
+            ) : (
+              <DefaultMockup scan={scan} platform={platform} />
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function EbayMockup({ scan }: { scan: ScanResult }) {
+  const { analysis, imageUrl } = scan;
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row gap-8">
+        <div className="w-full md:w-1/2 aspect-square rounded-xl bg-neutral-100 overflow-hidden border border-neutral-200">
+          <img src={imageUrl} alt="Product" className="w-full h-full object-cover" />
+        </div>
+        <div className="w-full md:w-1/2 space-y-4">
+          <h1 className="text-xl font-medium leading-tight text-neutral-900">{analysis.suggestedTitle}</h1>
+          <div className="flex items-center gap-2">
+            <div className="flex text-amber-500"><Sparkles className="w-3 h-3 fill-current" /><Sparkles className="w-3 h-3 fill-current" /><Sparkles className="w-3 h-3 fill-current" /></div>
+            <span className="text-xs text-neutral-500">100% positive feedback</span>
+          </div>
+          <div className="py-4 border-y border-neutral-100">
+            <div className="text-sm text-neutral-600 mb-1">Price:</div>
+            <div className="text-3xl font-bold text-neutral-900">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</div>
+            <div className="text-xs text-neutral-500 mt-1">Approximately £{analysis.priceRange.sweetSpot}</div>
+          </div>
+          <div className="space-y-2">
+            <button className="w-full py-3 bg-blue-600 text-white font-bold rounded-full text-sm">Buy It Now</button>
+            <button className="w-full py-3 bg-blue-100 text-blue-700 font-bold rounded-full text-sm">Add to basket</button>
+          </div>
+        </div>
+      </div>
+      <div className="p-6 bg-neutral-50 rounded-xl border border-neutral-200">
+        <h3 className="font-bold text-neutral-900 mb-4 pb-2 border-b border-neutral-200">Description</h3>
+        <div className="prose prose-neutral prose-sm max-w-none text-neutral-700">
+          <ReactMarkdown>{analysis.suggestedDescription}</ReactMarkdown>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VintedMockup({ scan }: { scan: ScanResult }) {
+  const { analysis, imageUrl } = scan;
+  return (
+    <div className="max-w-md mx-auto bg-white rounded-2xl border border-neutral-100 shadow-xl overflow-hidden animate-in zoom-in-95 duration-500">
+      <div className="p-4 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 font-bold text-xs">JD</div>
+        <div className="text-sm">
+          <div className="font-bold text-neutral-900">John_Reseller</div>
+          <div className="flex gap-0.5"><Sparkles className="w-2.5 h-2.5 text-amber-400 fill-current" /> <Sparkles className="w-2.5 h-2.5 text-amber-400 fill-current" /> <Sparkles className="w-2.5 h-2.5 text-amber-400 fill-current" /></div>
+        </div>
+      </div>
+      <div className="aspect-square bg-neutral-50">
+        <img src={imageUrl} alt="Product" className="w-full h-full object-cover" />
+      </div>
+      <div className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="text-2xl font-bold text-neutral-900">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</div>
+          <Heart className="w-6 h-6 text-neutral-300" />
+        </div>
+        <div>
+          <h3 className="font-bold text-neutral-900 mb-1">{analysis.productDetails.brand} {analysis.productDetails.type}</h3>
+          <p className="text-xs text-neutral-500 uppercase tracking-wider">{analysis.productDetails.condition} • {analysis.productDetails.category}</p>
+        </div>
+        <div className="text-sm text-neutral-700 leading-relaxed line-clamp-4">
+           {analysis.suggestedDescription}
+        </div>
+        <button className="w-full py-3 bg-teal-500 text-white font-bold rounded-lg transition-transform active:scale-95">I'm interested</button>
+      </div>
+    </div>
+  );
+}
+
+function DepopMockup({ scan }: { scan: ScanResult }) {
+  const { analysis, imageUrl } = scan;
+  return (
+    <div className="max-w-md mx-auto bg-white border border-neutral-200 animate-in slide-in-from-right-8 duration-500">
+      <div className="p-3 flex items-center gap-2">
+        <div className="w-6 h-6 rounded-full bg-black" />
+        <span className="text-xs font-bold tracking-tight">vintage_vault</span>
+      </div>
+      <div className="aspect-square bg-neutral-100 relative">
+        <img src={imageUrl} alt="Product" className="w-full h-full object-cover" />
+        <div className="absolute bottom-4 left-4 flex gap-2">
+          <div className="bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">{analysis.productDetails.brand}</div>
+        </div>
+      </div>
+      <div className="p-4 space-y-4 flex flex-col">
+        <div className="flex gap-4">
+          <Heart className="w-5 h-5" />
+          <LucideMessageSquare className="w-5 h-5" />
+          <Share2 className="w-5 h-5" />
+          <MoreHorizontal className="w-5 h-5 ml-auto" />
+        </div>
+        <div>
+          <span className="font-bold text-sm mr-2">vintage_vault</span>
+          <span className="text-sm text-neutral-800">{analysis.suggestedTitle}</span>
+        </div>
+        <div className="text-sm text-neutral-500 whitespace-pre-wrap">
+          {analysis.suggestedDescription}
+        </div>
+        <div className="flex items-center gap-2 pt-2 border-t border-neutral-100">
+          <span className="font-black text-lg">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</span>
+          <button className="ml-auto bg-red-600 text-white px-6 py-2 text-xs font-bold uppercase tracking-widest rounded-full">Buy now</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DefaultMockup({ scan, platform }: { scan: ScanResult, platform: string }) {
+  const { analysis, imageUrl } = scan;
+  return (
+    <div className="glass-card overflow-hidden animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row">
+        <div className="w-full md:w-2/5 aspect-square">
+          <img src={imageUrl} alt="Product" className="w-full h-full object-cover" />
+        </div>
+        <div className="p-8 flex-grow space-y-6">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-brand-accent mb-2 block">{platform} Listing</span>
+            <h1 className="text-2xl font-bold leading-tight">{analysis.suggestedTitle}</h1>
+          </div>
+          <div className="flex items-center justify-between py-4 border-y border-brand-border">
+            <div className="text-3xl font-bold">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</div>
+            <div className="text-xs text-brand-text-muted text-right">
+              Recommended for {platform}<br />
+              <span className="text-brand-accent">{analysis.platforms.find(p => p.name === platform)?.matchScore}% Match Score</span>
+            </div>
+          </div>
+          <div className="prose prose-invert prose-sm max-w-none text-brand-text-muted">
+            <ReactMarkdown>{analysis.suggestedDescription}</ReactMarkdown>
+          </div>
+          <button className="w-full py-4 bg-brand-accent text-brand-bg font-bold rounded-2xl hover:scale-[1.02] transition-all">
+            List on {platform}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
