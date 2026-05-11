@@ -65,3 +65,10 @@ export interface UserStats {
   categories: { name: string; count: number; value: number }[];
   scansByDate: { date: string; count: number }[];
 }
+
+export interface UserLocation {
+  country: string;
+  state?: string;
+  method: 'auto' | 'manual';
+  timestamp: number;
+}

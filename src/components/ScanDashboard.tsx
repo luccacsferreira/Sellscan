@@ -314,8 +314,9 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
               </div>
             </div>
             <div className="pt-4 border-t border-brand-border flex flex-wrap gap-2">
-              <PlatformTag badge="eBay" />
-              <PlatformTag badge="Vinted" />
+              {analysis.platforms.slice(0, 2).map((p, i) => (
+                <PlatformTag key={i} badge={p.name} />
+              ))}
               <PlatformTag badge="SEO Optimized" active />
             </div>
           </div>

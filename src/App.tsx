@@ -17,7 +17,9 @@ import { AnalyticsPage } from './components/AnalyticsPage';
 import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
 import { analyzeProduct } from './services/geminiService';
 import { cn } from './lib/utils';
-import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2 } from 'lucide-react';
+import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin } from 'lucide-react';
+import { LocationProvider, useLocation } from './lib/LocationContext';
+import { UserLocation } from './types';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics';
 
@@ -37,6 +39,14 @@ const LOADING_STAGE_TEXT: Record<LoadingStage, string> = {
 };
 
 export default function App() {
+  return (
+    <LocationProvider>
+      <AppContent />
+    </LocationProvider>
+  );
+}
+
+function AppContent() {
   const [view, setView] = useState<View>('landing');
   const [history, setHistory] = useState<ScanResult[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -49,6 +59,18 @@ export default function App() {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectData, setNewProjectData] = useState({ name: '', description: '', color: '#55cdd1' });
+  
+  const { location, setLocation, requestLocation, isLoading: isLocating } = useLocation();
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [manualCountry, setManualCountry] = useState('');
+  const [manualState, setManualState] = useState('');
+
+  // Ask for location if not set
+  useEffect(() => {
+    if (!location && view !== 'landing') {
+      setShowLocationModal(true);
+    }
+  }, [location, view]);
 
   // Load theme, history, and projects from localStorage
   useEffect(() => {
@@ -142,7 +164,7 @@ export default function App() {
       new Promise(res => setTimeout(() => { setLoadingStage(stage); res(true); }, delay));
 
     try {
-      const aiPromise = analyzeProduct(image, description);
+      const aiPromise = analyzeProduct(image, description, location || undefined);
       
       await stageTimer('searching', 1500);
       await stageTimer('analyzing_reviews', 2500);
@@ -588,6 +610,88 @@ export default function App() {
                      className="w-full py-4 rounded-xl bg-brand-bg border border-brand-border font-bold hover:bg-brand-card transition-all"
                    >
                      Keep Project
+                   </button>
+                 </div>
+               </div>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Location Modal */}
+      <AnimatePresence>
+        {showLocationModal && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="absolute inset-0 bg-brand-bg/95 backdrop-blur-xl"
+             />
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.8, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               exit={{ opacity: 0, scale: 0.8, y: 20 }}
+               className="relative w-full max-w-md glass-card p-8 bg-brand-bg text-center"
+             >
+               <div className="w-20 h-20 rounded-3xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mx-auto mb-8">
+                  <MapPin className="w-10 h-10 text-brand-accent" />
+               </div>
+               <h2 className="text-3xl font-bold mb-4">Personalize your market</h2>
+               <p className="text-brand-text-muted mb-8 text-lg">
+                 Sellscan adapts pricing and selling platforms to your current location for the most accurate results.
+               </p>
+
+               <div className="space-y-6">
+                 <button 
+                   onClick={async () => {
+                     await requestLocation();
+                     setShowLocationModal(false);
+                   }}
+                   disabled={isLocating}
+                   className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                 >
+                   {isLocating ? <Loader2 className="w-5 h-5 animate-spin" /> : <MapPin className="w-5 h-5" />}
+                   {isLocating ? 'Locating...' : 'Use current location'}
+                 </button>
+
+                 <div className="relative">
+                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-brand-border" /></div>
+                   <div className="relative flex justify-center text-xs uppercase"><span className="bg-brand-bg px-2 text-brand-text-muted font-bold">Or enter manually</span></div>
+                 </div>
+
+                 <div className="space-y-4">
+                   <input 
+                     type="text" 
+                     placeholder="Country (e.g. United Kingdom)" 
+                     value={manualCountry}
+                     onChange={e => setManualCountry(e.target.value)}
+                     className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 outline-none focus:border-brand-accent transition-all"
+                   />
+                   <input 
+                     type="text" 
+                     placeholder="State/Region (optional)" 
+                     value={manualState}
+                     onChange={e => setManualState(e.target.value)}
+                     className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-3 outline-none focus:border-brand-accent transition-all"
+                   />
+                   <button 
+                     onClick={() => {
+                        if (manualCountry.trim()) {
+                          const newLocation: UserLocation = {
+                            country: manualCountry.trim(),
+                            state: manualState.trim() || undefined,
+                            method: 'manual',
+                            timestamp: Date.now()
+                          };
+                          setLocation(newLocation);
+                          setShowLocationModal(false);
+                        }
+                     }}
+                     disabled={!manualCountry.trim()}
+                     className="w-full py-4 rounded-xl bg-brand-card border border-brand-border text-brand-text font-bold hover:bg-brand-border transition-all disabled:opacity-50"
+                   >
+                     Confirm Location
                    </button>
                  </div>
                </div>

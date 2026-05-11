@@ -8,6 +8,8 @@ import { motion } from 'motion/react';
 import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+import af1Example from '../assets/Example_Image.jpeg';
+
 interface LandingPageProps {
   onStart: () => void;
 }
@@ -52,15 +54,15 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <section className="max-w-6xl mx-auto mb-32 px-4">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-2 rounded-full bg-brand-accent shadow-[0_0_8px_var(--color-brand-accent)]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent">EXAMPLE SCAN • NIKE AIR MAX 90</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent">EXAMPLE SCAN • AIR JORDAN 1 MID</span>
         </div>
         
         <div className="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-8 bg-brand-card/30 backdrop-blur-sm group">
-          {/* Left: Product Image */}
-          <div className="w-full md:w-[320px] aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl relative">
+          {/* Left: Product Image (Square) */}
+          <div className="w-full md:w-[400px] flex-shrink-0 aspect-square rounded-2xl overflow-hidden shadow-2xl relative">
             <img 
-              src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop" 
-              alt="Nike Air Max" 
+              src={af1Example} 
+              alt="Air Jordan 1 Mid" 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-brand-bg/60 to-transparent pointer-events-none" />
@@ -74,7 +76,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 <Zap className="w-3 h-3 fill-current" /> Quick Verdict
               </div>
               <p className="text-lg font-medium leading-relaxed">
-                Strong resale value — clean soles, shoot on white background, and list on StockX or eBay for £75–95 within a week.
+                Nike Air Jordan 1 Mid "Gym Red/Black Toe" (2021). Iconic colorway featuring a white leather base with black overlays and red accents. Released August 2021. High demand on major resale platforms and marketplaces. Expect £85–£115 ($110–$150).
               </p>
             </div>
 
@@ -84,9 +86,11 @@ export function LandingPage({ onStart }: LandingPageProps) {
               <div className="p-5 rounded-2xl bg-brand-bg/40 border border-brand-border">
                 <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">Best Platforms</h4>
                 <div className="space-y-3">
-                  <PlatformMiniRow name="eBay" score={91} />
-                  <PlatformMiniRow name="Depop" score={78} />
-                  <PlatformMiniRow name="Vinted" score={62} />
+                  <PlatformMiniRow name="StockX" rank={1} />
+                  <PlatformMiniRow name="GOAT" rank={2} />
+                  <PlatformMiniRow name="eBay" rank={3} />
+                  <PlatformMiniRow name="Flight Club" rank={4} />
+                  <PlatformMiniRow name="Grailed" rank={5} />
                 </div>
               </div>
 
@@ -94,13 +98,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
               <div className="p-5 rounded-2xl bg-brand-bg/40 border border-brand-border h-full flex flex-col">
                 <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">Sweet Spot Price</h4>
                 <div className="mt-auto">
-                  <div className="text-4xl font-bold mb-4">£82</div>
+                  <div className="text-4xl font-bold mb-4">£102</div>
                   <div className="h-1.5 w-full bg-brand-border rounded-full relative">
-                    <div className="absolute h-full bg-brand-accent rounded-full w-[60%]" />
+                    <div className="absolute h-full bg-brand-accent rounded-full w-[65%]" />
                   </div>
                   <div className="flex justify-between mt-2 text-[8px] text-brand-text-muted font-mono">
-                    <span>£65</span>
-                    <span>£110</span>
+                    <span>£55</span>
+                    <span>£145</span>
                   </div>
                 </div>
               </div>
@@ -111,15 +115,15 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 <ul className="space-y-3 text-[11px] text-brand-text-muted font-medium">
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-1 flex-shrink-0" />
-                    Clean the midsoles with magic eraser
+                    Deep clean the white leather and midsoles
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-1 flex-shrink-0" />
-                    Shoot on white background
+                    Re-lace neatly and use shoe trees for shape
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-1 flex-shrink-0" />
-                    Include original box if available
+                    Include original box, tags, and proof of purchase
                   </li>
                 </ul>
               </div>
@@ -129,7 +133,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <div className="p-5 rounded-2xl bg-brand-bg/20 border border-brand-border/40">
               <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-2">AI-Written Listing Title</h4>
               <p className="text-sm font-bold opacity-80 leading-relaxed">
-                "Nike Air Max 90 — Size UK 9 — Excellent Condition — Barely Worn — Box Included"
+                "Air Jordan 1 Mid 'Gym Red/Black Toe' — US 10 (UK 9) — Excellent Condition — Original Box Included"
               </p>
             </div>
           </div>
@@ -194,11 +198,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
   );
 }
 
-function PlatformMiniRow({ name, score }: { name: string, score: number }) {
+function PlatformMiniRow({ name, rank }: { name: string, rank: number }) {
   return (
     <div className="flex items-center justify-between text-xs">
-      <span className="font-semibold text-brand-text/90">{name}</span>
-      <span className="font-bold text-brand-accent">{score}%</span>
+      <span className="font-semibold text-brand-text/90">{rank}. {name}</span>
+      <span className="text-[10px] text-brand-accent font-bold uppercase tracking-tighter">
+        {rank === 1 ? 'Best' : rank === 2 ? 'High Demand' : rank === 3 ? 'Fast Sell' : 'Solid option'}
+      </span>
     </div>
   );
 }

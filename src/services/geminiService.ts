@@ -4,7 +4,7 @@
  */
 
 import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
-import { ProductAnalysis } from "../types";
+import { ProductAnalysis, UserLocation } from "../types";
 
 let genAI: GoogleGenAI | null = null;
 
@@ -72,7 +72,7 @@ const ANALYSIS_SCHEMA = {
   required: ["quickVerdict", "improvements", "platforms", "suggestedTitle", "suggestedDescription", "priceRange", "productDetails", "buyerSentiment"]
 };
 
-export async function analyzeProduct(image?: string, description?: string): Promise<ProductAnalysis> {
+export async function analyzeProduct(image?: string, description?: string, location?: UserLocation): Promise<ProductAnalysis> {
   const ai = getAI();
   if (!ai) {
     throw new Error("API_KEY_MISSING");
@@ -92,15 +92,26 @@ export async function analyzeProduct(image?: string, description?: string): Prom
     parts.push({ text: `Context provided by user: ${description}` });
   }
 
+  const locationContext = location 
+    ? `The user is located in: ${location.country}${location.state ? `, ${location.state}` : ''}. Adapt currency (£/$/€), local buying trends, and preferred platforms (e.g., if in UK, prioritize Vinted and eBay UK; if in US, prioritize Poshmark and Mercari) to this specific location.` 
+    : "The user's location is unknown. Assume a global market but default to major international platforms and USD/GBP if unsure.";
+
   const prompt = `You are an expert market analyst for resellers. 
+  ${locationContext}
+  
   1. Identify this product's exact brand, model, edition, and likely condition.
-  2. USE THE INTERNET to research current similar sold listings and active competitors.
+  2. USE THE INTERNET to research current similar sold listings and active competitors in the user's location if specified.
   3. SEARCH FOR REVIEWS: Look for what real people are saying about this product online (YouTube reviews, Reddit, specialized forums, store ratings).
-  4. Analyze pricing trends for this specific product across Vinted, eBay, Depop, etc.
-  5. Recommend exactly what physical improvements should be made to maximize value.
-  6. Suggest the top 3-4 selling platforms with scores and specific reasoning for this exact item.
-  7. Generate a human-written, non-robotic title and description optimized for the #1 recommended platform.
-  8. Set a competitive price range (£/$/€) with a "sweet spot" for a 7-day sale.
+  4. Analyze pricing trends for this specific product across Vinted, StockX, GOAT, Depop, Grailed, and Vestiaire Collective, as well as local leaders like Poshmark (US) or Mercari (US/Japan) if applicable.
+  5. Recommend exactly what low-effort, high-impact physical improvements should be made to maximize value (e.g., standard cleaning, better lighting, simple polishing). AVOID suggestions that require the user to buy new parts/accessories unless absolutely critical.
+  6. Suggest the top 3-4 selling platforms with scores and specific reasoning for this exact item, considering the user's location.
+     - IMPORTANT: Prioritize current market leaders over traditional platforms like eBay UNLESS it is a niche or rare item where eBay is still the primary market.
+     - For sneakers: Prioritize StockX, GOAT, and Vinted.
+     - For vintage/streetwear: Prioritize Depop, Grailed, and Vinted.
+     - For high-end luxury: Prioritize Vestiaire Collective and RealReal.
+     - For general clothing: Prioritize Vinted.
+  7. Generate a human-written, non-robotic title and description optimized for the #1 recommended platform in the user's market.
+  8. Set a competitive price range with a "sweet spot" for a 7-day sale. Use the local currency of the user's location if known.
   
   IMPORTANT: Do not make up information. If you cannot find specific data, use your best expert judgment but indicate the level of certainty in the reasoning.
   
