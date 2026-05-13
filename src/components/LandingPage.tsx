@@ -9,6 +9,22 @@ import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote
 import { cn } from '../lib/utils';
 
 import af1Example from '../assets/Example_Image.jpeg';
+import clothesImg from '../assets/clothes.png';
+import voiceImg from '../assets/voice.png';
+import qImg from '../assets/q.png';
+import pontoImg from '../assets/ponto.png';
+import wImg from '../assets/w.png';
+import eImg from '../assets/e.png';
+import photoImg from '../assets/photo-1491553895911-0055eca6402d.png';
+import aImg from '../assets/a.png';
+import bImg from '../assets/b.png';
+import aaImg from '../assets/aa.png';
+import ppImg from '../assets/pp.png';
+import pokemonImg from '../assets/pokemon.png';
+import glassesImg from '../assets/glasses.png';
+import shoeImg from '../assets/612eQB-fcqL._AC_UF894,1000_QL80_.png';
+import slImg from '../assets/s-l400.png';
+import clocksImg from '../assets/antique-clocks.png';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -170,6 +186,19 @@ export function LandingPage({ onStart }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Marquee Showcase */}
+      <section className="mb-32 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 mb-12 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Scan any item</h2>
+          <p className="text-brand-text-muted">From rare collectibles to high-end vintage — Sellscan knows the value.</p>
+        </div>
+        
+        <div className="flex flex-col gap-6">
+          <MarqueeRow direction="right" images={COLLECTIBLES_ROW_1} />
+          <MarqueeRow direction="left" images={COLLECTIBLES_ROW_2} />
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="max-w-4xl mx-auto">
         <div className="text-center mb-16">
@@ -194,6 +223,54 @@ export function LandingPage({ onStart }: LandingPageProps) {
           />
         </div>
       </section>
+    </div>
+  );
+}
+
+const COLLECTIBLES_ROW_1 = [
+  clothesImg,
+  voiceImg,
+  qImg,
+  pontoImg,
+  wImg,
+  eImg,
+  photoImg,
+  aImg,
+];
+
+const COLLECTIBLES_ROW_2 = [
+  bImg,
+  aaImg,
+  ppImg,
+  pokemonImg,
+  glassesImg,
+  shoeImg,
+  slImg,
+  clocksImg,
+];
+
+function MarqueeRow({ images, direction }: { images: string[], direction: 'left' | 'right' }) {
+  const doubledImages = [...images, ...images];
+  
+  return (
+    <div className="flex w-[200%] gap-6">
+      <motion.div 
+        className="flex gap-6 shrink-0"
+        animate={{ 
+          x: direction === 'left' ? [0, '-50%'] : ['-50%', 0]
+        }}
+        transition={{ 
+          duration: 40, 
+          repeat: Infinity, 
+          ease: "linear"
+        }}
+      >
+        {doubledImages.map((src, i) => (
+          <div key={i} className="w-48 h-48 md:w-64 md:h-64 rounded-3xl overflow-hidden shadow-lg shrink-0 border border-brand-border/30">
+            <img src={src} alt="Collectible" className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-500 hover:scale-110" />
+          </div>
+        ))}
+      </motion.div>
     </div>
   );
 }
