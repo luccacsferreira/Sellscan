@@ -16,6 +16,14 @@ import {
 } from 'recharts';
 import { ArrowLeft, TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { UserStats } from '../types';
+import { useLocation } from '../lib/LocationContext';
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  'GBP': '£',
+  'USD': '$',
+  'EUR': '€',
+  'BRL': 'R$'
+};
 
 interface AnalyticsPageProps {
   stats: UserStats;
@@ -23,6 +31,8 @@ interface AnalyticsPageProps {
 }
 
 export function AnalyticsPage({ stats, onBack }: AnalyticsPageProps) {
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   const COLORS = ['#55cdd1', '#14b8a6', '#0d9488', '#0f766e', '#134e4a'];
 
   return (
@@ -158,9 +168,11 @@ export function AnalyticsPage({ stats, onBack }: AnalyticsPageProps) {
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false}
+                  tickFormatter={(val) => `${currencySymbol}${val}`}
                 />
                 <Tooltip 
-                   contentStyle={{ 
+                  formatter={(value: number) => [`${currencySymbol}${value}`, 'Market Value']}
+                  contentStyle={{ 
                     backgroundColor: '#212121', 
                     border: '1px solid #2B2B2B',
                     borderRadius: '8px'

@@ -8,6 +8,14 @@ import { motion } from 'motion/react';
 import { Clock, ExternalLink, ArrowRight, Search, Trash2 } from 'lucide-react';
 import { ScanResult } from '../types';
 import { cn } from '../lib/utils';
+import { useLocation } from '../lib/LocationContext';
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  'GBP': '£',
+  'USD': '$',
+  'EUR': '€',
+  'BRL': 'R$'
+};
 
 interface HistoryPageProps {
   history: ScanResult[];
@@ -16,6 +24,9 @@ interface HistoryPageProps {
 }
 
 export function HistoryPage({ history, onSelect, onClear }: HistoryPageProps) {
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
+
   return (
     <div className="pt-32 pb-20 px-4 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-12">
@@ -69,7 +80,7 @@ export function HistoryPage({ history, onSelect, onClear }: HistoryPageProps) {
                   {scan.analysis.productDetails.brand} {scan.analysis.productDetails.type}
                 </h3>
                 <div className="flex items-center justify-between mt-4">
-                  <span className="text-xl font-bold">{scan.analysis.priceRange.currency}{scan.analysis.priceRange.sweetSpot}</span>
+                  <span className="text-xl font-bold">{currencySymbol}{scan.analysis.priceRange.sweetSpot}</span>
                   <div className="w-8 h-8 rounded-full bg-brand-bg border border-brand-border flex items-center justify-center group-hover:bg-brand-accent group-hover:text-brand-bg transition-all">
                     <ArrowRight className="w-4 h-4" />
                   </div>

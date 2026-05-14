@@ -4,6 +4,8 @@ import { UserLocation } from '../types';
 interface LocationContextType {
   location: UserLocation | null;
   setLocation: (location: UserLocation | null) => void;
+  currency: string;
+  setCurrency: (currency: string) => void;
   requestLocation: () => Promise<void>;
   isLoading: boolean;
 }
@@ -15,6 +17,9 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const saved = localStorage.getItem('sellscan_location');
     return saved ? JSON.parse(saved) : null;
   });
+  const [currency, setCurrencyState] = useState<string>(() => {
+    return localStorage.getItem('sellscan_currency') || 'GBP';
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   const setLocation = (newLocation: UserLocation | null) => {
@@ -24,6 +29,11 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
       localStorage.removeItem('sellscan_location');
     }
+  };
+
+  const setCurrency = (newCurrency: string) => {
+    setCurrencyState(newCurrency);
+    localStorage.setItem('sellscan_currency', newCurrency);
   };
 
   const requestLocation = async () => {
@@ -60,7 +70,7 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <LocationContext.Provider value={{ location, setLocation, requestLocation, isLoading }}>
+    <LocationContext.Provider value={{ location, setLocation, currency, setCurrency, requestLocation, isLoading }}>
       {children}
     </LocationContext.Provider>
   );

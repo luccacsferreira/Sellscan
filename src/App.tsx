@@ -18,7 +18,7 @@ import { BottomNav } from './components/BottomNav';
 import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
 import { analyzeProduct } from './services/geminiService';
 import { cn } from './lib/utils';
-import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin } from 'lucide-react';
+import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign } from 'lucide-react';
 import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
 
@@ -110,15 +110,21 @@ function AppContent() {
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectData, setNewProjectData] = useState({ name: '', description: '', color: '#55cdd1' });
   
-  const { location, setLocation, requestLocation, isLoading: isLocating } = useLocation();
+  const { location, setLocation, currency, setCurrency, requestLocation, isLoading: isLocating } = useLocation();
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
 
-  // Ask for location if not set
+  // Ask for location/currency if not set
   useEffect(() => {
-    if (!location && view !== 'landing') {
-      setShowLocationModal(true);
+    if (view !== 'landing') {
+      const savedCurrency = localStorage.getItem('sellscan_currency');
+      if (!savedCurrency) {
+        setShowCurrencyModal(true);
+      } else if (!location) {
+        setShowLocationModal(true);
+      }
     }
   }, [location, view]);
 
@@ -671,6 +677,56 @@ function AppContent() {
                      Keep Project
                    </button>
                  </div>
+               </div>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Currency Modal */}
+      <AnimatePresence>
+        {showCurrencyModal && (
+          <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="absolute inset-0 bg-brand-bg/95 backdrop-blur-xl"
+             />
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.8, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               exit={{ opacity: 0, scale: 0.8, y: 20 }}
+               className="relative w-full max-w-md glass-card p-10 bg-brand-bg text-center border-brand-accent/20"
+             >
+               <div className="w-20 h-20 rounded-3xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mx-auto mb-8">
+                  <CircleDollarSign className="w-10 h-10 text-brand-accent" />
+               </div>
+               <h2 className="text-3xl font-bold mb-4 italic tracking-tight">Set your currency</h2>
+               <p className="text-brand-text-muted mb-10 text-lg">
+                 Choose the currency you use for listing. You can change this anytime in settings.
+               </p>
+
+               <div className="grid grid-cols-2 gap-4">
+                 {[
+                   { code: 'GBP', symbol: '£', name: 'British Pound' },
+                   { code: 'USD', symbol: '$', name: 'US Dollar' },
+                   { code: 'EUR', symbol: '€', name: 'Euro' },
+                   { code: 'BRL', symbol: 'R$', name: 'Real' }
+                 ].map((c) => (
+                   <button 
+                     key={c.code}
+                     onClick={() => {
+                       setCurrency(c.code);
+                       setShowCurrencyModal(false);
+                       if (!location) setShowLocationModal(true);
+                     }}
+                     className="flex flex-col items-center justify-center p-6 rounded-2xl bg-brand-bg border border-brand-border hover:border-brand-accent hover:bg-brand-accent/5 transition-all group"
+                   >
+                     <span className="text-2xl font-black mb-1 group-hover:scale-110 transition-transform">{c.symbol}</span>
+                     <span className="text-[10px] font-extrabold uppercase tracking-widest text-brand-text-muted group-hover:text-brand-accent transition-colors">{c.code}</span>
+                   </button>
+                 ))}
                </div>
              </motion.div>
           </div>

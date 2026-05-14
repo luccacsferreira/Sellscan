@@ -12,6 +12,14 @@ import {
 } from 'lucide-react';
 import { ScanResult, Project, UserStats } from '../types';
 import { cn } from '../lib/utils';
+import { useLocation } from '../lib/LocationContext';
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  'GBP': '£',
+  'USD': '$',
+  'EUR': '€',
+  'BRL': 'R$'
+};
 
 interface DashboardHomeProps {
   stats: UserStats;
@@ -34,6 +42,9 @@ export function DashboardHome({
   onViewAllScans,
   onViewAnalytics
 }: DashboardHomeProps) {
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 space-y-12">
       {/* Header with quick actions */}
@@ -71,13 +82,13 @@ export function DashboardHome({
         <StatCard 
           icon={<TrendingUp className="w-5 h-5" />}
           label="Market Value"
-          value={`$${stats.totalMarketValue.toLocaleString()}`}
+          value={`${currencySymbol}${stats.totalMarketValue.toLocaleString()}`}
           trend="Based on 20+ sources"
         />
         <StatCard 
           icon={<BarChart3 className="w-5 h-5" />}
           label="Avg. Resale"
-          value={`$${stats.averageSweetSpot.toFixed(0)}`}
+          value={`${currencySymbol}${stats.averageSweetSpot.toFixed(0)}`}
           trend="Optimal sweet spot"
         />
         <div 
@@ -176,7 +187,7 @@ export function DashboardHome({
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-bold truncate group-hover:text-brand-accent transition-colors">{scan.analysis.suggestedTitle}</h4>
-                  <p className="text-xs text-brand-text-muted">{scan.analysis.priceRange.currency}{scan.analysis.priceRange.sweetSpot}</p>
+                  <p className="text-xs text-brand-text-muted">{currencySymbol}{scan.analysis.priceRange.sweetSpot}</p>
                 </div>
                 <div className="text-[10px] font-mono text-brand-text-muted uppercase">
                   {new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}

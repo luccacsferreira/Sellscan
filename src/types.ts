@@ -69,6 +69,7 @@ export interface UserStats {
 export interface UserLocation {
   country: string;
   state?: string;
+  currency?: string;
   method: 'auto' | 'manual';
   timestamp: number;
 }

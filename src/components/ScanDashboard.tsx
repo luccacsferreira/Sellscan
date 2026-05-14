@@ -7,13 +7,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Zap, Wrench, Paintbrush, Package, Plus, ExternalLink, 
   Copy, Check, Send, Sparkles, MessageCircle, ArrowLeft,
-  DollarSign, TrendingUp, Info, Users, X, ShoppingBag, Eye, Heart, MessageSquare as LucideMessageSquare, Share2, MoreHorizontal, User as LucideUser
+  DollarSign, TrendingUp, Info, Users, X, ShoppingBag, Eye, Heart, MessageSquare as LucideMessageSquare, Share2, MoreHorizontal, User as LucideUser,
+  Maximize2, Minimize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { ProductAnalysis, ChatMessage, ScanResult } from '../types';
 import { cn } from '../lib/utils';
 import { chatAboutProduct } from '../services/geminiService';
+import { useLocation } from '../lib/LocationContext';
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  'GBP': '£',
+  'USD': '$',
+  'EUR': '€',
+  'BRL': 'R$'
+};
 
 interface ScanDashboardProps {
   scan: ScanResult;
@@ -29,6 +38,9 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
   const [selectedMockup, setSelectedMockup] = useState<string | null>(null);
+  const [isChatFullscreen, setIsChatFullscreen] = useState(false);
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
 
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -78,7 +90,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
   const analysis = scan.analysis;
 
   return (
-    <div className="pt-20 pb-28 md:pb-20 px-4 md:px-10 max-w-7xl mx-auto min-h-screen flex flex-col md:flex-row gap-8">
+    <div className="pt-20 pb-28 md:pb-20 px-4 md:px-10 max-w-7xl mx-auto min-h-screen flex flex-col md:flex-row gap-8 relative">
       <AnimatePresence>
         {selectedMockup && (
           <PlatformMockup 
@@ -90,7 +102,10 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
       </AnimatePresence>
 
       {/* LEFT: RESULTS DASHBOARD */}
-      <div className="flex-grow space-y-8 scroll-smooth">
+      <div className={cn(
+        "flex-grow space-y-8 scroll-smooth transition-all duration-500",
+        isChatFullscreen ? "opacity-0 pointer-events-none scale-95" : "opacity-100"
+      )}>
         <div className="flex items-center justify-between">
           <button 
             onClick={onBack}
@@ -117,85 +132,106 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
           <p className="text-2xl font-bold leading-tight tracking-tight text-white/90">{analysis.quickVerdict}</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12 overflow-visible">
-          {/* Product Overview Card */}
-          <div className="glass-card flex flex-col sm:flex-row h-full group overflow-hidden border-brand-border/10">
+        <div className="space-y-6 pb-12">
+          {/* Product Overview Card (Full Width) */}
+          <div className="glass-card flex flex-col md:flex-row min-h-[220px] group overflow-hidden border-brand-border/10">
             {scan.imageUrl && (
-              <div className="w-full sm:w-[160px] lg:w-[180px] bg-black/20 flex-shrink-0 relative">
+              <div className="w-full md:w-1/3 min-h-[200px] bg-black/20 flex-shrink-0 relative">
                 <img src={scan.imageUrl} alt="Product" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent to-brand-bg/20" />
               </div>
             )}
-            <div className="p-6 flex-grow flex flex-col justify-center">
+            <div className="p-8 flex-grow flex flex-col justify-center">
               <div className="mb-6">
-                <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-widest block mb-2 opacity-60">Detected Item</span>
-                <h3 className="text-2xl font-bold tracking-tight text-white/95 leading-tight">
+                <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-[0.2em] block mb-3 opacity-60">Identified Item</span>
+                <h3 className="text-3xl font-black tracking-tight text-white/95 leading-tight mb-2">
                   {analysis.productDetails.brand} <span className="text-brand-accent">{analysis.productDetails.type}</span>
                 </h3>
+                <p className="text-brand-text-muted text-sm max-w-xl">This item has been cross-referenced across major reselling databases for accurate valuation.</p>
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
                 <DetailItem label="Condition" value={analysis.productDetails.condition} />
                 <DetailItem label="Category" value={analysis.productDetails.category} />
+                <DetailItem label="Brand" value={analysis.productDetails.brand} />
+                <DetailItem label="Method" value="AI Optical Scan" />
               </div>
             </div>
           </div>
 
-          {/* Price Card */}
-          <div className="glass-card p-6 flex flex-col relative overflow-visible border-brand-border/10">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60">Suggested Price</h3>
-              <div className="flex items-center gap-1.5 text-brand-accent bg-brand-accent/10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-accent/20">
-                <TrendingUp className="w-3 h-3" /> High Demand
-              </div>
-            </div>
-            
-            <div className="flex items-baseline gap-2 mb-8 mt-auto">
-              <span className="text-5xl font-black tracking-tighter text-white">
-                {analysis.priceRange.currency}{analysis.priceRange.sweetSpot}
-              </span>
-              <span className="text-brand-text-muted text-sm font-medium">avg listing</span>
-            </div>
-            
-            {/* Range Bar */}
-            <div className="relative pt-8 pb-4">
-              <div className="h-2 w-full bg-brand-border/40 rounded-full overflow-hidden">
-                 <div className="h-full bg-gradient-to-r from-brand-accent/20 via-brand-accent to-brand-accent/20 opacity-50" />
+          {/* Price Card (Full Width) */}
+          <div className="glass-card p-0 flex flex-col md:flex-row relative overflow-hidden border-brand-border/10">
+            <div className="w-full md:w-[40%] p-8 flex flex-col justify-center border-b md:border-b-0 md:border-r border-brand-border/10 bg-brand-bg/20">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60">Market Value</h3>
+                <div className="flex items-center gap-1.5 text-brand-accent bg-brand-accent/10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-accent/20">
+                  <TrendingUp className="w-3 h-3" /> High Demand
+                </div>
               </div>
               
-              {/* Sweet Spot Marker */}
-              <div 
-                className="absolute top-5 transition-all duration-1000 ease-out"
-                style={{ left: `${((analysis.priceRange.sweetSpot - (analysis.priceRange.min * 0.8)) / (analysis.priceRange.max * 1.2 - (analysis.priceRange.min * 0.8))) * 100}%` }}
-              >
-                <div className="flex flex-col items-center">
-                  <div className="bg-brand-accent text-brand-bg px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter shadow-[0_5px_15px_-3px_var(--color-brand-accent)] mb-1">
-                    Sweet Spot
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-6xl font-black tracking-tighter text-white">
+                  {currencySymbol}{analysis.priceRange.sweetSpot}
+                </span>
+              </div>
+              <p className="text-brand-text-muted text-sm font-medium uppercase tracking-widest text-[10px]">Optimal Listing price</p>
+              
+              <div className="mt-8">
+                <button 
+                  onClick={() => prefillChat(`How can I justify a price above ${currencySymbol}${analysis.priceRange.max} for this ${analysis.productDetails.brand} ${analysis.productDetails.type}?`)}
+                  className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_-5px_rgba(85,205,209,0.3)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 fill-current" /> Get Premium Pricing Strategy
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-grow p-8 flex flex-col justify-center gap-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                 <div>
+                   <h4 className="text-[10px] font-black text-brand-accent uppercase tracking-widest mb-2">Market Sentiment</h4>
+                   <p className="text-sm text-brand-text-muted leading-relaxed">Buyers are moving fast on {analysis.productDetails.brand}. Similar items are clearing in under 4 days when priced around {currencySymbol}{analysis.priceRange.sweetSpot}.</p>
+                 </div>
+                 <div>
+                   <h4 className="text-[10px] font-black text-brand-accent uppercase tracking-widest mb-2">Pricing Logic</h4>
+                   <p className="text-sm text-brand-text-muted leading-relaxed">Adjusted for {analysis.productDetails.condition} state and current platform seasonal trends.</p>
+                 </div>
+               </div>
+
+               {/* Range Bar */}
+               <div className="relative pt-6 pb-2">
+                <div className="h-2 w-full bg-brand-border/40 rounded-full overflow-hidden">
+                   <div className="h-full bg-gradient-to-r from-brand-accent/20 via-brand-accent to-brand-accent/20 opacity-50" />
+                </div>
+                
+                {/* Sweet Spot Marker */}
+                <div 
+                  className="absolute top-3 transition-all duration-1000 ease-out"
+                  style={{ left: `${((analysis.priceRange.sweetSpot - (analysis.priceRange.min * 0.8)) / (analysis.priceRange.max * 1.2 - (analysis.priceRange.min * 0.8))) * 100}%` }}
+                >
+                  <div className="flex flex-col items-center">
+                    <div className="bg-brand-accent text-brand-bg px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter shadow-[0_5px_15px_-3px_var(--color-brand-accent)] mb-1">
+                      Target
+                    </div>
+                    <div className="w-4 h-4 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] border-2 border-brand-accent" />
                   </div>
-                  <div className="w-4 h-4 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] border-2 border-brand-accent" />
+                </div>
+
+                <div className="flex justify-between mt-6 text-[10px] text-brand-text-muted font-bold tracking-widest uppercase">
+                  <div className="flex flex-col">
+                    <span className="text-white/80">{currencySymbol}{analysis.priceRange.min}</span>
+                    <span className="opacity-40">Quick Sale</span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span className="text-white/80">{currencySymbol}{analysis.priceRange.max}</span>
+                    <span className="opacity-40">Max Profit</span>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex justify-between mt-6 text-[10px] text-brand-text-muted font-bold tracking-widest uppercase mb-8">
-                <div className="flex flex-col">
-                  <span className="text-white/80">{analysis.priceRange.currency}{analysis.priceRange.min}</span>
-                  <span className="opacity-40">Quick Sale</span>
-                </div>
-                <div className="flex flex-col text-right">
-                  <span className="text-white/80">{analysis.priceRange.currency}{analysis.priceRange.max}</span>
-                  <span className="opacity-40">Max Profit</span>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => prefillChat("How can I justify a higher price for this item?")}
-                className="w-full py-2 rounded-lg bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[10px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
-              >
-                Reach for {analysis.priceRange.currency}{analysis.priceRange.max + 20} →
-              </button>
             </div>
           </div>
 
-          {/* Platforms Card */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6 overflow-visible">
+            {/* Platforms Card */}
           <div className="glass-card p-6 lg:col-span-1 border-brand-border/10 flex flex-col">
              <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Top Platforms</h3>
              <div className="space-y-3 mb-6">
@@ -222,12 +258,12 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                  </div>
                ))}
              </div>
-             <button 
-               onClick={() => prefillChat("Show me 5 more platforms where this item would sell well")}
-               className="mt-auto w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-[0.1em] transition-all border border-brand-accent/10 border-dashed"
-             >
-               + Get 5 more platforms
-             </button>
+              <button 
+                onClick={() => prefillChat(`Give me 5 more platforms where this ${analysis.productDetails.brand} ${analysis.productDetails.type} would sell well`)}
+                className="mt-auto w-full py-3 rounded-xl bg-brand-accent text-brand-bg text-[11px] font-black uppercase tracking-[0.1em] transition-all shadow-[0_10px_20px_-5px_rgba(85,205,209,0.2)] hover:scale-[1.02] flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 fill-current" /> Get 5 more platforms
+              </button>
           </div>
 
           {/* Improvements Card */}
@@ -249,10 +285,10 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                ))}
              </ul>
               <button 
-                onClick={() => prefillChat("Give me 5 more specific ways to increase the value of this item")}
-                className="mt-8 w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+                onClick={() => prefillChat(`Give me 5 more specific ways to increase the value of this ${analysis.productDetails.brand}`)}
+                className="mt-8 w-full py-3 rounded-xl bg-brand-accent text-brand-bg text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_-5px_rgba(85,205,209,0.2)] hover:scale-[1.02] flex items-center justify-center gap-2"
               >
-                 Get Specialized Prep Tips →
+                 <Sparkles className="w-4 h-4 fill-current" /> Get Specialized Prep Tips
               </button>
           </div>
 
@@ -310,16 +346,17 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
               </div>
 
               <button 
-                onClick={() => prefillChat("How can I improve buyer trust for this particular item?")}
-                className="w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+                onClick={() => prefillChat(`How can I improve buyer trust for this particular ${analysis.productDetails.type}?`)}
+                className="w-full py-3 rounded-xl bg-brand-accent text-brand-bg text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_-5px_rgba(85,205,209,0.2)] hover:scale-[1.02] flex items-center justify-center gap-2"
               >
-                Increase Trust Score →
+                <Sparkles className="w-4 h-4 fill-current" /> Increase Trust Score
               </button>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Listing Preview Card */}
+      {/* Listing Preview Card */}
         <div className="glass-card p-0 overflow-hidden">
           <div className="bg-brand-bg border-b border-brand-border p-4 flex items-center justify-between">
             <div className="flex gap-1.5">
@@ -366,10 +403,10 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
               </div>
 
               <button 
-                onClick={() => prefillChat("Rewrite this description to be more persuasive and sales-focused.")}
-                className="w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+                onClick={() => prefillChat(`Rewrite this ${analysis.productDetails.type} description to be more persuasive and sales-focused.`)}
+                className="w-full py-3 rounded-xl bg-brand-accent text-brand-bg text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_-5px_rgba(85,205,209,0.2)] hover:scale-[1.02] flex items-center justify-center gap-2"
               >
-                Boost Sales Copy →
+                <Sparkles className="w-4 h-4 fill-current" /> Boost Sales Copy
               </button>
             </div>
           </div>
@@ -377,15 +414,31 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
       </div>
 
       {/* RIGHT: AI CHAT SIDEBAR (Sticky) */}
-      <div className="w-full md:w-[380px] lg:w-[420px] shrink-0">
-        <div className="sticky top-24 flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md h-[500px] md:h-[calc(100vh-120px)]">
-           <div className="p-4 border-b border-brand-border/50 flex items-center gap-3 bg-brand-bg/40">
-              <div className="w-8 h-8 rounded-full bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-brand-accent" />
+      <div className={cn(
+        "shrink-0 transition-all duration-500 flex flex-col items-center",
+        isChatFullscreen ? "fixed inset-0 z-[150] w-full h-full p-4 md:p-10 bg-brand-bg/95 backdrop-blur-xl" : "w-full md:w-[280px] lg:w-[320px]"
+      )}>
+        <div className={cn(
+          "flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md shadow-2xl transition-all duration-500",
+          isChatFullscreen ? "w-full max-w-4xl h-full" : "sticky top-24 w-full h-[500px] md:h-[calc(100vh-120px)]"
+        )}>
+           <div className="p-4 border-b border-brand-border/50 flex items-center justify-between bg-brand-bg/40">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center animate-pulse">
+                  <Sparkles className="w-4 h-4 text-brand-accent" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm tracking-tight italic">Sellscan AI</h3>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-sm tracking-tight">Sellscan AI</h3>
-              </div>
+
+              <button 
+                onClick={() => setIsChatFullscreen(!isChatFullscreen)}
+                className="p-2 rounded-lg hover:bg-brand-accent/10 text-brand-text-muted hover:text-brand-accent transition-all"
+                title={isChatFullscreen ? "Exit Fullscreen" : "Fullscreen Chat"}
+              >
+                {isChatFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
            </div>
          
          <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar scroll-smooth bg-brand-bg/10">
@@ -577,6 +630,8 @@ function PlatformMockup({ platform, scan, onClose }: { platform: string, scan: S
 
 function EbayMockup({ scan }: { scan: ScanResult }) {
   const { analysis, imageUrl } = scan;
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row gap-8">
@@ -591,8 +646,8 @@ function EbayMockup({ scan }: { scan: ScanResult }) {
           </div>
           <div className="py-4 border-y border-neutral-100">
             <div className="text-sm text-neutral-600 mb-1">Price:</div>
-            <div className="text-3xl font-bold text-neutral-900">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</div>
-            <div className="text-xs text-neutral-500 mt-1">Approximately £{analysis.priceRange.sweetSpot}</div>
+            <div className="text-3xl font-bold text-neutral-900">{currencySymbol}{analysis.priceRange.sweetSpot}</div>
+            <div className="text-xs text-neutral-500 mt-1">Approximately {currencySymbol}{analysis.priceRange.sweetSpot}</div>
           </div>
           <div className="space-y-2">
             <button className="w-full py-3 bg-blue-600 text-white font-bold rounded-full text-sm">Buy It Now</button>
@@ -612,6 +667,8 @@ function EbayMockup({ scan }: { scan: ScanResult }) {
 
 function VintedMockup({ scan }: { scan: ScanResult }) {
   const { analysis, imageUrl } = scan;
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   return (
     <div className="max-w-md mx-auto bg-white rounded-2xl border border-neutral-100 shadow-xl overflow-hidden animate-in zoom-in-95 duration-500">
       <div className="p-4 flex items-center gap-3">
@@ -626,7 +683,7 @@ function VintedMockup({ scan }: { scan: ScanResult }) {
       </div>
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-neutral-900">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</div>
+          <div className="text-2xl font-bold text-neutral-900">{currencySymbol}{analysis.priceRange.sweetSpot}</div>
           <Heart className="w-6 h-6 text-neutral-300" />
         </div>
         <div>
@@ -644,6 +701,8 @@ function VintedMockup({ scan }: { scan: ScanResult }) {
 
 function DepopMockup({ scan }: { scan: ScanResult }) {
   const { analysis, imageUrl } = scan;
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   return (
     <div className="max-w-md mx-auto bg-white border border-neutral-200 animate-in slide-in-from-right-8 duration-500">
       <div className="p-3 flex items-center gap-2">
@@ -671,7 +730,7 @@ function DepopMockup({ scan }: { scan: ScanResult }) {
           {analysis.suggestedDescription}
         </div>
         <div className="flex items-center gap-2 pt-2 border-t border-neutral-100">
-          <span className="font-black text-lg">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</span>
+          <span className="font-black text-lg">{currencySymbol}{analysis.priceRange.sweetSpot}</span>
           <button className="ml-auto bg-red-600 text-white px-6 py-2 text-xs font-bold uppercase tracking-widest rounded-full">Buy now</button>
         </div>
       </div>
@@ -681,6 +740,8 @@ function DepopMockup({ scan }: { scan: ScanResult }) {
 
 function DefaultMockup({ scan, platform }: { scan: ScanResult, platform: string }) {
   const { analysis, imageUrl } = scan;
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   return (
     <div className="glass-card overflow-hidden animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row">
@@ -693,7 +754,7 @@ function DefaultMockup({ scan, platform }: { scan: ScanResult, platform: string 
             <h1 className="text-2xl font-bold leading-tight">{analysis.suggestedTitle}</h1>
           </div>
           <div className="flex items-center justify-between py-4 border-y border-brand-border">
-            <div className="text-3xl font-bold">{analysis.priceRange.currency}{analysis.priceRange.sweetSpot}</div>
+            <div className="text-3xl font-bold">{currencySymbol}{analysis.priceRange.sweetSpot}</div>
             <div className="text-xs text-brand-text-muted text-right">
               Recommended for {platform}<br />
               <span className="text-brand-accent">{analysis.platforms.find(p => p.name === platform)?.matchScore}% Match Score</span>

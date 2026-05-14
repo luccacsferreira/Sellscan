@@ -11,6 +11,14 @@ import {
 } from 'lucide-react';
 import { Project, ScanResult } from '../types';
 import { cn } from '../lib/utils';
+import { useLocation } from '../lib/LocationContext';
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  'GBP': '£',
+  'USD': '$',
+  'EUR': '€',
+  'BRL': 'R$'
+};
 
 interface ProjectDetailProps {
   project: Project;
@@ -31,6 +39,9 @@ export function ProjectDetail({
   onNewScan,
   onSelectScan
 }: ProjectDetailProps) {
+  const { currency } = useLocation();
+  const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 space-y-12">
       {/* Header */}
@@ -110,7 +121,7 @@ export function ProjectDetail({
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">Target Price</span>
-                    <span className="text-xl font-bold">{scan.analysis.priceRange.currency}{scan.analysis.priceRange.sweetSpot}</span>
+                    <span className="text-xl font-bold">{currencySymbol}{scan.analysis.priceRange.sweetSpot}</span>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-brand-bg border border-brand-border flex items-center justify-center group-hover:bg-brand-accent group-hover:text-brand-bg transition-all">
                     <ArrowRight className="w-4 h-4" />

@@ -208,16 +208,16 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <PricingCard 
              price="$0"
-             tier="Free"
+             tier="Starter"
              features={["3 scans per month", "Full AI analysis", "Chat with scan results", "Copy-ready listings"]}
              cta="Get started free"
              variant="muted"
           />
           <PricingCard 
              price="$12"
-             tier="Pro"
-             features={["Unlimited scans", "Full scan history", "Priority AI processing", "Everything in Free"]}
-             cta="Start Pro"
+             tier="Unlimited"
+             features={["Unlimited scans", "Full scan history", "Priority AI processing", "Everything in Basic"]}
+             cta="Go Unlimited"
              variant="accent"
              popular
           />
