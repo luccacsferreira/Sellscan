@@ -54,8 +54,14 @@ export async function analyzeProduct(options: AnalysisOptions): Promise<ProductA
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || "Failed to analyze with " + model);
+    let errorMessage = "Failed to analyze with " + model;
+    try {
+      const err = await response.json();
+      errorMessage = err.error || errorMessage;
+    } catch {
+      errorMessage = `Server error (${response.status}): ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -91,8 +97,14 @@ export async function chatAboutProduct(
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || "Failed to chat with " + model);
+    let errorMessage = "Failed to chat with " + model;
+    try {
+      const err = await response.json();
+      errorMessage = err.error || errorMessage;
+    } catch {
+      errorMessage = `Server error (${response.status}): ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();

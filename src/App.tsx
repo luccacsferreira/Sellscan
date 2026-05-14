@@ -15,6 +15,7 @@ import { DashboardHome } from './components/DashboardHome';
 import { ProjectDetail } from './components/ProjectDetail';
 import { AnalyticsPage } from './components/AnalyticsPage';
 import { BottomNav } from './components/BottomNav';
+import { AuthModal } from './components/AuthModal';
 import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
 import { analyzeProduct, AIModel } from './services/aiService';
 import { cn } from './lib/utils';
@@ -135,6 +136,8 @@ function AppContent() {
   const { location, setLocation, currency, setCurrency, requestLocation, isLoading: isLocating } = useLocation();
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(null);
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
 
@@ -271,7 +274,15 @@ function AppContent() {
     };
   }, [history]);
 
-  const handleAnalyze = async (image?: string, description?: string, isDemo: boolean = false) => {
+  const handleAnalyze = async (image?: string, description?: string, isDemo: boolean = false, forceUser?: User | null) => {
+    const activeUser = forceUser !== undefined ? forceUser : user;
+    
+    if (!activeUser && !isDemo) {
+      setPendingScan({ image, description });
+      setShowAuthModal(true);
+      return;
+    }
+
     setIsLoading(true);
     setLoadingStage('identifying');
     setImageToAnalyze(image || null);
@@ -441,6 +452,7 @@ function AppContent() {
         onViewHistory={() => setView('history')}
         onViewAnalytics={() => setView('analytics')}
         onViewSettings={() => setView('settings')}
+        onSignInClick={() => setShowAuthModal(true)}
         isLoggedIn={!!user}
         userEmail={user?.email}
         theme={theme}
@@ -749,6 +761,8 @@ function AppContent() {
                    setSelectedModel(model);
                    localStorage.setItem('sellscan_model', model);
                  }} 
+                 isLoggedIn={!!user}
+                 userEmail={user?.email}
                />
              </motion.div>
           )}
@@ -1030,6 +1044,17 @@ function AppContent() {
           </div>
         )}
       </AnimatePresence>
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        onSuccess={(authenticatedUser) => {
+          if (pendingScan) {
+            handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
+            setPendingScan(null);
+          }
+        }}
+      />
     </div>
   );
 }

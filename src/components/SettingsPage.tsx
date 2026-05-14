@@ -11,7 +11,17 @@ import { supabase } from '../lib/supabase';
 
 import { AIModel } from '../services/aiService';
 
-export function SettingsPage({ selectedModel, setSelectedModel }: { selectedModel: AIModel, setSelectedModel: (m: AIModel) => void }) {
+export function SettingsPage({ 
+  selectedModel, 
+  setSelectedModel,
+  isLoggedIn,
+  userEmail
+}: { 
+  selectedModel: AIModel, 
+  setSelectedModel: (m: AIModel) => void,
+  isLoggedIn: boolean,
+  userEmail?: string
+}) {
   const { location, setLocation, requestLocation, isLoading } = useLocation();
   const [secretsStatus, setSecretsStatus] = React.useState({ gemini: false, openai: false });
 
@@ -27,6 +37,14 @@ export function SettingsPage({ selectedModel, setSelectedModel }: { selectedMode
       <h1 className="text-4xl font-bold mb-12">Settings</h1>
       
       <div className="space-y-4">
+        {isLoggedIn && (
+          <SettingsGroup title="Account">
+            <SettingsItem icon={<User className="text-blue-500" />} label="Profile Information" value={userEmail || "Anonymous"} />
+            <SettingsItem icon={<Bell className="text-amber-500" />} label="Notifications" value="Enabled" />
+            <SettingsItem icon={<Shield className="text-green-500" />} label="Security" value="MFA Active" />
+          </SettingsGroup>
+        )}
+
         <SettingsGroup title="Location">
           <div className="p-4 flex items-center justify-between hover:bg-brand-bg group cursor-pointer transition-all">
             <div className="flex items-center gap-4">
@@ -143,12 +161,6 @@ export function SettingsPage({ selectedModel, setSelectedModel }: { selectedMode
           </div>
         </SettingsGroup>
 
-        <SettingsGroup title="Account">
-          <SettingsItem icon={<User className="text-blue-500" />} label="Profile Information" value="luccacsferreira@gmail.com" />
-          <SettingsItem icon={<Bell className="text-amber-500" />} label="Notifications" value="Enabled" />
-          <SettingsItem icon={<Shield className="text-green-500" />} label="Security" value="MFA Active" />
-        </SettingsGroup>
-
         <SettingsGroup title="Subscription">
           <SettingsItem 
             icon={<CreditCard className="text-brand-accent" />} 
@@ -158,15 +170,17 @@ export function SettingsPage({ selectedModel, setSelectedModel }: { selectedMode
           />
         </SettingsGroup>
 
-        <button 
-          onClick={async () => {
-            const { error } = await supabase.auth.signOut();
-            if (error) alert(error.message);
-          }}
-          className="w-full mt-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-500/10 transition-all"
-        >
-          <LogOut className="w-4 h-4" /> Sign out
-        </button>
+        {isLoggedIn && (
+          <button 
+            onClick={async () => {
+              const { error } = await supabase.auth.signOut();
+              if (error) alert(error.message);
+            }}
+            className="w-full mt-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-500/10 transition-all"
+          >
+            <LogOut className="w-4 h-4" /> Sign out
+          </button>
+        )}
       </div>
     </div>
   );

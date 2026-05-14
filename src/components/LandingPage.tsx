@@ -67,7 +67,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
       </section>
 
       {/* Example Preview Section */}
-      <section className="max-w-6xl mx-auto mb-32 px-4">
+      <motion.section 
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="max-w-6xl mx-auto mb-32 px-4"
+      >
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-2 rounded-full bg-brand-accent shadow-[0_0_8px_var(--color-brand-accent)]" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent">EXAMPLE SCAN • AIR JORDAN 1 MID</span>
@@ -154,15 +160,32 @@ export function LandingPage({ onStart }: LandingPageProps) {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Features Grid */}
       <section id="features" className="max-w-6xl mx-auto mb-32">
-        <div className="text-center mb-16">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to sell smarter</h2>
           <p className="text-brand-text-muted">From market research to copy — one scan does it all.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        </motion.div>
+        <motion.div 
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={{
+            animate: {
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           <FeatureCard 
             icon={<Search className="w-6 h-6 text-brand-accent" />}
             title="Market research in seconds"
@@ -183,11 +206,17 @@ export function LandingPage({ onStart }: LandingPageProps) {
             title="Live AI refinements"
             description="Chat with your scan results. Ask to shorten the description, try a different platform, or adjust the price."
           />
-        </div>
+        </motion.div>
       </section>
 
       {/* Marquee Showcase */}
-      <section className="mb-32 overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1 }}
+        className="mb-32 overflow-hidden"
+      >
         <div className="max-w-6xl mx-auto px-4 mb-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Scan any item</h2>
           <p className="text-brand-text-muted">From rare collectibles to high-end vintage — Sellscan knows the value.</p>
@@ -197,20 +226,38 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <MarqueeRow direction="right" images={COLLECTIBLES_ROW_1} />
           <MarqueeRow direction="left" images={COLLECTIBLES_ROW_2} />
         </div>
-      </section>
+      </motion.section>
 
       {/* Pricing Section */}
       <section id="pricing" className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-20">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-20"
+        >
           <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4 block">Pricing Plans</span>
           <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Level up your <br className="md:hidden" /> resale game.</h2>
           <p className="text-brand-text-muted text-lg max-w-2xl mx-auto">
             Choose the intelligence tier that fits your volume. <br />
             Upgrade or cancel anytime.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pb-20">
+        <motion.div 
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          variants={{
+            animate: {
+              transition: {
+                staggerChildren: 0.15
+              }
+            }
+          }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pb-20"
+        >
           {/* FREE PLAN */}
           <PricingCard 
              tier="Free"
@@ -265,7 +312,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
              cta="Go Pro"
              variant="accent"
           />
-        </div>
+        </motion.div>
 
         <div className="max-w-2xl mx-auto text-center pb-32">
           <p className="text-[10px] text-brand-text-muted tracking-wide leading-relaxed">
@@ -339,13 +386,19 @@ function PlatformMiniRow({ name, rank }: { name: string, rank: number }) {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="glass-card p-8 hover:border-brand-accent/50 transition-all group">
+    <motion.div 
+      variants={{
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 }
+      }}
+      className="glass-card p-8 hover:border-brand-accent/50 transition-all group"
+    >
       <div className="w-12 h-12 rounded-xl bg-brand-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
         {icon}
       </div>
       <h3 className="text-xl font-bold mb-3">{title}</h3>
       <p className="text-brand-text-muted leading-relaxed">{description}</p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -369,12 +422,18 @@ function PricingCard({
   credits: string 
 }) {
   return (
-    <div className={cn(
-      "glass-card p-8 lg:p-10 relative flex flex-col transition-all duration-300",
-      popular 
-        ? "border-brand-accent bg-brand-bg/40 scale-[1.02] shadow-[0_20px_50px_-20px_rgba(85,205,209,0.2)] z-10" 
-        : "bg-brand-card/20 border-brand-border/40 hover:border-brand-accent/30"
-    )}>
+    <motion.div 
+      variants={{
+        initial: { opacity: 0, y: 30 },
+        animate: { opacity: 1, y: 0 }
+      }}
+      className={cn(
+        "glass-card p-8 lg:p-10 relative flex flex-col transition-all duration-300",
+        popular 
+          ? "border-brand-accent bg-brand-bg/40 md:scale-[1.02] shadow-[0_20px_50px_-20px_rgba(85,205,209,0.2)] z-10" 
+          : "bg-brand-card/20 border-brand-border/40 hover:border-brand-accent/30"
+      )}
+    >
       {popular && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-bg px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(85,205,209,0.4)]">
           Most Popular
@@ -422,6 +481,6 @@ function PricingCard({
       )}>
         {cta}
       </button>
-    </div>
+    </motion.div>
   );
 }
