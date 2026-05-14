@@ -34,7 +34,7 @@ export function Navbar({
     <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
       {/* Background with Opaque-to-Transparent Gradient */}
       <div 
-        className="absolute inset-0 z-0 backdrop-blur-md pointer-events-none"
+        className="absolute inset-0 z-0 backdrop-blur-md pointer-events-none transition-[background] duration-300"
         style={{
           background: `linear-gradient(to right, 
             var(--bg) 0%, 
@@ -48,14 +48,27 @@ export function Navbar({
       
       <div className="max-w-7xl mx-auto h-full flex items-center justify-between relative z-10">
         <div 
-          className="flex items-end h-16 cursor-pointer group pb-0"
+          className="flex items-end h-16 cursor-pointer group pb-0 relative"
           onClick={onGoHome}
         >
-          <img 
-            src={theme === 'dark' ? logoWhite : logoBlack} 
-            alt="Sellscan" 
-            className="h-14 w-auto object-contain object-bottom pointer-events-none"
-          />
+          <div className="relative h-14 w-32 md:w-40">
+            <img 
+              src={logoWhite} 
+              alt="Sellscan" 
+              className={cn(
+                "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
+                theme === 'dark' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+              )}
+            />
+            <img 
+              src={logoBlack} 
+              alt="Sellscan" 
+              className={cn(
+                "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
+                theme === 'light' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+              )}
+            />
+          </div>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
