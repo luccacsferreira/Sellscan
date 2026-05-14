@@ -30,6 +30,8 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
   const [selectedMockup, setSelectedMockup] = useState<string | null>(null);
 
+  const chatInputRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
@@ -70,12 +72,13 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
 
   const prefillChat = (text: string) => {
     setInput(text);
+    setTimeout(() => chatInputRef.current?.focus(), 50);
   };
 
   const analysis = scan.analysis;
 
   return (
-    <div className="pt-20 pb-28 md:pb-10 px-4 md:px-10 max-w-7xl mx-auto min-h-screen md:h-screen flex flex-col md:flex-row gap-8 overflow-hidden">
+    <div className="pt-20 pb-28 md:pb-20 px-4 md:px-10 max-w-7xl mx-auto min-h-screen flex flex-col md:flex-row gap-8">
       <AnimatePresence>
         {selectedMockup && (
           <PlatformMockup 
@@ -87,8 +90,8 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
       </AnimatePresence>
 
       {/* LEFT: RESULTS DASHBOARD */}
-      <div className="flex-grow overflow-y-auto pr-0 md:pr-4 space-y-6 custom-scrollbar scroll-smooth">
-        <div className="flex items-center justify-between mb-4">
+      <div className="flex-grow space-y-8 scroll-smooth">
+        <div className="flex items-center justify-between">
           <button 
             onClick={onBack}
             className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors group"
@@ -96,11 +99,6 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
             <span className="text-sm font-bold uppercase tracking-widest">Back to Scanner</span>
           </button>
-          
-          <div className="hidden sm:flex items-center gap-2 text-brand-text-muted">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Analysis Live</span>
-          </div>
         </div>
 
         {/* Quick Verdict */}
@@ -159,7 +157,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
             </div>
             
             {/* Range Bar */}
-            <div className="relative pt-8 pb-2">
+            <div className="relative pt-8 pb-4">
               <div className="h-2 w-full bg-brand-border/40 rounded-full overflow-hidden">
                  <div className="h-full bg-gradient-to-r from-brand-accent/20 via-brand-accent to-brand-accent/20 opacity-50" />
               </div>
@@ -177,7 +175,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                 </div>
               </div>
 
-              <div className="flex justify-between mt-6 text-[10px] text-brand-text-muted font-bold tracking-widest uppercase">
+              <div className="flex justify-between mt-6 text-[10px] text-brand-text-muted font-bold tracking-widest uppercase mb-8">
                 <div className="flex flex-col">
                   <span className="text-white/80">{analysis.priceRange.currency}{analysis.priceRange.min}</span>
                   <span className="opacity-40">Quick Sale</span>
@@ -187,37 +185,49 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                   <span className="opacity-40">Max Profit</span>
                 </div>
               </div>
+
+              <button 
+                onClick={() => prefillChat("How can I justify a higher price for this item?")}
+                className="w-full py-2 rounded-lg bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[10px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+              >
+                Reach for {analysis.priceRange.currency}{analysis.priceRange.max + 20} →
+              </button>
             </div>
           </div>
 
           {/* Platforms Card */}
-          <div className="glass-card p-6 lg:col-span-1 border-brand-border/10">
-             <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Best Platforms</h3>
-             <div className="space-y-3">
-               {analysis.platforms.map((p, i) => (
+          <div className="glass-card p-6 lg:col-span-1 border-brand-border/10 flex flex-col">
+             <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Top Platforms</h3>
+             <div className="space-y-3 mb-6">
+               {analysis.platforms.slice(0, 5).map((p, i) => (
                  <div 
                   key={i} 
                   onClick={() => setSelectedMockup(p.name)}
                   className="flex flex-col gap-1.5 p-4 rounded-xl bg-brand-bg/40 border border-brand-border/40 hover:border-brand-accent/40 active:scale-[0.98] transition-all cursor-pointer group relative overflow-hidden"
                 >
                    <div className="flex items-center justify-between relative z-10">
-                     <div className="flex items-center gap-2">
+                     <div className="flex items-center gap-3">
+                       <span className="w-6 h-6 rounded-lg bg-brand-bg border border-brand-border flex items-center justify-center text-[10px] font-black text-brand-accent">
+                         {i + 1}
+                       </span>
                        <span className="font-bold text-white group-hover:text-brand-accent transition-colors">{p.name}</span>
                        <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent" />
                      </div>
-                     <span className={cn(
-                       "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tighter",
-                       p.matchScore > 80 ? "bg-brand-accent text-brand-bg" : "bg-brand-border text-brand-text-muted"
-                     )}>
-                       {p.matchScore}% Match
+                     <span className="text-[9px] font-black px-2 py-1 rounded bg-brand-accent/10 text-brand-accent border border-brand-accent/20 uppercase tracking-tighter">
+                       {i === 0 ? "Fast Sell" : i === 1 ? "Hot Demand" : "Low Fees"}
                      </span>
                    </div>
-                   <p className="text-xs text-brand-text-muted leading-relaxed relative z-10">{p.reasoning}</p>
-                   {/* Subtle hover reveal */}
+                   <p className="text-xs text-brand-text-muted leading-relaxed relative z-10 pl-9">{p.reasoning}</p>
                    <div className="absolute inset-0 bg-brand-accent opacity-0 group-hover:opacity-[0.03] transition-opacity" />
                  </div>
                ))}
              </div>
+             <button 
+               onClick={() => prefillChat("Show me 5 more platforms where this item would sell well")}
+               className="mt-auto w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-[0.1em] transition-all border border-brand-accent/10 border-dashed"
+             >
+               + Get 5 more platforms
+             </button>
           </div>
 
           {/* Improvements Card */}
@@ -238,18 +248,18 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                  </li>
                ))}
              </ul>
-             <button 
-               onClick={() => prefillChat("Give me 5 more specific ways to increase the value of this item")}
-               className="mt-8 px-4 py-2 rounded-lg bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-xs font-bold transition-all flex items-center gap-2 group w-fit"
-             >
-               <Sparkles className="w-3 h-3 group-hover:rotate-12 transition-transform" /> Get Strategic Advice
-             </button>
+              <button 
+                onClick={() => prefillChat("Give me 5 more specific ways to increase the value of this item")}
+                className="mt-8 w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+              >
+                 Get Specialized Prep Tips →
+              </button>
           </div>
 
           {/* Buyer Sentiment Card */}
           {analysis.buyerSentiment && (
-            <div className="glass-card p-6 lg:col-span-2">
-              <div className="flex flex-col md:flex-row gap-8">
+            <div className="glass-card p-6 lg:col-span-2 border-brand-border/10">
+              <div className="flex flex-col md:flex-row gap-8 mb-8 border-b border-brand-border/10 pb-8">
                 <div className="md:w-1/3">
                   <div className="flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-widest mb-4">
                     <Users className="w-4 h-4" /> Buyer Sentiment
@@ -298,6 +308,13 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                   </div>
                 </div>
               </div>
+
+              <button 
+                onClick={() => prefillChat("How can I improve buyer trust for this particular item?")}
+                className="w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+              >
+                Increase Trust Score →
+              </button>
             </div>
           )}
         </div>
@@ -313,13 +330,13 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
             <span className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">Optimized Listing Preview</span>
             <div className="w-10 h-10" />
           </div>
-          <div className="p-8 space-y-6">
+          <div className="p-8 space-y-8">
             <div>
               <div className="flex items-center justify-between mb-2">
                  <h4 className="text-xs font-bold uppercase text-brand-text-muted tracking-wider">Suggested Title</h4>
                  <button 
                    onClick={() => handleCopy(analysis.suggestedTitle, 'title')}
-                   className="text-brand-text-muted hover:text-brand-accent transition-colors flex items-center gap-1 text-xs"
+                   className="text-brand-text-muted hover:text-brand-text transition-colors flex items-center gap-1 text-xs"
                  >
                    {copying === 'title' ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
                  </button>
@@ -331,7 +348,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                  <h4 className="text-xs font-bold uppercase text-brand-text-muted tracking-wider">Suggested Description</h4>
                  <button 
                    onClick={() => handleCopy(analysis.suggestedDescription, 'description')}
-                   className="text-brand-text-muted hover:text-brand-accent transition-colors flex items-center gap-1 text-xs"
+                   className="text-brand-text-muted hover:text-brand-text transition-colors flex items-center gap-1 text-xs"
                  >
                    {copying === 'description' ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
                  </button>
@@ -340,31 +357,36 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                 <ReactMarkdown>{analysis.suggestedDescription}</ReactMarkdown>
               </div>
             </div>
-            <div className="pt-4 border-t border-brand-border flex flex-wrap gap-2">
-              {analysis.platforms.slice(0, 2).map((p, i) => (
-                <PlatformTag key={i} badge={p.name} />
-              ))}
-              <PlatformTag badge="SEO Optimized" active />
+            <div className="pt-6 border-t border-brand-border/50 flex flex-col gap-6">
+              <div className="flex flex-wrap gap-2">
+                {analysis.platforms.slice(0, 2).map((p, i) => (
+                  <PlatformTag key={i} badge={p.name} />
+                ))}
+                <PlatformTag badge="SEO Optimized" active />
+              </div>
+
+              <button 
+                onClick={() => prefillChat("Rewrite this description to be more persuasive and sales-focused.")}
+                className="w-full py-3 rounded-xl bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-[11px] font-black uppercase tracking-widest transition-all border border-brand-accent/10"
+              >
+                Boost Sales Copy →
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* RIGHT: AI CHAT SIDEBAR */}
-      <div className="w-full md:w-[380px] lg:w-[420px] flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md h-[500px] md:h-auto md:max-h-full">
-         <div className="p-4 border-b border-brand-border/50 flex items-center gap-3 bg-brand-bg/40">
-            <div className="w-8 h-8 rounded-full bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-brand-accent" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm tracking-tight">Sellscan AI</h3>
-              <div className="flex items-center gap-1.5 leading-none">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[9px] font-bold text-brand-text-muted uppercase tracking-widest">Active</span>
+      {/* RIGHT: AI CHAT SIDEBAR (Sticky) */}
+      <div className="w-full md:w-[380px] lg:w-[420px] shrink-0">
+        <div className="sticky top-24 flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md h-[500px] md:h-[calc(100vh-120px)]">
+           <div className="p-4 border-b border-brand-border/50 flex items-center gap-3 bg-brand-bg/40">
+              <div className="w-8 h-8 rounded-full bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-brand-accent" />
               </div>
-            </div>
-            <span className="ml-auto text-[9px] font-black bg-brand-accent text-brand-bg px-2 py-0.5 rounded uppercase tracking-tighter">Pro</span>
-         </div>
+              <div>
+                <h3 className="font-bold text-sm tracking-tight">Sellscan AI</h3>
+              </div>
+           </div>
          
          <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar scroll-smooth bg-brand-bg/10">
             {chatMessages.length === 0 && (
@@ -417,6 +439,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
           <div className="p-4 border-t border-brand-border/50 bg-brand-bg/80 backdrop-blur-sm">
             <div className="relative group">
               <textarea 
+                ref={chatInputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
@@ -435,6 +458,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
               </button>
             </div>
           </div>
+        </div>
       </div>
     </div>
   );
