@@ -49,7 +49,56 @@ export default function App() {
 
 function AppContent() {
   const [view, setView] = useState<View>('landing');
-  const [history, setHistory] = useState<ScanResult[]>([]);
+  const [history, setHistory] = useState<ScanResult[]>(() => {
+    const saved = localStorage.getItem('sellscan_history');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to load history", e);
+      }
+    }
+    // Return sample data if nothing is saved
+    return [{
+      id: 'demo-1',
+      timestamp: Date.now(),
+      imageUrl: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=600',
+      analysis: {
+        quickVerdict: "High resale potential. This is a sought-after vintage piece that performs well on fashion-focused platforms.",
+        improvements: [
+          "Wipe down the leather with a damp cloth to restore natural sheen.",
+          "Take photos against a neutral, well-lit background (ideally near a window).",
+          "Mention the specific year/collection if known to attract collectors."
+        ],
+        platforms: [
+          { name: "Vinted", matchScore: 95, reasoning: "Highest demand for this category with lower seller fees." },
+          { name: "Depop", matchScore: 88, reasoning: "Great for the vintage aesthetic this item carries." },
+          { name: "eBay", matchScore: 75, reasoning: "Good fall-back for reaching a wider international audience." }
+        ],
+        suggestedTitle: "Vintage 1990s Leather Biker Jacket - Excellent Condition",
+        suggestedDescription: "Beautifully preserved vintage leather jacket. Features classic heavy-duty zippers and a quilted lining. Perfectly broken in with a natural patina. Size Medium. No visible flaws.",
+        priceRange: {
+          min: 85,
+          max: 120,
+          sweetSpot: 95,
+          currency: "GBP"
+        },
+        productDetails: {
+          type: "Apparel",
+          condition: "Vintage / Pre-owned",
+          brand: "Authentic Vintage",
+          category: "Jackets"
+        },
+        buyerSentiment: {
+          overallRating: 4.8,
+          summary: "Buyers love this specific era for its durability and timeless style.",
+          pros: ["High-quality full-grain leather", "Classic fit", "Increasing value year-over-year"],
+          cons: ["Sizing can be smaller than modern standards", "Slight vintage scent expected"]
+        }
+      }
+    }];
+  });
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentScan, setCurrentScan] = useState<ScanResult | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
@@ -75,15 +124,6 @@ function AppContent() {
 
   // Load theme, history, and projects from localStorage
   useEffect(() => {
-    const savedHistory = localStorage.getItem('sellscan_history');
-    if (savedHistory) {
-      try {
-        setHistory(JSON.parse(savedHistory));
-      } catch (e) {
-        console.error("Failed to load history", e);
-      }
-    }
-
     const savedProjects = localStorage.getItem('sellscan_projects');
     if (savedProjects) {
       try {

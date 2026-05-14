@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 interface ImageUploadProps {
-  onAnalyze: (image?: string, description?: string) => void;
+  onAnalyze: (image?: string, description?: string, isDemo?: boolean) => void;
   isLoading: boolean;
 }
 
@@ -31,9 +31,13 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
     }
   };
 
-  const handleAnalyze = () => {
-    if (selectedImage || description.trim()) {
-      onAnalyze(selectedImage || undefined, description || undefined);
+  const handleAnalyze = (isDemo: boolean = false) => {
+    if (isDemo || selectedImage || description.trim()) {
+      onAnalyze(
+        isDemo ? undefined : (selectedImage || undefined), 
+        isDemo ? undefined : (description || undefined), 
+        isDemo
+      );
     }
   };
 
@@ -101,9 +105,9 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
         </div>
       </div>
 
-      <div className="flex justify-center pt-4">
+      <div className="flex flex-col items-center gap-6 pt-4">
         <button
-          onClick={handleAnalyze}
+          onClick={() => handleAnalyze(false)}
           disabled={isLoading || (!selectedImage && !description.trim())}
           className={cn(
             "w-full sm:w-80 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-3",
@@ -122,6 +126,16 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
             </>
           )}
         </button>
+
+        {!isLoading && (
+          <button 
+            onClick={() => handleAnalyze(true)}
+            className="text-brand-text-muted hover:text-brand-accent transition-colors text-sm font-bold flex items-center gap-2 group"
+          >
+            <Zap className="w-4 h-4 text-brand-accent group-hover:fill-brand-accent/20 transition-all" /> 
+            Try Sample Analysis (Demo Mode)
+          </button>
+        )}
       </div>
     </div>
   );
