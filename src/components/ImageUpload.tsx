@@ -16,6 +16,7 @@ interface ImageUploadProps {
 export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [mode, setMode] = useState<'upload' | 'describe'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,10 +33,11 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
   };
 
   const handleAnalyze = (isDemo: boolean = false) => {
-    if (isDemo || selectedImage || description.trim()) {
+    if (isDemo || selectedImage || title.trim() || description.trim()) {
+      const combinedText = [title.trim(), description.trim()].filter(Boolean).join('\n\n');
       onAnalyze(
         isDemo ? undefined : (selectedImage || undefined), 
-        isDemo ? undefined : (description || undefined), 
+        isDemo ? undefined : (combinedText || undefined), 
         isDemo
       );
     }
@@ -89,10 +91,17 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
 
         {/* Right: Text Description Area */}
         <div className="glass-card p-6 border-brand-border flex flex-col h-full bg-brand-bg/20">
-          <div className="flex items-center gap-2 mb-4">
-            <Type className="w-4 h-4 text-brand-accent" />
-            <h3 className="text-sm font-bold uppercase tracking-widest text-brand-text-muted">Describe the product</h3>
+          <div className="flex items-center gap-2 mb-8">
+            <Type className="w-4 h-4 text-brand-accent shrink-0" />
+            <input 
+              type="text"
+              placeholder="ADD A TITLE"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-transparent text-sm font-bold uppercase tracking-widest text-white placeholder-brand-text-muted/40 focus:outline-none"
+            />
           </div>
+
           <textarea
             placeholder="Add details like size, rare editions, or flaws that might not be visible in the photo..."
             value={description}
@@ -108,10 +117,10 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
       <div className="flex flex-col items-center gap-6 pt-4">
         <button
           onClick={() => handleAnalyze(false)}
-          disabled={isLoading || (!selectedImage && !description.trim())}
+          disabled={isLoading || (!selectedImage && !title.trim() && !description.trim())}
           className={cn(
             "w-full sm:w-80 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-3",
-            (isLoading || (!selectedImage && !description.trim())) 
+            (isLoading || (!selectedImage && !title.trim() && !description.trim())) 
               ? "bg-brand-border text-brand-text-muted cursor-not-allowed" 
               : "bg-brand-accent text-brand-bg hover:scale-[1.02] shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)]"
           )}
