@@ -161,21 +161,31 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
           {/* Price Card (Full Width) */}
           <div className="glass-card p-0 flex flex-col md:flex-row relative overflow-hidden border-brand-border/10">
             <div className="w-full md:w-[40%] p-8 flex flex-col justify-center border-b md:border-b-0 md:border-r border-brand-border/10 bg-brand-bg/20">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60">Market Value</h3>
-                <div className="flex items-center gap-1.5 text-brand-accent bg-brand-accent/10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-accent/20">
-                  <TrendingUp className="w-3 h-3" /> High Demand
+              <div className="mb-2">
+                <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Sweet Spot Price</h3>
+                <div className="flex items-baseline gap-2 mb-4">
+                  <span className="text-6xl font-black tracking-tighter text-white">
+                    {currencySymbol}{analysis.priceRange.sweetSpot}
+                  </span>
                 </div>
               </div>
               
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-6xl font-black tracking-tighter text-white">
-                  {currencySymbol}{analysis.priceRange.sweetSpot}
-                </span>
+              {/* Range Bar Indicator */}
+              <div className="relative mt-2">
+                <div className="h-2 w-full bg-brand-border/20 rounded-full overflow-hidden">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${((analysis.priceRange.sweetSpot - (analysis.priceRange.min * 0.5)) / (analysis.priceRange.max * 1.5 - (analysis.priceRange.min * 0.5))) * 100}%` }}
+                     className="h-full bg-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.4)]"
+                   />
+                </div>
+                <div className="flex justify-between mt-3 text-xs font-bold text-brand-text-muted/60">
+                  <span>{currencySymbol}{analysis.priceRange.min}</span>
+                  <span>{currencySymbol}{analysis.priceRange.max}</span>
+                </div>
               </div>
-              <p className="text-brand-text-muted text-sm font-medium uppercase tracking-widest text-[10px]">Optimal Listing price</p>
-              
-              <div className="mt-8">
+
+              <div className="mt-10">
                 <button 
                   onClick={() => prefillChat(`How can I justify a price above ${currencySymbol}${analysis.priceRange.max} for this ${analysis.productDetails.brand} ${analysis.productDetails.type}?`)}
                   className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg text-[11px] font-black uppercase tracking-widest transition-all shadow-[0_10px_20px_-5px_rgba(85,205,209,0.3)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
@@ -185,7 +195,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
               </div>
             </div>
 
-            <div className="flex-grow p-8 flex flex-col justify-center gap-6">
+            <div className="flex-grow p-8 flex flex-col justify-center gap-10">
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                  <div>
                    <h4 className="text-[10px] font-black text-brand-accent uppercase tracking-widest mb-2">Market Sentiment</h4>
@@ -196,37 +206,6 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
                    <p className="text-sm text-brand-text-muted leading-relaxed">Adjusted for {analysis.productDetails.condition} state and current platform seasonal trends.</p>
                  </div>
                </div>
-
-               {/* Range Bar */}
-               <div className="relative pt-6 pb-2">
-                <div className="h-2 w-full bg-brand-border/40 rounded-full overflow-hidden">
-                   <div className="h-full bg-gradient-to-r from-brand-accent/20 via-brand-accent to-brand-accent/20 opacity-50" />
-                </div>
-                
-                {/* Sweet Spot Marker */}
-                <div 
-                  className="absolute top-3 transition-all duration-1000 ease-out"
-                  style={{ left: `${((analysis.priceRange.sweetSpot - (analysis.priceRange.min * 0.8)) / (analysis.priceRange.max * 1.2 - (analysis.priceRange.min * 0.8))) * 100}%` }}
-                >
-                  <div className="flex flex-col items-center">
-                    <div className="bg-brand-accent text-brand-bg px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter shadow-[0_5px_15px_-3px_var(--color-brand-accent)] mb-1">
-                      Target
-                    </div>
-                    <div className="w-4 h-4 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] border-2 border-brand-accent" />
-                  </div>
-                </div>
-
-                <div className="flex justify-between mt-6 text-[10px] text-brand-text-muted font-bold tracking-widest uppercase">
-                  <div className="flex flex-col">
-                    <span className="text-white/80">{currencySymbol}{analysis.priceRange.min}</span>
-                    <span className="opacity-40">Quick Sale</span>
-                  </div>
-                  <div className="flex flex-col text-right">
-                    <span className="text-white/80">{currencySymbol}{analysis.priceRange.max}</span>
-                    <span className="opacity-40">Max Profit</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
