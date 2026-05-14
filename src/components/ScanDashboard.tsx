@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 import { ProductAnalysis, ChatMessage, ScanResult } from '../types';
 import { cn } from '../lib/utils';
-import { chatAboutProduct } from '../services/geminiService';
+import { chatAboutProduct, AIModel } from '../services/aiService';
 import { useLocation } from '../lib/LocationContext';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -28,9 +28,10 @@ interface ScanDashboardProps {
   scan: ScanResult;
   onUpdateAnalysis: (newAnalysis: ProductAnalysis) => void;
   onBack: () => void;
+  selectedModel: AIModel;
 }
 
-export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardProps) {
+export function ScanDashboard({ scan, onUpdateAnalysis, onBack, selectedModel }: ScanDashboardProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -63,7 +64,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
     setIsSending(true);
 
     try {
-      const response = await chatAboutProduct([...chatMessages, userMessage], scan.analysis);
+      const response = await chatAboutProduct([...chatMessages, userMessage], scan.analysis, selectedModel);
       
       const assistantMessage: ChatMessage = { role: 'assistant', content: response.chatResponse };
       setChatMessages(prev => [...prev, assistantMessage]);

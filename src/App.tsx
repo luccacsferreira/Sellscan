@@ -16,8 +16,10 @@ import { ProjectDetail } from './components/ProjectDetail';
 import { AnalyticsPage } from './components/AnalyticsPage';
 import { BottomNav } from './components/BottomNav';
 import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
-import { analyzeProduct } from './services/geminiService';
+import { analyzeProduct, AIModel } from './services/aiService';
 import { cn } from './lib/utils';
+import { supabase } from './lib/supabase';
+import { User } from '@supabase/supabase-js';
 import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign, Check } from 'lucide-react';
 import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
@@ -49,6 +51,20 @@ export default function App() {
 
 function AppContent() {
   const [view, setView] = useState<View>('landing');
+  const [user, setUser] = useState<User | null>(null);
+  
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const [history, setHistory] = useState<ScanResult[]>(() => {
     const saved = localStorage.getItem('sellscan_history');
     if (saved) {
@@ -108,6 +124,9 @@ function AppContent() {
   const [detectedName, setDetectedName] = useState<string | null>(null);
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
+    return (localStorage.getItem('sellscan_model') as AIModel) || 'gemini';
+  });
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -160,15 +179,61 @@ function AppContent() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  const saveToHistory = (scan: ScanResult) => {
+  useEffect(() => {
+    if (user) {
+      // Sync from Supabase
+      const fetchData = async () => {
+        const { data: projectsData } = await supabase.from('projects').select('*');
+        if (projectsData) {
+          setProjects(projectsData.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            color: p.color,
+            createdAt: new Date(p.created_at).getTime()
+          })));
+        }
+
+        const { data: scansData } = await supabase.from('scans').select('*').order('timestamp', { ascending: false });
+        if (scansData) {
+          setHistory(scansData.map(s => ({
+            id: s.id,
+            timestamp: s.timestamp,
+            imageUrl: s.image_url,
+            description: s.description,
+            analysis: s.analysis,
+            projectId: s.project_id
+          })));
+        }
+      };
+      fetchData();
+    }
+  }, [user]);
+
+  const saveToHistory = async (scan: ScanResult) => {
     const updated = [scan, ...history];
     setHistory(updated);
     localStorage.setItem('sellscan_history', JSON.stringify(updated));
+
+    if (user) {
+      await supabase.from('scans').upsert({
+        id: scan.id.includes('-') ? scan.id : undefined, // Check if it looks like a UUID
+        user_id: user.id,
+        project_id: scan.projectId,
+        timestamp: scan.timestamp,
+        image_url: scan.imageUrl,
+        description: scan.description,
+        analysis: scan.analysis
+      });
+    }
   };
 
-  const saveProjects = (updatedProjects: Project[]) => {
+  const saveProjects = async (updatedProjects: Project[]) => {
     setProjects(updatedProjects);
     localStorage.setItem('sellscan_projects', JSON.stringify(updatedProjects));
+    
+    // We would need to implement a more robust sync here
+    // For now, let's just handle it in the create/update functions
   };
 
   const stats: UserStats = useMemo(() => {
@@ -217,7 +282,13 @@ function AppContent() {
       new Promise(res => setTimeout(() => { setLoadingStage(stage); res(true); }, delay));
 
     try {
-      const aiPromise = analyzeProduct(image, description, location || undefined, isDemo);
+      const aiPromise = analyzeProduct({ 
+        image: image || undefined, 
+        description, 
+        location: location || undefined, 
+        isDemo,
+        model: selectedModel
+      });
       
       // Simulate detection name appearing after a bit
       setTimeout(() => {
@@ -269,7 +340,7 @@ function AppContent() {
     }
   };
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     const newProject: Project = {
       id: Math.random().toString(36).substring(7),
       name: newProjectData.name,
@@ -277,26 +348,54 @@ function AppContent() {
       color: newProjectData.color,
       createdAt: Date.now()
     };
+    
+    if (user) {
+      const { data, error } = await supabase.from('projects').insert({
+        name: newProject.name,
+        description: newProject.description,
+        color: newProject.color,
+        user_id: user.id
+      }).select().single();
+      
+      if (data) {
+        newProject.id = data.id;
+      }
+    }
+
     saveProjects([...projects, newProject]);
     setShowNewProjectModal(false);
     setNewProjectData({ name: '', description: '', color: '#55cdd1' });
   };
 
-  const handleUpdateProject = () => {
+  const handleUpdateProject = async () => {
     if (!editingProject) return;
     const updated = projects.map(p => 
       p.id === editingProject.id 
         ? { ...p, ...newProjectData } 
         : p
     );
+
+    if (user) {
+      await supabase.from('projects').update({
+        name: newProjectData.name,
+        description: newProjectData.description,
+        color: newProjectData.color
+      }).eq('id', editingProject.id);
+    }
+
     saveProjects(updated);
     setEditingProject(null);
     setNewProjectData({ name: '', description: '', color: '#55cdd1' });
   };
 
-  const handleDeleteProject = () => {
+  const handleDeleteProject = async () => {
     if (!projectToDelete) return;
     const updated = projects.filter(p => p.id !== projectToDelete.id);
+    
+    if (user) {
+      await supabase.from('projects').delete().eq('id', projectToDelete.id);
+    }
+
     saveProjects(updated);
     setHistory(history.map(scan => scan.projectId === projectToDelete.id ? { ...scan, projectId: undefined } : scan));
     setProjectToDelete(null);
@@ -342,7 +441,8 @@ function AppContent() {
         onViewHistory={() => setView('history')}
         onViewAnalytics={() => setView('analytics')}
         onViewSettings={() => setView('settings')}
-        isLoggedIn={true}
+        isLoggedIn={!!user}
+        userEmail={user?.email}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -616,6 +716,7 @@ function AppContent() {
                 scan={currentScan} 
                 onUpdateAnalysis={handleUpdateAnalysis}
                 onBack={() => setView('home')}
+                selectedModel={selectedModel}
               />
             </motion.div>
           )}
@@ -642,7 +743,13 @@ function AppContent() {
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
              >
-               <SettingsPage />
+               <SettingsPage 
+                 selectedModel={selectedModel} 
+                 setSelectedModel={(model) => {
+                   setSelectedModel(model);
+                   localStorage.setItem('sellscan_model', model);
+                 }} 
+               />
              </motion.div>
           )}
         </AnimatePresence>

@@ -10,6 +10,8 @@ import { cn } from '../lib/utils';
 import logoWhite from '../assets/logo_white_cropped.png';
 import logoBlack from '../assets/logo_black_cropped.png';
 
+import { supabase } from '../lib/supabase';
+
 interface NavbarProps {
   onNewScan?: () => void;
   onGoHome?: () => void;
@@ -17,6 +19,7 @@ interface NavbarProps {
   onViewAnalytics?: () => void;
   onViewSettings?: () => void;
   isLoggedIn?: boolean;
+  userEmail?: string;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
 }
@@ -28,10 +31,31 @@ export function Navbar({
   onViewAnalytics,
   onViewSettings,
   isLoggedIn = false, 
+  userEmail,
   theme, 
   onToggleTheme 
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  const handleSignIn = async () => {
+    // Simple popup for now, or we can guide the user to their Supabase settings
+    const email = prompt("Enter your email:");
+    const password = prompt("Enter your password:");
+    if (email && password) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) alert(error.message);
+    }
+  };
+
+  const handleSignUp = async () => {
+    const email = prompt("Enter your email:");
+    const password = prompt("Enter your password:");
+    if (email && password) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) alert(error.message);
+      else alert("Check your email for confirmation!");
+    }
+  };
 
   const handleMobileNav = (action: () => void) => {
     action();
@@ -120,23 +144,27 @@ export function Navbar({
 
               {isLoggedIn ? (
                 <div className="flex items-center gap-4">
+                  <div className="hidden lg:flex flex-col items-end mr-2">
+                     <span className="text-[9px] font-bold uppercase text-brand-text-muted">Account</span>
+                     <span className="text-[10px] font-medium text-brand-text truncate max-w-[120px]">{userEmail}</span>
+                  </div>
                   <button 
                     onClick={onNewScan}
-                    className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all shadow-[0_5px_20px_-5px_var(--color-brand-accent-glow)]"
+                    className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all shadow-[0_5px_20px_-5px_var(--color-brand-accent-glow)] group flex items-center gap-2"
                   >
-                    Scanner
+                    <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" /> Scanner
                   </button>
                   <button 
                     onClick={onViewSettings}
-                    className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group"
+                    className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group overflow-hidden"
                   >
                     <User className="w-5 h-5 text-brand-text-muted group-hover:text-brand-accent" />
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <button className="text-brand-text hover:text-brand-accent transition-colors text-sm font-medium">Sign in</button>
-                  <button className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2">
+                  <button onClick={handleSignIn} className="text-brand-text hover:text-brand-accent transition-colors text-sm font-medium">Sign in</button>
+                  <button onClick={handleSignUp} className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2">
                     Get Started <LogIn className="w-4 h-4" />
                   </button>
                 </div>

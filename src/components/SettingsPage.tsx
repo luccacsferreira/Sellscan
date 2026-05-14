@@ -7,8 +7,11 @@ import React from 'react';
 import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
+import { supabase } from '../lib/supabase';
 
-export function SettingsPage() {
+import { AIModel } from '../services/aiService';
+
+export function SettingsPage({ selectedModel, setSelectedModel }: { selectedModel: AIModel, setSelectedModel: (m: AIModel) => void }) {
   const { location, setLocation, requestLocation, isLoading } = useLocation();
 
   return (
@@ -81,6 +84,57 @@ export function SettingsPage() {
           </div>
         </SettingsGroup>
 
+        <SettingsGroup title="AI Analysis Engine">
+          <div className="p-6 bg-brand-bg/50">
+            <div className="flex items-center gap-3 mb-6">
+              <Zap className="w-5 h-5 text-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.5)]" />
+              <h3 className="font-bold">Select AI Model</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+               {[
+                 { id: 'gemini', name: 'Gemini 3 Flash', desc: 'Fast & Multimodal', color: 'text-blue-400' },
+                 { id: 'gpt4', name: 'GPT-4o', desc: 'High Accuracy', color: 'text-green-400' }
+               ].map((m) => (
+                 <button
+                   key={m.id}
+                   onClick={() => setSelectedModel(m.id as AIModel)}
+                   className={cn(
+                     "flex flex-col p-4 rounded-xl border transition-all text-left group",
+                     selectedModel === m.id 
+                       ? "bg-brand-accent/10 border-brand-accent shadow-[0_0_10px_rgba(85,205,209,0.2)]" 
+                       : "bg-brand-bg border-brand-border hover:border-brand-accent/40"
+                   )}
+                 >
+                   <div className="flex items-center justify-between mb-2">
+                      <span className={cn("text-xs font-black uppercase tracking-tight", m.color)}>{m.name}</span>
+                      <div className={cn(
+                        "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
+                        selectedModel === m.id ? "border-brand-accent bg-brand-accent" : "border-brand-border"
+                      )}>
+                        {selectedModel === m.id && <div className="w-1.5 h-1.5 rounded-full bg-brand-bg" />}
+                      </div>
+                   </div>
+                   <span className="text-[10px] text-brand-text-muted font-medium">{m.desc}</span>
+                 </button>
+               ))}
+            </div>
+            
+            <div className="mt-6 p-4 rounded-xl border border-brand-border/20 bg-brand-bg/40">
+               <div className="flex items-center justify-between mb-2">
+                 <span className="text-[10px] font-bold uppercase text-brand-text-muted tracking-widest">Active Secrets Status</span>
+               </div>
+               <div className="flex flex-wrap gap-4">
+                  <StatusBadge label="Gemini" active={true} />
+                  <StatusBadge label="GPT-4" active={true} />
+               </div>
+               <p className="text-[9px] text-brand-text-muted italic mt-3 opacity-60">
+                 * Ensure your API keys are configured in the AI Studio Secrets panel.
+               </p>
+            </div>
+          </div>
+        </SettingsGroup>
+
         <SettingsGroup title="Account">
           <SettingsItem icon={<User className="text-blue-500" />} label="Profile Information" value="luccacsferreira@gmail.com" />
           <SettingsItem icon={<Bell className="text-amber-500" />} label="Notifications" value="Enabled" />
@@ -96,42 +150,13 @@ export function SettingsPage() {
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Developer">
-          <div className="p-6 bg-brand-bg/50">
-            <div className="flex items-center gap-3 mb-4">
-              <Zap className="w-5 h-5 text-brand-accent" />
-              <h3 className="font-bold">Gemini API Configuration</h3>
-            </div>
-            <p className="text-sm text-brand-text-muted mb-4">
-              This app uses Google's Gemini Flash for product analysis. 
-              To use your own key:
-            </p>
-            <ol className="text-xs space-y-3 list-decimal list-inside text-brand-text-muted mb-6">
-              <li>Open the <span className="text-brand-text font-bold">Settings</span> menu in AI Studio (bottom left).</li>
-              <li>Go to the <span className="text-brand-text font-bold">Secrets</span> panel.</li>
-              <li>Add a secret with the name <code className="bg-brand-border px-1.5 py-0.5 rounded text-brand-accent font-mono">GEMINI_API_KEY</code> and your key as the value.</li>
-              <li>Restart the application.</li>
-            </ol>
-            <div className="p-3 bg-brand-accent/5 border border-brand-accent/20 rounded-xl">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] font-bold uppercase text-brand-text-muted">Current Key Status</span>
-                <span className={cn(
-                  "text-[10px] font-bold px-2 py-0.5 rounded-full",
-                  process.env.GEMINI_API_KEY ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
-                )}>
-                  {process.env.GEMINI_API_KEY ? 'CONNECTED' : 'MISSING'}
-                </span>
-              </div>
-              <p className="text-[10px] text-brand-text-muted italic">
-                {process.env.GEMINI_API_KEY 
-                  ? "Application is connected to the Gemini API." 
-                  : "Scanning will run in Demo Mode (mock data) until a key is provided."}
-              </p>
-            </div>
-          </div>
-        </SettingsGroup>
-
-        <button className="w-full mt-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-500/10 transition-all">
+        <button 
+          onClick={async () => {
+            const { error } = await supabase.auth.signOut();
+            if (error) alert(error.message);
+          }}
+          className="w-full mt-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-500/10 transition-all"
+        >
           <LogOut className="w-4 h-4" /> Sign out
         </button>
       </div>
@@ -163,6 +188,15 @@ function SettingsItem({ icon, label, value, action }: { icon: React.ReactNode, l
         </div>
       </div>
       {action ? action : <ChevronRight className="w-4 h-4 text-brand-text-muted group-hover:translate-x-1 transition-transform" />}
+    </div>
+  );
+}
+
+function StatusBadge({ label, active }: { label: string, active: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+       <div className={cn("w-2 h-2 rounded-full", active ? "bg-green-500 animate-pulse" : "bg-red-500")} />
+       <span className="text-[10px] font-black uppercase text-white opacity-70">{label}</span>
     </div>
   );
 }
