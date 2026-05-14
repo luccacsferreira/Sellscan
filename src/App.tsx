@@ -18,7 +18,7 @@ import { BottomNav } from './components/BottomNav';
 import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
 import { analyzeProduct } from './services/geminiService';
 import { cn } from './lib/utils';
-import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign } from 'lucide-react';
+import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign, Check } from 'lucide-react';
 import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
 
@@ -104,6 +104,7 @@ function AppContent() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('identifying');
+  const [imageToAnalyze, setImageToAnalyze] = useState<string | null>(null);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -206,6 +207,7 @@ function AppContent() {
   const handleAnalyze = async (image?: string, description?: string, isDemo: boolean = false) => {
     setIsLoading(true);
     setLoadingStage('identifying');
+    setImageToAnalyze(image || null);
     
     const stageTimer = (stage: LoadingStage, delay: number) => 
       new Promise(res => setTimeout(() => { setLoadingStage(stage); res(true); }, delay));
@@ -335,73 +337,136 @@ function AppContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100] bg-brand-bg/80 backdrop-blur-md flex flex-col items-center justify-center p-6"
+              className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-brand-bg/60 backdrop-blur-xl overflow-y-auto"
             >
-              <div className="w-full max-w-md">
-                <div className="relative mb-12 flex justify-center">
-                   <div className="w-24 h-24 rounded-3xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center relative">
-                      <motion.div
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          opacity: [0.5, 1, 0.5]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute inset-0 bg-brand-accent/5 rounded-3xl"
-                      />
-                      {loadingStage === 'identifying' && <Search className="w-10 h-10 text-brand-accent" />}
-                      {loadingStage === 'searching' && <Globe className="w-10 h-10 text-brand-accent" />}
-                      {loadingStage === 'analyzing_reviews' && <Users className="w-10 h-10 text-brand-accent" />}
-                      {loadingStage === 'calculating' && <TrendingUp className="w-10 h-10 text-brand-accent" />}
-                      {loadingStage === 'finishing' && <Sparkles className="w-10 h-10 text-brand-accent" />}
+              <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                 {/* Left: Progress Checklist */}
+                 <motion.div 
+                   initial={{ opacity: 0, x: -20 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   className="md:col-span-4 glass-card p-8 md:p-10 border-brand-accent/20 bg-brand-bg/40 flex flex-col h-full min-h-[500px]"
+                 >
+                    <div className="mb-10">
+                      <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4 text-white">
+                        {loadingStage === 'finishing' ? 'Finalizing your report' : 'Extracting product identity'}
+                      </h2>
+                      <p className="text-brand-text-muted text-sm">AI is cross-referencing global market data for your item.</p>
+                    </div>
+
+                    <div className="space-y-6 flex-grow">
+                      {[
+                        { id: 'identifying', label: 'Extracting context', sub: 'Scanning photo & description' },
+                        { id: 'searching', label: 'Searching market', sub: 'Live platform ping' },
+                        { id: 'analyzing_reviews', label: 'Analyzing sentiment', sub: 'Social & review trends' },
+                        { id: 'calculating', label: 'Calculating pricing', sub: 'Algorithmic valuation' },
+                        { id: 'finishing', label: 'Polishing listing', sub: 'SEO & Copy generation' }
+                      ].map((stage, idx, arr) => {
+                        const stages = arr.map(s => s.id);
+                        const currentIdx = stages.indexOf(loadingStage);
+                        const isCompleted = stages.indexOf(stage.id) < currentIdx;
+                        const isActive = stage.id === loadingStage;
+
+                        return (
+                          <div key={stage.id} className="relative pl-8">
+                            {/* Connector Line */}
+                            {idx < arr.length - 1 && (
+                              <div className="absolute left-[11px] top-6 w-[2px] h-8 bg-brand-border/30" />
+                            )}
+                            
+                            <div className={cn(
+                              "absolute left-0 top-1 w-6 h-6 rounded-full border flex items-center justify-center transition-all duration-500",
+                              isCompleted ? "bg-brand-accent border-brand-accent text-brand-bg" : 
+                              isActive ? "border-brand-accent bg-brand-accent/10 animate-pulse" : "border-brand-border"
+                            )}>
+                              {isCompleted ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <div className={cn("w-1.5 h-1.5 rounded-full", isActive ? "bg-brand-accent" : "bg-brand-border/40")} />}
+                            </div>
+                            
+                            <div className="flex flex-col">
+                              <span className={cn(
+                                "text-sm font-bold tracking-tight transition-colors",
+                                isCompleted || isActive ? "text-white" : "text-brand-text-muted/40"
+                              )}>
+                                {stage.label}
+                              </span>
+                              <span className="text-[10px] uppercase font-bold tracking-widest text-brand-text-muted/60">{stage.sub}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-10 pt-10 border-t border-brand-border/10">
+                      <div className="flex items-center gap-3 text-brand-text-muted text-xs font-bold uppercase tracking-widest">
+                         <Loader2 className="w-4 h-4 animate-spin text-brand-accent" />
+                         About {loadingStage === 'finishing' ? '2' : '6'} seconds remaining
+                      </div>
+                    </div>
+                 </motion.div>
+
+                 {/* Right: Visual Feedback Bento */}
+                 <div className="md:col-span-8 flex flex-col gap-6">
+                   {/* Main Image View */}
+                   <motion.div 
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ delay: 0.1 }}
+                     className="glass-card p-4 overflow-hidden aspect-video border-brand-accent/10 bg-black/40 group relative"
+                   >
+                      {imageToAnalyze && (
+                        <img 
+                          src={imageToAnalyze} 
+                          alt="Analyzing" 
+                          className="w-full h-full object-contain transition-transform duration-1000 scale-[1.05]" 
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-brand-bg/20" />
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                         <div className="w-20 h-20 rounded-full border-4 border-brand-accent/20 flex items-center justify-center relative">
+                            <div className="absolute inset-0 rounded-full border-4 border-t-brand-accent border-transparent animate-spin" />
+                            <Sparkles className="w-8 h-8 text-brand-accent animate-pulse" />
+                         </div>
+                      </div>
+                   </motion.div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Tagline Card */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="glass-card p-8 border-brand-border/10 h-full flex flex-col justify-center"
+                      >
+                        <h4 className="text-[10px] font-black uppercase text-brand-text-muted tracking-widest mb-4 opacity-60">Status</h4>
+                        <p className="text-2xl font-bold tracking-tight italic text-brand-text">
+                          "Your {loadingStage === 'finishing' ? 'report' : 'item'} is being handled by the industry's most advanced reselling engine."
+                        </p>
+                      </motion.div>
+
+                      {/* Secondary Info */}
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="glass-card p-8 border-brand-border/10 h-full flex flex-col justify-center bg-brand-accent/5 backdrop-blur-2xl"
+                      >
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center">
+                             <Globe className="w-5 h-5 text-brand-accent" />
+                          </div>
+                          <div className="flex flex-col">
+                             <span className="text-xs font-black uppercase tracking-widest text-white">Live Search</span>
+                             <span className="text-[10px] text-brand-text-muted">Global marketplace lookup</span>
+                          </div>
+                        </div>
+                        <div className="p-4 rounded-xl border border-brand-border/20 bg-brand-bg/40 font-mono text-[10px] text-brand-accent break-all">
+                          {loadingStage === 'identifying' ? 'GET_PRODUCT_FINGERPRINT...' : 
+                           loadingStage === 'searching' ? 'PLATFORM_SCAN_IN_PROGRESS...' :
+                           loadingStage === 'calculating' ? 'UPDATING_MARKET_INDEX...' :
+                           'GENERATING_SEO_CONTENT...'}
+                        </div>
+                      </motion.div>
                    </div>
-                   <div className="absolute -bottom-2 -right-2">
-                     <div className="bg-brand-accent text-brand-bg p-2 rounded-xl shadow-xl">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                     </div>
-                   </div>
-                </div>
-
-                <div className="space-y-6">
-                  <motion.div
-                    key={loadingStage}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ 
-                      opacity: [0.3, 1, 0.3],
-                      y: 0 
-                    }}
-                    transition={{ 
-                      opacity: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
-                      y: { duration: 0.3 }
-                    }}
-                    className="text-center"
-                  >
-                    <h3 className="text-2xl font-bold mb-2">{LOADING_STAGE_TEXT[loadingStage]}</h3>
-                    <p className="text-brand-text-muted text-sm tracking-widest uppercase font-bold">Sellscan AI is working...</p>
-                  </motion.div>
-
-                  <div className="h-1 w-full bg-brand-border rounded-full overflow-hidden">
-                    <motion.div 
-                      className="h-full bg-brand-accent"
-                      initial={{ width: "0%" }}
-                      animate={{ 
-                        width: 
-                          loadingStage === 'identifying' ? '20%' : 
-                          loadingStage === 'searching' ? '40%' : 
-                          loadingStage === 'analyzing_reviews' ? '65%' : 
-                          loadingStage === 'calculating' ? '85%' : '95%'
-                      }}
-                      transition={{ duration: 1 }}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-5 gap-2 px-2">
-                    <StageDot active={true} />
-                    <StageDot active={['searching', 'analyzing_reviews', 'calculating', 'finishing'].includes(loadingStage)} />
-                    <StageDot active={['analyzing_reviews', 'calculating', 'finishing'].includes(loadingStage)} />
-                    <StageDot active={['calculating', 'finishing'].includes(loadingStage)} />
-                    <StageDot active={loadingStage === 'finishing'} />
-                  </div>
-                </div>
+                 </div>
               </div>
             </motion.div>
           )}
