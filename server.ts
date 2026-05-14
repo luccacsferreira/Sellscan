@@ -22,6 +22,14 @@ async function startServer() {
   const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY || "");
 
   // API Routes
+  app.get("/api/health/secrets", (req, res) => {
+    res.json({
+      gemini: !!process.env.GEMINI_API_KEY,
+      openai: !!process.env.OPENAI_API_KEY,
+      supabase: !!process.env.VITE_SUPABASE_URL && !!process.env.VITE_SUPABASE_ANON_KEY
+    });
+  });
+
   app.post("/api/ai/gemini", async (req, res) => {
     try {
       const { prompt, image, messages, analysis } = req.body;

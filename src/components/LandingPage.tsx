@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search } from 'lucide-react';
+import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search, Check, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 import af1Example from '../assets/Example_Image.jpeg';
@@ -200,27 +200,78 @@ export function LandingPage({ onStart }: LandingPageProps) {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="max-w-4xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Simple pricing</h2>
-          <p className="text-brand-text-muted">Start free, upgrade when you need more.</p>
+      <section id="pricing" className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-20">
+          <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4 block">Pricing Plans</span>
+          <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Level up your <br className="md:hidden" /> resale game.</h2>
+          <p className="text-brand-text-muted text-lg max-w-2xl mx-auto">
+            Choose the intelligence tier that fits your volume. <br />
+            Upgrade or cancel anytime.
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pb-20">
+          {/* FREE PLAN */}
           <PricingCard 
-             price="$0"
-             tier="Starter"
-             features={["3 scans per month", "Full AI analysis", "Chat with scan results", "Copy-ready listings"]}
-             cta="Get started free"
+             tier="Free"
+             description="Perfect for occasional decluttering."
+             priceMonthly="€0"
+             credits="7 Credits / Month"
+             features={[
+               { text: "Uses Gemini Flash only", included: true },
+               { text: "Basic price estimate", included: true },
+               { text: "1 marketplace suggestion", included: true },
+               { text: "Full item scan", included: false },
+               { text: "AI Listing generator", included: false },
+               { text: "AI Resale Chatbot", included: false }
+             ]}
+             cta="Get started"
              variant="muted"
           />
+
+          {/* BASIC PLAN */}
           <PricingCard 
-             price="$12"
-             tier="Unlimited"
-             features={["Unlimited scans", "Full scan history", "Priority AI processing", "Everything in Basic"]}
-             cta="Go Unlimited"
-             variant="accent"
+             tier="Basic"
+             description="For the regular flipper hitting the local charity shops."
+             priceMonthly="€8.99"
+             credits="40 Credits / Month"
+             features={[
+               { text: "Gemini Pro + GPT-4o", included: true },
+               { text: "7 Credits/day soft limit", included: true },
+               { text: "Full item analysis", included: true },
+               { text: "AI Listing generator", included: true },
+               { text: "Limited Chatbot access", included: true },
+               { text: "Price range estimation", included: true },
+             ]}
+             cta="Go Basic"
+             variant="primary"
              popular
           />
+
+          {/* PRO PLAN */}
+          <PricingCard 
+             tier="Pro"
+             description="For pro resellers scaling their business to full-time."
+             priceMonthly="€14.99"
+             credits="120 Credits / Month"
+             features={[
+               { text: "Best Gemini + GPT-4o", included: true },
+               { text: "No daily limits", included: true },
+               { text: "Multi-platform listings", included: true },
+               { text: "Profit & Demand estimation", included: true },
+               { text: "Scam & Risk detection", included: true },
+               { text: "Full Priority processing", included: true },
+             ]}
+             cta="Go Pro"
+             variant="accent"
+          />
+        </div>
+
+        <div className="max-w-2xl mx-auto text-center pb-32">
+          <p className="text-[10px] text-brand-text-muted tracking-wide leading-relaxed">
+            * 1 Credit is consumed per product scan. Some advanced AI refinements may consume additional sub-credits. 
+            Daily limits apply to Basic plans to ensure fair resource allocation. Credits refresh on your billing date.
+          </p>
         </div>
       </section>
     </div>
@@ -298,37 +349,76 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
   );
 }
 
-function PricingCard({ price, tier, features, cta, variant, popular }: { price: string, tier: string, features: string[], cta: string, variant: 'muted' | 'accent', popular?: boolean }) {
+function PricingCard({ 
+  tier, 
+  priceMonthly, 
+  description, 
+  features, 
+  cta, 
+  variant, 
+  popular, 
+  credits 
+}: { 
+  tier: string, 
+  priceMonthly: string, 
+  description: string, 
+  features: { text: string, included: boolean }[], 
+  cta: string, 
+  variant: 'muted' | 'accent' | 'primary', 
+  popular?: boolean, 
+  credits: string 
+}) {
   return (
     <div className={cn(
-      "glass-card p-8 relative flex flex-col",
-      popular && "border-brand-accent/50 scale-[1.02] z-10 accent-glow"
+      "glass-card p-8 lg:p-10 relative flex flex-col transition-all duration-300",
+      popular 
+        ? "border-brand-accent bg-brand-bg/40 scale-[1.02] shadow-[0_20px_50px_-20px_rgba(85,205,209,0.2)] z-10" 
+        : "bg-brand-card/20 border-brand-border/40 hover:border-brand-accent/30"
     )}>
       {popular && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-bg px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-bg px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(85,205,209,0.4)]">
           Most Popular
-        </span>
-      )}
-      <div className="mb-8">
-        <div className="flex items-baseline gap-1">
-          <span className="text-4xl font-bold">{price}</span>
-          <span className="text-brand-text-muted text-sm pb-1">/month</span>
         </div>
-        <h3 className="text-lg font-bold mb-2 mt-2">{tier}</h3>
-        <p className="text-sm text-brand-text-muted">
-          {tier === 'Free' ? 'Perfect for occasional flippers' : 'For serious resellers'}
+      )}
+      
+      <div className="mb-10">
+        <h3 className={cn("text-xl font-black mb-3 tracking-tight", popular ? "text-brand-accent" : "text-brand-text")}>
+          {tier}
+        </h3>
+        <p className="text-sm text-brand-text-muted leading-relaxed mb-8 h-12">
+          {description}
         </p>
+        <div className="flex items-baseline gap-1 mb-4">
+          <span className="text-5xl font-black tracking-tight">{priceMonthly}</span>
+          <span className="text-brand-text-muted text-sm font-bold">/mo</span>
+        </div>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-brand-accent uppercase tracking-widest">
+          <Zap className="w-3 h-3 fill-current" /> {credits}
+        </div>
       </div>
-      <ul className="space-gap flex-grow mb-8 space-y-4">
+
+      <div className="space-y-4 mb-12 flex-grow">
         {features.map((f, i) => (
-          <li key={i} className="flex items-center gap-3 text-sm text-brand-text-muted">
-            <Zap className="w-4 h-4 text-brand-accent fill-current" /> {f}
-          </li>
+          <div key={i} className={cn(
+            "flex items-start gap-3 text-sm transition-all duration-300",
+            f.included ? "text-brand-text/90" : "text-brand-text-muted/30"
+          )}>
+            <div className={cn(
+              "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0",
+              f.included ? "bg-brand-accent/10 text-brand-accent" : "bg-white/5 text-white/20"
+            )}>
+              {f.included ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+            </div>
+            <span className="leading-snug font-medium italic-none">{f.text}</span>
+          </div>
         ))}
-      </ul>
+      </div>
+
       <button className={cn(
-        "w-full py-4 rounded-xl font-bold transition-all",
-        variant === 'accent' ? "bg-brand-accent text-brand-bg hover:bg-brand-accent/90" : "bg-brand-border text-brand-text hover:bg-brand-border/80"
+        "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-[0.98] cursor-pointer",
+        popular 
+          ? "bg-brand-accent text-brand-bg shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)] hover:opacity-90" 
+          : "bg-white/5 border border-brand-border/60 hover:bg-white/10"
       )}>
         {cta}
       </button>

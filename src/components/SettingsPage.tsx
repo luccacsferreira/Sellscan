@@ -13,6 +13,14 @@ import { AIModel } from '../services/aiService';
 
 export function SettingsPage({ selectedModel, setSelectedModel }: { selectedModel: AIModel, setSelectedModel: (m: AIModel) => void }) {
   const { location, setLocation, requestLocation, isLoading } = useLocation();
+  const [secretsStatus, setSecretsStatus] = React.useState({ gemini: false, openai: false });
+
+  React.useEffect(() => {
+    fetch('/api/health/secrets')
+      .then(res => res.json())
+      .then(data => setSecretsStatus(data))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="pt-32 pb-20 px-4 max-w-3xl mx-auto">
@@ -125,8 +133,8 @@ export function SettingsPage({ selectedModel, setSelectedModel }: { selectedMode
                  <span className="text-[10px] font-bold uppercase text-brand-text-muted tracking-widest">Active Secrets Status</span>
                </div>
                <div className="flex flex-wrap gap-4">
-                  <StatusBadge label="Gemini" active={true} />
-                  <StatusBadge label="GPT-4" active={true} />
+                  <StatusBadge label="Gemini" active={secretsStatus.gemini} />
+                  <StatusBadge label="GPT-4" active={secretsStatus.openai} />
                </div>
                <p className="text-[9px] text-brand-text-muted italic mt-3 opacity-60">
                  * Ensure your API keys are configured in the AI Studio Secrets panel.
