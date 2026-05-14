@@ -75,7 +75,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
   const analysis = scan.analysis;
 
   return (
-    <div className="pt-20 pb-28 md:pb-20 px-4 max-w-7xl mx-auto h-auto md:h-[calc(100vh-64px)] flex flex-col md:flex-row gap-6">
+    <div className="pt-20 pb-28 md:pb-10 px-4 md:px-10 max-w-7xl mx-auto min-h-screen md:h-screen flex flex-col md:flex-row gap-8 overflow-hidden">
       <AnimatePresence>
         {selectedMockup && (
           <PlatformMockup 
@@ -87,13 +87,21 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
       </AnimatePresence>
 
       {/* LEFT: RESULTS DASHBOARD */}
-      <div className="flex-grow overflow-y-auto pr-0 md:pr-4 space-y-6 custom-scrollbar">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors mb-2 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to new scan
-        </button>
+      <div className="flex-grow overflow-y-auto pr-0 md:pr-4 space-y-6 custom-scrollbar scroll-smooth">
+        <div className="flex items-center justify-between mb-4">
+          <button 
+            onClick={onBack}
+            className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+            <span className="text-sm font-bold uppercase tracking-widest">Back to Scanner</span>
+          </button>
+          
+          <div className="hidden sm:flex items-center gap-2 text-brand-text-muted">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Analysis Live</span>
+          </div>
+        </div>
 
         {/* Quick Verdict */}
         <motion.div 
@@ -104,27 +112,30 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
              highlightedCard === 'all' && "accent-glow border-brand-accent scale-[1.01]"
            )}
         >
-          <div className="absolute top-0 left-0 w-1 h-full bg-brand-accent" />
-          <div className="flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="absolute top-0 left-0 w-1.5 h-full bg-brand-accent shadow-[0_0_15px_-2px_var(--color-brand-accent)]" />
+          <div className="flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider mb-3">
             <Zap className="w-3 h-3 fill-current" /> Quick Verdict
           </div>
-          <p className="text-xl font-medium leading-relaxed">{analysis.quickVerdict}</p>
+          <p className="text-2xl font-bold leading-tight tracking-tight text-white/90">{analysis.quickVerdict}</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Product Overview Card (Small version of image + details) */}
-          <div className="glass-card flex flex-col sm:flex-row h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-12 overflow-visible">
+          {/* Product Overview Card */}
+          <div className="glass-card flex flex-col sm:flex-row h-full group overflow-hidden border-brand-border/10">
             {scan.imageUrl && (
-              <div className="w-full sm:w-1/3 aspect-square sm:aspect-auto">
-                <img src={scan.imageUrl} alt="Product" className="w-full h-full object-cover" />
+              <div className="w-full sm:w-[160px] lg:w-[180px] bg-black/20 flex-shrink-0 relative">
+                <img src={scan.imageUrl} alt="Product" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-brand-bg/20" />
               </div>
             )}
             <div className="p-6 flex-grow flex flex-col justify-center">
-              <div className="mb-4">
-                <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-widest block mb-1">Detected Product</span>
-                <h3 className="text-xl font-bold">{analysis.productDetails.brand} {analysis.productDetails.type}</h3>
+              <div className="mb-6">
+                <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-widest block mb-2 opacity-60">Detected Item</span>
+                <h3 className="text-2xl font-bold tracking-tight text-white/95 leading-tight">
+                  {analysis.productDetails.brand} <span className="text-brand-accent">{analysis.productDetails.type}</span>
+                </h3>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <DetailItem label="Condition" value={analysis.productDetails.condition} />
                 <DetailItem label="Category" value={analysis.productDetails.category} />
               </div>
@@ -132,90 +143,106 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
           </div>
 
           {/* Price Card */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-bold uppercase text-brand-text-muted tracking-wider">Suggested Price</h3>
-              <div className="flex items-center gap-1 text-brand-accent text-xs font-medium">
-                <TrendingUp className="w-3 h-3" /> High demand
+          <div className="glass-card p-6 flex flex-col relative overflow-visible border-brand-border/10">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60">Suggested Price</h3>
+              <div className="flex items-center gap-1.5 text-brand-accent bg-brand-accent/10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-accent/20">
+                <TrendingUp className="w-3 h-3" /> High Demand
               </div>
             </div>
-            <div className="text-4xl font-bold mb-6">
-              {analysis.priceRange.currency}{analysis.priceRange.sweetSpot}
+            
+            <div className="flex items-baseline gap-2 mb-8 mt-auto">
+              <span className="text-5xl font-black tracking-tighter text-white">
+                {analysis.priceRange.currency}{analysis.priceRange.sweetSpot}
+              </span>
+              <span className="text-brand-text-muted text-sm font-medium">avg listing</span>
             </div>
             
             {/* Range Bar */}
-            <div className="relative pt-6">
-              <div className="h-1.5 w-full bg-brand-border rounded-full" />
+            <div className="relative pt-8 pb-2">
+              <div className="h-2 w-full bg-brand-border/40 rounded-full overflow-hidden">
+                 <div className="h-full bg-gradient-to-r from-brand-accent/20 via-brand-accent to-brand-accent/20 opacity-50" />
+              </div>
+              
+              {/* Sweet Spot Marker */}
               <div 
-                className="absolute top-6 h-1.5 bg-brand-accent rounded-full"
-                style={{ 
-                  left: `${((analysis.priceRange.min - (analysis.priceRange.min * 0.8)) / (analysis.priceRange.max * 1.2 - (analysis.priceRange.min * 0.8))) * 100}%`,
-                  width: `${((analysis.priceRange.max - analysis.priceRange.min) / (analysis.priceRange.max * 1.2 - (analysis.priceRange.min * 0.8))) * 100}%`
-                }}
-              />
-              <div 
-                className="absolute -top-1 w-3 h-3 rounded-full bg-brand-text z-10 border-2 border-brand-accent"
+                className="absolute top-5 transition-all duration-1000 ease-out"
                 style={{ left: `${((analysis.priceRange.sweetSpot - (analysis.priceRange.min * 0.8)) / (analysis.priceRange.max * 1.2 - (analysis.priceRange.min * 0.8))) * 100}%` }}
               >
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-brand-bg bg-brand-text px-1 rounded">Sweet Spot</div>
+                <div className="flex flex-col items-center">
+                  <div className="bg-brand-accent text-brand-bg px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter shadow-[0_5px_15px_-3px_var(--color-brand-accent)] mb-1">
+                    Sweet Spot
+                  </div>
+                  <div className="w-4 h-4 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] border-2 border-brand-accent" />
+                </div>
               </div>
-              <div className="flex justify-between mt-2 text-[10px] text-brand-text-muted font-mono uppercase">
-                <span>{analysis.priceRange.currency}{analysis.priceRange.min} (fast)</span>
-                <span>{analysis.priceRange.currency}{analysis.priceRange.max} (patient)</span>
+
+              <div className="flex justify-between mt-6 text-[10px] text-brand-text-muted font-bold tracking-widest uppercase">
+                <div className="flex flex-col">
+                  <span className="text-white/80">{analysis.priceRange.currency}{analysis.priceRange.min}</span>
+                  <span className="opacity-40">Quick Sale</span>
+                </div>
+                <div className="flex flex-col text-right">
+                  <span className="text-white/80">{analysis.priceRange.currency}{analysis.priceRange.max}</span>
+                  <span className="opacity-40">Max Profit</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Platforms Card */}
-          <div className="glass-card p-6 lg:col-span-1">
-             <h3 className="text-sm font-bold uppercase text-brand-text-muted tracking-wider mb-6">Best Platforms</h3>
-             <div className="space-y-4">
+          <div className="glass-card p-6 lg:col-span-1 border-brand-border/10">
+             <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Best Platforms</h3>
+             <div className="space-y-3">
                {analysis.platforms.map((p, i) => (
                  <div 
                   key={i} 
                   onClick={() => setSelectedMockup(p.name)}
-                  className="flex flex-col gap-1 p-3 rounded-xl bg-brand-bg/50 border border-brand-border hover:border-brand-accent/40 active:scale-[0.98] transition-all cursor-pointer group"
+                  className="flex flex-col gap-1.5 p-4 rounded-xl bg-brand-bg/40 border border-brand-border/40 hover:border-brand-accent/40 active:scale-[0.98] transition-all cursor-pointer group relative overflow-hidden"
                 >
-                   <div className="flex items-center justify-between">
-                     <div className="font-bold flex items-center gap-2">
-                       {p.name} <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent" />
+                   <div className="flex items-center justify-between relative z-10">
+                     <div className="flex items-center gap-2">
+                       <span className="font-bold text-white group-hover:text-brand-accent transition-colors">{p.name}</span>
+                       <Eye className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-brand-accent" />
                      </div>
                      <span className={cn(
-                       "text-[10px] font-bold px-2 py-0.5 rounded-full border",
-                       p.matchScore > 80 ? "bg-brand-accent/10 text-brand-accent border-brand-accent/20" : "bg-brand-border text-brand-text-muted border-brand-border"
+                       "text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tighter",
+                       p.matchScore > 80 ? "bg-brand-accent text-brand-bg" : "bg-brand-border text-brand-text-muted"
                      )}>
                        {p.matchScore}% Match
                      </span>
                    </div>
-                   <p className="text-xs text-brand-text-muted leading-relaxed">{p.reasoning}</p>
-                   <div className="mt-2 text-[10px] text-brand-accent font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                     Click to preview listing mockup
-                   </div>
+                   <p className="text-xs text-brand-text-muted leading-relaxed relative z-10">{p.reasoning}</p>
+                   {/* Subtle hover reveal */}
+                   <div className="absolute inset-0 bg-brand-accent opacity-0 group-hover:opacity-[0.03] transition-opacity" />
                  </div>
                ))}
              </div>
           </div>
 
           {/* Improvements Card */}
-          <div className="glass-card p-6 lg:col-span-1">
-             <h3 className="text-sm font-bold uppercase text-brand-text-muted tracking-wider mb-6">What to improve</h3>
-             <ul className="space-y-4">
+          <div className="glass-card p-6 lg:col-span-1 border-brand-border/10">
+             <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Execution Steps</h3>
+             <ul className="space-y-5">
                {analysis.improvements.map((imp, i) => (
-                 <li key={i} className="flex items-start gap-3">
-                   <div className="w-6 h-6 rounded-lg bg-brand-bg border border-brand-border flex items-center justify-center flex-shrink-0 mt-0.5">
-                     {i === 0 ? <Wrench className="w-3 h-3 text-brand-accent" /> : 
-                      i === 1 ? <Paintbrush className="w-3 h-3 text-brand-accent" /> : 
-                               <Package className="w-3 h-3 text-brand-accent" />}
+                 <li key={i} className="flex items-start gap-4">
+                   <div className="w-8 h-8 rounded-xl bg-brand-bg/50 border border-brand-border flex items-center justify-center flex-shrink-0 mt-0.5">
+                     {i === 0 ? <Wrench className="w-4 h-4 text-brand-accent" /> : 
+                      i === 1 ? <Paintbrush className="w-4 h-4 text-brand-accent" /> : 
+                               <Package className="w-4 h-4 text-brand-accent" />}
                    </div>
-                   <span className="text-sm text-brand-text-muted leading-relaxed">{imp}</span>
+                   <div className="flex flex-col gap-0.5">
+                     <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest opacity-60">Step 0{i+1}</span>
+                     <span className="text-sm text-brand-text/80 leading-relaxed font-medium">{imp}</span>
+                   </div>
                  </li>
                ))}
              </ul>
              <button 
-               onClick={() => prefillChat("Suggest more improvements")}
-               className="mt-6 text-xs text-brand-accent font-bold hover:underline flex items-center gap-1"
+               onClick={() => prefillChat("Give me 5 more specific ways to increase the value of this item")}
+               className="mt-8 px-4 py-2 rounded-lg bg-brand-accent/5 hover:bg-brand-accent/10 text-brand-accent text-xs font-bold transition-all flex items-center gap-2 group w-fit"
              >
-               <Plus className="w-3 h-3" /> More ideas
+               <Sparkles className="w-3 h-3 group-hover:rotate-12 transition-transform" /> Get Strategic Advice
              </button>
           </div>
 
@@ -324,29 +351,37 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
       </div>
 
       {/* RIGHT: AI CHAT SIDEBAR */}
-      <div className="w-full md:w-[380px] flex flex-col glass-card border-brand-border h-[500px] md:h-full">
-         <div className="p-4 border-b border-brand-border flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-brand-accent" />
-            <h3 className="font-bold">Sellscan AI</h3>
-            <span className="ml-auto text-[10px] font-bold bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full">Pro</span>
+      <div className="w-full md:w-[380px] lg:w-[420px] flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md h-[500px] md:h-auto md:max-h-full">
+         <div className="p-4 border-b border-brand-border/50 flex items-center gap-3 bg-brand-bg/40">
+            <div className="w-8 h-8 rounded-full bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-brand-accent" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm tracking-tight">Sellscan AI</h3>
+              <div className="flex items-center gap-1.5 leading-none">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[9px] font-bold text-brand-text-muted uppercase tracking-widest">Active</span>
+              </div>
+            </div>
+            <span className="ml-auto text-[9px] font-black bg-brand-accent text-brand-bg px-2 py-0.5 rounded uppercase tracking-tighter">Pro</span>
          </div>
          
-         <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
+         <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar scroll-smooth bg-brand-bg/10">
             {chatMessages.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-                <div className="w-12 h-12 rounded-full bg-brand-accent/5 flex items-center justify-center border border-brand-accent/20">
-                  <MessageCircle className="w-6 h-6 text-brand-accent" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-6">
+                <div className="w-16 h-16 rounded-2xl bg-brand-accent/5 flex items-center justify-center border border-brand-accent/10 rotate-3">
+                  <MessageCircle className="w-8 h-8 text-brand-accent/80" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-sm mb-1">Interactive Refinements</h4>
-                  <p className="text-xs text-brand-text-muted leading-relaxed">
-                    Ask me to change the title, find a better platform, or adjust the price. I'll update the dashboard in real-time.
+                <div className="space-y-2">
+                  <h4 className="font-bold text-base tracking-tight leading-tight">Expert Strategy Chat</h4>
+                  <p className="text-xs text-brand-text-muted leading-relaxed px-4">
+                    Refine your listing in seconds. Ask for better tags, local market trends, or shipping hacks.
                   </p>
                 </div>
-                <div className="grid grid-cols-1 gap-2 w-full">
-                  <SuggestionBtn text="Make the title shorter" onClick={prefillChat} />
-                  <SuggestionBtn text="Write description for Depop" onClick={prefillChat} />
-                  <SuggestionBtn text="What if I want to sell faster?" onClick={prefillChat} />
+                <div className="flex flex-col gap-2 w-full max-w-[240px]">
+                  <SuggestionBtn text="Optimize for Depop" onClick={prefillChat} />
+                  <SuggestionBtn text="Write 5 SEO tags" onClick={prefillChat} />
+                  <SuggestionBtn text="Is this a good flip?" onClick={prefillChat} />
                 </div>
               </div>
             )}
@@ -354,55 +389,52 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
             {chatMessages.map((msg, i) => (
               <motion.div 
                 key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 className={cn(
-                  "flex flex-col max-w-[85%] gap-1",
+                  "flex flex-col max-w-[90%] gap-1",
                   msg.role === 'user' ? "ml-auto items-end" : "mr-auto items-start"
                 )}
               >
                 <div className={cn(
-                  "p-3 rounded-2xl text-sm leading-relaxed",
+                  "px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm",
                   msg.role === 'user' 
-                    ? "bg-brand-accent text-brand-bg font-medium rounded-tr-none" 
-                    : "bg-brand-card text-brand-text rounded-tl-none border border-brand-border"
+                    ? "bg-brand-accent text-brand-bg font-bold rounded-tr-none" 
+                    : "bg-brand-card text-brand-text/90 rounded-tl-none border border-brand-border shadow-black/5"
                 )}>
                   {msg.content}
                 </div>
               </motion.div>
             ))}
             {isSending && (
-               <div className="flex gap-1 items-center p-2 text-brand-text-muted">
-                  <Loader2 className="w-3 h-3 animate-spin" /> Thinking...
+               <div className="flex gap-2 items-center p-3 text-[10px] font-bold text-brand-accent uppercase tracking-widest bg-brand-accent/5 rounded-xl w-fit">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Analyzing request...
                </div>
             )}
             <div ref={chatEndRef} />
          </div>
-
-          <div className="p-4 border-t border-brand-border bg-brand-bg/50">
+ 
+          <div className="p-4 border-t border-brand-border/50 bg-brand-bg/80 backdrop-blur-sm">
             <div className="relative group">
               <textarea 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
-                placeholder="Ask me to change anything..."
-                className="w-full bg-brand-border/50 border border-brand-border rounded-2xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 transition-all resize-none h-20 group-hover:border-brand-accent/30 text-brand-text"
+                placeholder="Message Sellscan AI..."
+                className="w-full bg-brand-border/20 border border-brand-border/50 rounded-2xl px-4 py-4 pr-12 text-sm focus:outline-none focus:border-brand-accent/40 transition-all resize-none h-24 group-hover:bg-brand-border/30 text-white placeholder:text-brand-text-muted/50"
               />
               <button 
                 onClick={handleSendMessage}
                 disabled={!input.trim() || isSending}
                 className={cn(
-                  "absolute right-3 bottom-4 p-1.5 rounded-lg transition-all",
-                  input.trim() ? "bg-brand-accent text-brand-bg" : "text-brand-text-muted hover:text-brand-text"
+                  "absolute right-3 bottom-4 p-2 rounded-xl transition-all shadow-lg",
+                  input.trim() ? "bg-brand-accent text-brand-bg scale-100 opacity-100" : "text-brand-text-muted/30 scale-90 opacity-50"
                 )}
               >
                 <Send className="w-4 h-4" />
               </button>
             </div>
-            <p className="mt-2 text-[10px] text-center text-brand-text-muted">
-              Sellscan AI can make mistakes. Always verify details.
-            </p>
-         </div>
+          </div>
       </div>
     </div>
   );
