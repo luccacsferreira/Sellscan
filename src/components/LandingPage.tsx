@@ -43,11 +43,11 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20 text-xs font-bold mb-6">
             <Zap className="w-3 h-3 fill-current" /> AI-powered resell analysis
           </span>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
+          <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
             Scan any product. <br />
             <span className="text-brand-accent">Know exactly</span> how to sell it.
           </h1>
-          <p className="text-lg md:text-xl text-brand-text-muted mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-xl text-brand-text-muted mb-10 max-w-2xl mx-auto leading-relaxed px-4">
             Upload a photo or describe any item. Sellscan analyses the market, 
             tells you what to fix, where to list it, and writes the description — in seconds.
           </p>

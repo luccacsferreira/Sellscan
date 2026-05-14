@@ -75,7 +75,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack }: ScanDashboardP
   const analysis = scan.analysis;
 
   return (
-    <div className="pt-24 pb-20 px-4 max-w-7xl mx-auto h-[calc(100vh-64px)] flex flex-col md:flex-row gap-6">
+    <div className="pt-20 pb-28 md:pb-20 px-4 max-w-7xl mx-auto h-auto md:h-[calc(100vh-64px)] flex flex-col md:flex-row gap-6">
       <AnimatePresence>
         {selectedMockup && (
           <PlatformMockup 

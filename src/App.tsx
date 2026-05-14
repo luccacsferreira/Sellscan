@@ -14,6 +14,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { DashboardHome } from './components/DashboardHome';
 import { ProjectDetail } from './components/ProjectDetail';
 import { AnalyticsPage } from './components/AnalyticsPage';
+import { BottomNav } from './components/BottomNav';
 import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
 import { analyzeProduct } from './services/geminiService';
 import { cn } from './lib/utils';
@@ -156,7 +157,7 @@ function AppContent() {
     };
   }, [history]);
 
-  const handleAnalyze = async (image?: string, description?: string) => {
+  const handleAnalyze = async (image?: string, description?: string, isDemo: boolean = false) => {
     setIsLoading(true);
     setLoadingStage('identifying');
     
@@ -164,12 +165,12 @@ function AppContent() {
       new Promise(res => setTimeout(() => { setLoadingStage(stage); res(true); }, delay));
 
     try {
-      const aiPromise = analyzeProduct(image, description, location || undefined);
+      const aiPromise = analyzeProduct(image, description, location || undefined, isDemo);
       
-      await stageTimer('searching', 1500);
-      await stageTimer('analyzing_reviews', 2500);
-      await stageTimer('calculating', 2500);
-      await stageTimer('finishing', 1500);
+      await stageTimer('searching', isDemo ? 500 : 1500);
+      await stageTimer('analyzing_reviews', isDemo ? 500 : 2500);
+      await stageTimer('calculating', isDemo ? 500 : 2500);
+      await stageTimer('finishing', isDemo ? 500 : 1500);
 
       const analysis = await aiPromise;
       
@@ -188,7 +189,9 @@ function AppContent() {
     } catch (error) {
       console.error("Analysis failed:", error);
       if (error instanceof Error && error.message === "API_KEY_MISSING") {
-        alert("Gemini API Key is missing. If you're on GitHub Pages, make sure you've added GEMINI_API_KEY as a secret in your repository and that your build includes it. Locally, check your .env file.");
+        if (confirm("Gemini API Key is not set in project settings. Would you like to run in Demo Mode to check the layout? \n\nOtherwise, you can add your key in the Settings > Secrets panel.")) {
+          handleAnalyze(image, description, true);
+        }
       } else {
         alert("Something went wrong during analysis. Please try again.");
       }
@@ -275,7 +278,10 @@ function AppContent() {
         onToggleTheme={toggleTheme}
       />
       
-      <main className="min-h-[calc(100vh-64px)] overflow-x-hidden pt-16">
+      <main className={cn(
+        "min-h-[calc(100vh-64px)] overflow-x-hidden pt-16 transition-all duration-300",
+        view !== 'landing' ? "pb-28 md:pb-0" : ""
+      )}>
         <AnimatePresence mode="wait">
           {isLoading && (
             <motion.div 
@@ -486,6 +492,19 @@ function AppContent() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Mobile Bottom Nav */}
+      <AnimatePresence>
+        {view !== 'landing' && !isLoading && !showLocationModal && (
+          <motion.div
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+          >
+            <BottomNav activeView={view} onNavigate={setView} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Project Modal (Create/Edit) */}
       <AnimatePresence>

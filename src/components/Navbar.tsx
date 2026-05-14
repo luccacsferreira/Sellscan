@@ -4,7 +4,8 @@
  */
 
 import React from 'react';
-import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap } from 'lucide-react';
+import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import logoWhite from '../assets/logo_white_cropped.png';
 import logoBlack from '../assets/logo_black_cropped.png';
@@ -30,123 +31,217 @@ export function Navbar({
   theme, 
   onToggleTheme 
 }: NavbarProps) {
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
-      {/* Background with Opaque-to-Transparent Gradient */}
-      <div 
-        className="absolute inset-0 z-0 backdrop-blur-md pointer-events-none transition-[background] duration-300"
-        style={{
-          background: `linear-gradient(to right, 
-            var(--bg) 0%, 
-            var(--bg) 180px, 
-            color-mix(in srgb, var(--bg), transparent 20%) 600px)`
-        }}
-      />
-      
-      {/* Bottom Border Line - Layered in front of logo */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-brand-border z-20" />
-      
-      <div className="max-w-7xl mx-auto h-full flex items-center justify-between relative z-10">
-        <div 
-          className="flex items-end h-16 cursor-pointer group pb-0 relative"
-          onClick={onGoHome}
-        >
-          <div className="relative h-14 w-32 md:w-40">
-            <img 
-              src={logoWhite} 
-              alt="Sellscan" 
-              className={cn(
-                "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
-                theme === 'dark' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-              )}
-            />
-            <img 
-              src={logoBlack} 
-              alt="Sellscan" 
-              className={cn(
-                "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
-                theme === 'light' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-              )}
-            />
-          </div>
-        </div>
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-        <div className="hidden md:flex items-center gap-8">
-          {isLoggedIn ? (
-            <>
+  const handleMobileNav = (action: () => void) => {
+    action();
+    setIsMobileMenuOpen(false);
+  };
+
+  return (
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
+        {/* Background with Opaque-to-Transparent Gradient */}
+        <div 
+          className="absolute inset-0 z-0 backdrop-blur-md pointer-events-none transition-[background] duration-300"
+          style={{
+            background: `linear-gradient(to right, 
+              var(--bg) 0%, 
+              var(--bg) 180px, 
+              color-mix(in srgb, var(--bg), transparent 20%) 600px)`
+          }}
+        />
+        
+        {/* Bottom Border Line - Layered in front of logo */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-brand-border z-20" />
+        
+        <div className="max-w-7xl mx-auto h-full flex items-center justify-between relative z-10">
+          <div 
+            className="flex items-end h-16 cursor-pointer group pb-0 relative"
+            onClick={onGoHome}
+          >
+            <div className="relative h-12 w-28 md:h-14 md:w-40">
+              <img 
+                src={logoWhite} 
+                alt="Sellscan" 
+                className={cn(
+                  "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
+                  theme === 'dark' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                )}
+              />
+              <img 
+                src={logoBlack} 
+                alt="Sellscan" 
+                className={cn(
+                  "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
+                  theme === 'light' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8">
+            {isLoggedIn ? (
+              <>
+                <button 
+                  onClick={onGoHome} 
+                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                >
+                  Dashboard
+                </button>
+                <button 
+                  onClick={onViewAnalytics} 
+                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                >
+                  Analytics
+                </button>
+                <button 
+                  onClick={onViewHistory} 
+                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                >
+                  History
+                </button>
+              </>
+            ) : (
+              <>
+                <a href="#features" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Features</a>
+                <a href="#pricing" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Pricing</a>
+              </>
+            )}
+            
+            <div className="flex items-center gap-4">
               <button 
-                onClick={onGoHome} 
-                className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                onClick={onToggleTheme}
+                className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted hover:text-brand-text"
+                aria-label="Toggle theme"
               >
-                Dashboard
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
-              <button 
-                onClick={onViewAnalytics} 
-                className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
-              >
-                Analytics
-              </button>
-              <button 
-                onClick={onViewHistory} 
-                className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
-              >
-                History
-              </button>
-            </>
-          ) : (
-            <>
-              <a href="#features" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Features</a>
-              <a href="#pricing" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Pricing</a>
-            </>
-          )}
-          
-          <div className="flex items-center gap-4">
+
+              {isLoggedIn ? (
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={onNewScan}
+                    className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all shadow-[0_5px_20px_-5px_var(--color-brand-accent-glow)]"
+                  >
+                    Scanner
+                  </button>
+                  <button 
+                    onClick={onViewSettings}
+                    className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group"
+                  >
+                    <User className="w-5 h-5 text-brand-text-muted group-hover:text-brand-accent" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <button className="text-brand-text hover:text-brand-accent transition-colors text-sm font-medium">Sign in</button>
+                  <button className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2">
+                    Get Started <LogIn className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="md:hidden flex items-center gap-2">
             <button 
               onClick={onToggleTheme}
-              className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted hover:text-brand-text"
-              aria-label="Toggle theme"
+              className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
-
-            {isLoggedIn ? (
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={onNewScan}
-                  className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all shadow-[0_5px_20px_-5px_var(--color-brand-accent-glow)]"
-                >
-                  Scanner
-                </button>
-                <button 
-                  onClick={onViewSettings}
-                  className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group"
-                >
-                  <User className="w-5 h-5 text-brand-text-muted group-hover:text-brand-accent" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-4">
-                <button className="text-brand-text hover:text-brand-accent transition-colors text-sm font-medium">Sign in</button>
-                <button className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2">
-                  Get Started <LogIn className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 text-brand-text-muted hover:text-brand-text transition-colors"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
           </div>
         </div>
+      </nav>
 
-        <div className="md:hidden flex items-center gap-4">
-          <button 
-            onClick={onToggleTheme}
-            className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted"
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-          <button className="text-brand-text-muted">
-            <Menu className="w-6 h-6" />
-          </button>
-        </div>
-      </div>
-    </nav>
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-[100] md:hidden">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute inset-0 bg-brand-bg/80 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute right-0 top-0 bottom-0 w-[280px] bg-brand-bg border-l border-brand-border p-6 flex flex-col"
+            >
+              <div className="flex justify-end mb-8">
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-brand-text-muted hover:text-brand-text">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-6">
+                {isLoggedIn ? (
+                  <>
+                    <button 
+                      onClick={() => handleMobileNav(onGoHome!)} 
+                      className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
+                    >
+                      Dashboard
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNav(onViewAnalytics!)} 
+                      className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
+                    >
+                      Analytics
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNav(onViewHistory!)} 
+                      className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
+                    >
+                      History
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNav(onViewSettings!)} 
+                      className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
+                    >
+                      Settings
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNav(onNewScan!)} 
+                      className="w-full bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold mt-4 flex items-center justify-center gap-2"
+                    >
+                      <Camera className="w-5 h-5" /> Open Scanner
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Features</a>
+                    <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Pricing</a>
+                    <div className="h-px bg-brand-border my-2" />
+                    <button className="text-left text-lg font-bold text-brand-text">Sign in</button>
+                    <button className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                      Get Started <LogIn className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-auto py-6">
+                <div className="flex items-center gap-2 text-brand-text-muted">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs font-bold uppercase tracking-widest">Sellscan AI Online</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

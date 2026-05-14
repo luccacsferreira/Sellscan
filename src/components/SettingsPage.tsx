@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw } from 'lucide-react';
+import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 
@@ -94,6 +94,41 @@ export function SettingsPage() {
             value="Free Tier" 
             action={<span className="text-brand-accent font-bold">Upgrade</span>}
           />
+        </SettingsGroup>
+
+        <SettingsGroup title="Developer">
+          <div className="p-6 bg-brand-bg/50">
+            <div className="flex items-center gap-3 mb-4">
+              <Zap className="w-5 h-5 text-brand-accent" />
+              <h3 className="font-bold">Gemini API Configuration</h3>
+            </div>
+            <p className="text-sm text-brand-text-muted mb-4">
+              This app uses Google's Gemini Flash for product analysis. 
+              To use your own key:
+            </p>
+            <ol className="text-xs space-y-3 list-decimal list-inside text-brand-text-muted mb-6">
+              <li>Open the <span className="text-brand-text font-bold">Settings</span> menu in AI Studio (bottom left).</li>
+              <li>Go to the <span className="text-brand-text font-bold">Secrets</span> panel.</li>
+              <li>Add a secret with the name <code className="bg-brand-border px-1.5 py-0.5 rounded text-brand-accent font-mono">GEMINI_API_KEY</code> and your key as the value.</li>
+              <li>Restart the application.</li>
+            </ol>
+            <div className="p-3 bg-brand-accent/5 border border-brand-accent/20 rounded-xl">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-bold uppercase text-brand-text-muted">Current Key Status</span>
+                <span className={cn(
+                  "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                  process.env.GEMINI_API_KEY ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"
+                )}>
+                  {process.env.GEMINI_API_KEY ? 'CONNECTED' : 'MISSING'}
+                </span>
+              </div>
+              <p className="text-[10px] text-brand-text-muted italic">
+                {process.env.GEMINI_API_KEY 
+                  ? "Application is connected to the Gemini API." 
+                  : "Scanning will run in Demo Mode (mock data) until a key is provided."}
+              </p>
+            </div>
+          </div>
         </SettingsGroup>
 
         <button className="w-full mt-8 p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 font-bold flex items-center justify-center gap-2 hover:bg-red-500/10 transition-all">

@@ -39,20 +39,20 @@ export function DashboardHome({
       {/* Header with quick actions */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Welcome back.</h1>
-          <p className="text-brand-text-muted">Your personal commerce command center.</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome back.</h1>
+          <p className="text-sm md:text-base text-brand-text-muted leading-tight">Your personal commerce command center.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <button 
             onClick={onCreateProject}
-            className="px-6 py-3 rounded-xl bg-brand-bg border border-brand-border hover:border-brand-accent/50 transition-all font-bold flex items-center gap-2"
+            className="px-6 py-3 rounded-xl bg-brand-bg border border-brand-border hover:border-brand-accent/50 transition-all font-bold flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             New Project
           </button>
           <button 
             onClick={onStartNewScan}
-            className="px-8 py-3 rounded-xl bg-brand-accent text-brand-bg font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)] flex items-center gap-2"
+            className="px-8 py-3 rounded-xl bg-brand-accent text-brand-bg font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)] flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4" />
             Scanner

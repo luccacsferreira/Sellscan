@@ -10,7 +10,7 @@ let genAI: GoogleGenAI | null = null;
 
 function getAI() {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+  if (!apiKey || apiKey === "undefined" || apiKey === "" || apiKey === "null") {
     return null;
   }
   if (!genAI) {
@@ -18,6 +18,40 @@ function getAI() {
   }
   return genAI;
 }
+
+export const MOCK_ANALYSIS: ProductAnalysis = {
+  quickVerdict: "High resale potential. This is a sought-after vintage piece that performs well on fashion-focused platforms.",
+  improvements: [
+    "Wipe down the leather with a damp cloth to restore natural sheen.",
+    "Take photos against a neutral, well-lit background (ideally near a window).",
+    "Mention the specific year/collection if known to attract collectors."
+  ],
+  platforms: [
+    { name: "Vinted", matchScore: 95, reasoning: "Highest demand for this category with lower seller fees." },
+    { name: "Depop", matchScore: 88, reasoning: "Great for the vintage aesthetic this item carries." },
+    { name: "eBay", matchScore: 75, reasoning: "Good fall-back for reaching a wider international audience." }
+  ],
+  suggestedTitle: "Vintage 1990s Leather Biker Jacket - Excellent Condition",
+  suggestedDescription: "Beautifully preserved vintage leather jacket. Features classic heavy-duty zippers and a quilted lining. Perfectly broken in with a natural patina. Size Medium. No visible flaws.",
+  priceRange: {
+    min: 85,
+    max: 120,
+    sweetSpot: 95,
+    currency: "GBP"
+  },
+  productDetails: {
+    type: "Apparel",
+    condition: "Vintage / Pre-owned",
+    brand: "Authentic Vintage",
+    category: "Jackets"
+  },
+  buyerSentiment: {
+    overallRating: 4.8,
+    summary: "Buyers love this specific era for its durability and timeless style.",
+    pros: ["High-quality full-grain leather", "Classic fit", "Increasing value year-over-year"],
+    cons: ["Sizing can be smaller than modern standards", "Slight vintage scent expected"]
+  }
+};
 
 const ANALYSIS_SCHEMA = {
   type: Type.OBJECT,
@@ -72,7 +106,13 @@ const ANALYSIS_SCHEMA = {
   required: ["quickVerdict", "improvements", "platforms", "suggestedTitle", "suggestedDescription", "priceRange", "productDetails", "buyerSentiment"]
 };
 
-export async function analyzeProduct(image?: string, description?: string, location?: UserLocation): Promise<ProductAnalysis> {
+export async function analyzeProduct(image?: string, description?: string, location?: UserLocation, isDemo: boolean = false): Promise<ProductAnalysis> {
+  if (isDemo) {
+    // Artificial delay to simulate AI processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return MOCK_ANALYSIS;
+  }
+
   const ai = getAI();
   if (!ai) {
     throw new Error("API_KEY_MISSING");
