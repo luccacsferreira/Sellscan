@@ -30,7 +30,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: window.location.href.split('#')[0], // Ensure clean URL without fragments
         }
       });
       if (error) throw error;
