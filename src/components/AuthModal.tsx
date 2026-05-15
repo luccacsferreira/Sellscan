@@ -57,8 +57,12 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
+          console.error("Supabase Auth Error:", error);
           if (error.message.includes('Email not confirmed')) {
             throw new Error("Please confirm your email. Check your inbox for the link!");
+          }
+          if (error.message.includes('Invalid login credentials') || error.message.includes('Invalid API key')) {
+             throw new Error(`Authentication failed: ${error.message}. Please verify your Supabase URL and Anon Key in the Secrets menu.`);
           }
           throw error;
         }

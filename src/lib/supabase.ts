@@ -10,6 +10,12 @@ export const isSupabaseConfigured = Boolean(
   supabaseUrl.trim() !== ''
 );
 
+if (!isSupabaseConfigured && typeof window !== 'undefined') {
+  console.warn(
+    'Supabase is not configured. Google login will not work until you add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your secrets. Requesting the placeholder URL will fail.'
+  );
+}
+
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder-url.supabase.co', 
   supabaseAnonKey || 'placeholder-key'

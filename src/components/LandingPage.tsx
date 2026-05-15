@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search, Check, X } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -31,6 +31,8 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onStart }: LandingPageProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   return (
     <div className="pt-32 pb-20 px-4">
       {/* Hero Section */}
@@ -124,7 +126,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <motion.section 
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: false, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="max-w-6xl mx-auto mb-32 px-4"
       >
@@ -221,7 +223,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
@@ -232,7 +234,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <motion.div 
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           variants={{
             animate: {
               transition: {
@@ -269,7 +271,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <motion.section 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: false, margin: "-100px" }}
         transition={{ duration: 1.2 }}
         className="mb-32 overflow-hidden py-20 bg-brand-accent/[0.02]"
       >
@@ -289,7 +291,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <motion.div 
           initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="text-center mb-24"
         >
@@ -304,7 +306,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <motion.div 
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: false, margin: "-100px" }}
           variants={{
             animate: {
               transition: {
@@ -329,6 +331,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
              ]}
              cta="Get started"
              variant="muted"
+             isActive={hoveredIndex === 0}
+             onHover={() => setHoveredIndex(0)}
+             onLeave={() => setHoveredIndex(null)}
           />
 
           <PricingCard 
@@ -347,6 +352,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
              cta="Go Basic"
              variant="primary"
              popular
+             isActive={hoveredIndex === 1 || hoveredIndex === null}
+             onHover={() => setHoveredIndex(1)}
+             onLeave={() => setHoveredIndex(null)}
           />
 
           <PricingCard 
@@ -364,6 +372,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
              ]}
              cta="Go Pro"
              variant="accent"
+             isActive={hoveredIndex === 2}
+             onHover={() => setHoveredIndex(2)}
+             onLeave={() => setHoveredIndex(null)}
           />
         </motion.div>
 
@@ -463,7 +474,10 @@ function PricingCard({
   cta, 
   variant, 
   popular, 
-  credits 
+  credits,
+  isActive,
+  onHover,
+  onLeave
 }: { 
   tier: string, 
   priceMonthly: string, 
@@ -472,40 +486,71 @@ function PricingCard({
   cta: string, 
   variant: 'muted' | 'accent' | 'primary', 
   popular?: boolean, 
-  credits: string 
+  credits: string,
+  isActive: boolean,
+  onHover: () => void,
+  onLeave: () => void
 }) {
   return (
     <motion.div 
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
       variants={{
         initial: { opacity: 0, y: 30 },
         animate: { opacity: 1, y: 0 }
       }}
+      whileHover={{ 
+        scale: 1.05,
+        y: -12,
+        transition: { duration: 0.4, ease: "easeOut" }
+      }}
       className={cn(
-        "glass-card p-8 lg:p-10 relative flex flex-col transition-all duration-300",
-        popular 
-          ? "border-brand-accent bg-brand-bg/40 md:scale-[1.02] shadow-[0_20px_50px_-20px_rgba(85,205,209,0.2)] z-10" 
-          : "bg-brand-card/20 border-brand-border/40 hover:border-brand-accent/30"
+        "glass-card p-8 lg:p-10 relative flex flex-col transition-all duration-500 group overflow-visible border-2",
+        isActive 
+          ? "border-brand-accent bg-brand-bg/60 md:scale-[1.02] shadow-[0_0_60px_-10px_rgba(85,205,209,0.7)] z-10" 
+          : "bg-brand-card/20 border-brand-border/40"
       )}
     >
+      {/* Top Neon Bar Glow */}
+      <div className={cn(
+        "absolute -top-[3px] left-1/2 -translate-x-1/2 w-3/4 h-[4px] transition-all duration-500 rounded-full",
+        isActive 
+          ? "bg-brand-accent shadow-[0_0_30px_6px_var(--color-brand-accent)] opacity-100" 
+          : "bg-transparent opacity-0"
+      )} />
+
       {popular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-brand-bg px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(85,205,209,0.4)]">
+        <div className={cn(
+          "absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+          isActive 
+            ? "bg-brand-accent text-brand-bg shadow-[0_10px_20px_-5px_rgba(85,205,209,0.4)]"
+            : "bg-brand-card text-brand-text-muted border border-brand-border"
+        )}>
           Most Popular
         </div>
       )}
       
       <div className="mb-10">
-        <h3 className={cn("text-xl font-black mb-3 tracking-tight", popular ? "text-brand-accent" : "text-brand-text")}>
+        <h3 className={cn(
+          "text-xl font-black mb-3 tracking-tight transition-all duration-300", 
+          isActive ? "text-brand-accent drop-shadow-[0_0_12px_rgba(85,205,209,0.6)]" : "text-brand-text"
+        )}>
           {tier}
         </h3>
         <p className="text-sm text-brand-text-muted leading-relaxed mb-8 h-12">
           {description}
         </p>
-        <div className="flex items-baseline gap-1 mb-4">
+        <div className="flex items-baseline gap-1 mb-6">
           <span className="text-5xl font-black tracking-tight">{priceMonthly}</span>
           <span className="text-brand-text-muted text-sm font-bold">/mo</span>
         </div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-brand-accent uppercase tracking-widest">
-          <Zap className="w-3 h-3 fill-current" /> {credits}
+        <div className={cn(
+          "inline-flex items-center gap-2 px-3 py-1 rounded-lg transition-all duration-300 border",
+          isActive 
+            ? "bg-brand-accent/20 border-brand-accent/40 text-brand-accent shadow-[0_0_20px_rgba(85,205,209,0.4)]" 
+            : "bg-white/5 border-white/10 text-brand-accent/70"
+        )}>
+          <Zap className="w-3 h-3 fill-current" /> <span className="text-[10px] font-bold uppercase tracking-widest">{credits}</span>
         </div>
       </div>
 
@@ -513,11 +558,13 @@ function PricingCard({
         {features.map((f, i) => (
           <div key={i} className={cn(
             "flex items-start gap-3 text-sm transition-all duration-300",
-            f.included ? "text-brand-text/90" : "text-brand-text-muted/30"
+            f.included ? (isActive ? "text-brand-text" : "text-brand-text/90") : "text-brand-text-muted/30"
           )}>
             <div className={cn(
-              "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0",
-              f.included ? "bg-brand-accent/10 text-brand-accent" : "bg-white/5 text-white/20"
+              "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300",
+              f.included 
+                ? (isActive ? "bg-brand-accent text-brand-bg shadow-[0_0_10px_rgba(85,205,209,0.6)]" : "bg-brand-accent/10 text-brand-accent") 
+                : "bg-white/5 text-white/20"
             )}>
               {f.included ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
             </div>
@@ -527,10 +574,10 @@ function PricingCard({
       </div>
 
       <button className={cn(
-        "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-[0.98] cursor-pointer",
-        popular 
-          ? "bg-brand-accent text-brand-bg shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)] hover:opacity-90" 
-          : "bg-white/5 border border-brand-border/60 hover:bg-white/10"
+        "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 active:scale-[0.98] cursor-pointer",
+        isActive 
+          ? "bg-brand-accent text-brand-bg shadow-[0_0_40px_-5px_rgba(85,205,209,0.7)] hover:brightness-110" 
+          : "bg-white/5 border border-brand-border/60 text-brand-text-muted"
       )}>
         {cta}
       </button>
