@@ -46,7 +46,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
     e.preventDefault();
     
     if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes('placeholder')) {
-      setError("Supabase configuration is missing. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your project secrets.");
+      setError("Supabase Secrets Missing: Open the 'Secrets' menu in AI Studio and add 'VITE_SUPABASE_URL' and 'VITE_SUPABASE_ANON_KEY'. If you are using a custom domain or external deployment, ensure these environment variables are set in your provider's dashboard.");
       return;
     }
 

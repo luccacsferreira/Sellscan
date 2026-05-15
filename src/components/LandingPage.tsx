@@ -34,35 +34,89 @@ export function LandingPage({ onStart }: LandingPageProps) {
   return (
     <div className="pt-32 pb-20 px-4">
       {/* Hero Section */}
-      <section className="max-w-4xl mx-auto text-center mb-32">
+      <section className="max-w-5xl mx-auto text-center mb-32 relative">
+        {/* Abstract Background element */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+        
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+           initial="initial"
+           animate="animate"
+           variants={{
+             animate: {
+               transition: {
+                 staggerChildren: 0.1
+               }
+             }
+           }}
         >
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20 text-xs font-bold mb-6">
-            <Zap className="w-3 h-3 fill-current" /> AI-powered resell analysis
-          </span>
-          <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
+          <motion.span 
+            variants={{
+              initial: { opacity: 0, y: 10 },
+              animate: { opacity: 1, y: 0 }
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20 text-xs font-black tracking-widest uppercase mb-10"
+          >
+            <Zap className="w-3 h-3 fill-current" /> AI-powered resell scan
+          </motion.span>
+          
+          <motion.h1 
+            variants={{
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 }
+            }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.95]"
+          >
             Scan any product. <br />
-            <span className="text-brand-accent">Know exactly</span> how to sell it.
-          </h1>
-          <p className="text-base md:text-xl text-brand-text-muted mb-10 max-w-2xl mx-auto leading-relaxed px-4">
+            <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-r from-brand-accent to-brand-accent/60">Know exactly</span> <br />
+            how to sell it.
+          </motion.h1>
+
+          <motion.p 
+            variants={{
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 }
+            }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="text-lg md:text-2xl text-brand-text-muted mb-12 max-w-2xl mx-auto leading-relaxed px-4 font-medium italic-none"
+          >
             Upload a photo or describe any item. Sellscan analyses the market, 
             tells you what to fix, where to list it, and writes the description — in seconds.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          </motion.p>
+
+          <motion.div 
+            variants={{
+              initial: { opacity: 0, y: 20 },
+              animate: { opacity: 1, y: 0 }
+            }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6 px-4"
+          >
             <button 
               onClick={onStart}
-              className="w-full sm:w-auto bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-8 py-4 rounded-full text-lg font-bold transition-all shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)] hover:scale-[1.02] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-10 py-5 rounded-2xl text-lg font-black uppercase tracking-widest transition-all shadow-[0_15px_40px_-10px_var(--color-brand-accent-glow)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group"
             >
-              Scan your first product <ArrowRight className="w-5 h-5" />
+              Scan first product 
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
-            <button className="w-full sm:w-auto bg-brand-card hover:bg-brand-border border border-brand-border px-8 py-4 rounded-full text-lg font-bold transition-all flex items-center justify-center">
+            <a 
+              href="#features"
+              className="w-full sm:w-auto bg-brand-card hover:bg-brand-border border border-brand-border px-10 py-5 rounded-2xl text-lg font-black uppercase tracking-widest transition-all flex items-center justify-center hover:scale-[1.02] active:scale-[0.98]"
+            >
               See how it works
-            </button>
-          </div>
-          <p className="mt-6 text-sm text-brand-text-muted">Free to start · No credit card required</p>
+            </a>
+          </motion.div>
+          
+          <motion.p 
+            variants={{
+              initial: { opacity: 0 },
+              animate: { opacity: 1 }
+            }}
+            transition={{ delay: 1 }}
+            className="mt-8 text-xs font-bold text-brand-text-muted opacity-60 uppercase tracking-[0.2em]"
+          >
+            Free to start · No credit card required
+          </motion.p>
         </motion.div>
       </section>
 
@@ -163,24 +217,26 @@ export function LandingPage({ onStart }: LandingPageProps) {
       </motion.section>
 
       {/* Features Grid */}
-      <section id="features" className="max-w-6xl mx-auto mb-32">
+      <section id="features" className="max-w-6xl mx-auto mb-32 px-4">
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to sell smarter</h2>
-          <p className="text-brand-text-muted">From market research to copy — one scan does it all.</p>
+          <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4 block">Core Features</span>
+          <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight">Everything you need to sell smarter</h2>
+          <p className="text-brand-text-muted text-lg">From market research to copy — one scan does it all.</p>
         </motion.div>
         <motion.div 
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
           variants={{
             animate: {
               transition: {
-                staggerChildren: 0.1
+                staggerChildren: 0.15
               }
             }
           }}
@@ -213,34 +269,34 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <motion.section 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1 }}
-        className="mb-32 overflow-hidden"
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 1.2 }}
+        className="mb-32 overflow-hidden py-20 bg-brand-accent/[0.02]"
       >
-        <div className="max-w-6xl mx-auto px-4 mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Scan any item</h2>
-          <p className="text-brand-text-muted">From rare collectibles to high-end vintage — Sellscan knows the value.</p>
+        <div className="max-w-6xl mx-auto px-4 mb-16 text-center">
+          <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Scan any item</h2>
+          <p className="text-brand-text-muted text-lg">From rare collectibles to high-end vintage — Sellscan knows the value.</p>
         </div>
         
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           <MarqueeRow direction="right" images={COLLECTIBLES_ROW_1} />
           <MarqueeRow direction="left" images={COLLECTIBLES_ROW_2} />
         </div>
       </motion.section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="max-w-7xl mx-auto px-4">
+      <section id="pricing" className="max-w-7xl mx-auto px-4 scroll-mt-24">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-20"
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="text-center mb-24"
         >
           <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4 block">Pricing Plans</span>
-          <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Level up your <br className="md:hidden" /> resale game.</h2>
-          <p className="text-brand-text-muted text-lg max-w-2xl mx-auto">
-            Choose the intelligence tier that fits your volume. <br />
+          <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter leading-none">Level up your <br className="hidden md:block" /> resale game.</h2>
+          <p className="text-brand-text-muted text-xl max-w-2xl mx-auto leading-relaxed italic-none">
+            Choose the intelligence tier that fits your volume. <br className="hidden sm:block" />
             Upgrade or cancel anytime.
           </p>
         </motion.div>
@@ -248,17 +304,16 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <motion.div 
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
           variants={{
             animate: {
               transition: {
-                staggerChildren: 0.15
+                staggerChildren: 0.1
               }
             }
           }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pb-20"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pb-32"
         >
-          {/* FREE PLAN */}
           <PricingCard 
              tier="Free"
              description="Perfect for occasional decluttering."
@@ -276,7 +331,6 @@ export function LandingPage({ onStart }: LandingPageProps) {
              variant="muted"
           />
 
-          {/* BASIC PLAN */}
           <PricingCard 
              tier="Basic"
              description="For the regular flipper hitting the local charity shops."
@@ -295,7 +349,6 @@ export function LandingPage({ onStart }: LandingPageProps) {
              popular
           />
 
-          {/* PRO PLAN */}
           <PricingCard 
              tier="Pro"
              description="For pro resellers scaling their business to full-time."
