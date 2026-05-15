@@ -215,22 +215,15 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 <button 
                   onClick={async () => {
                     setError(null);
-                    const { data, error } = await supabase.auth.signInWithOAuth({
+                    const { error } = await supabase.auth.signInWithOAuth({
                       provider: 'google',
                       options: {
-                        redirectTo: window.location.origin,
-                        skipBrowserRedirect: true
+                        redirectTo: window.location.origin
                       }
                     });
                     
                     if (error) {
                       setError(error.message);
-                      return;
-                    }
-
-                    if (data?.url) {
-                      // Open Google's OAuth URL in a new window/popup
-                      window.open(data.url, '_blank', 'width=600,height=700');
                     }
                   }}
                   className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-xs font-bold"
