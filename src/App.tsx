@@ -16,7 +16,7 @@ import { ProjectDetail } from './components/ProjectDetail';
 import { AnalyticsPage } from './components/AnalyticsPage';
 import { BottomNav } from './components/BottomNav';
 import { AuthModal } from './components/AuthModal';
-import { ProductAnalysis, ScanResult, Project, UserStats } from './types';
+import { ScanResult, Project, UserStats, ProductAnalysis } from './types';
 import { analyzeProduct, AIModel } from './services/aiService';
 import { cn } from './lib/utils';
 import { supabase } from './lib/supabase';
@@ -24,8 +24,9 @@ import { User } from '@supabase/supabase-js';
 import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign, Check } from 'lucide-react';
 import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
+import { AuthCallback } from './components/AuthCallback';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback';
 
 type LoadingStage = 
   | 'identifying' 
@@ -140,6 +141,35 @@ function AppContent() {
   const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(null);
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
+
+  // Handle OAuth Callback from Popup
+  useEffect(() => {
+    const isCallback = window.location.hash.includes('access_token') || 
+                      window.location.search.includes('code=') || 
+                      window.location.search.includes('error=');
+    
+    if (isCallback) {
+      setView('auth-callback');
+    }
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      
+      if (event.data?.type === 'SUPABASE_OAUTH_SUCCESS') {
+        // Refresh session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) {
+            setUser(session.user);
+            setShowAuthModal(false);
+            // If we have a pending scan, it will be handled by the AuthModal callback
+          }
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   // Ask for location/currency if not set
   useEffect(() => {
@@ -765,6 +795,17 @@ function AppContent() {
                  userEmail={user?.email}
                />
              </motion.div>
+          )}
+
+          {view === 'auth-callback' && (
+            <motion.div
+              key="auth-callback"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <AuthCallback />
+            </motion.div>
           )}
         </AnimatePresence>
       </main>

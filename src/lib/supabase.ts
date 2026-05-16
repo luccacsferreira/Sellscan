@@ -13,21 +13,31 @@ export const isSupabaseConfigured = Boolean(
 );
 
 if (typeof window !== 'undefined') {
-  console.log('Supabase check:', { 
-    url: supabaseUrl ? `${supabaseUrl.substring(0, 10)}...` : 'undefined',
-    hasKey: !!supabaseAnonKey,
+  // Enhanced debugging for the user
+  const check = { 
+    url: supabaseUrl ? (supabaseUrl.includes('placeholder') ? 'PLACEHOLDER' : 'SET') : 'MISSING',
+    hasKey: !!supabaseAnonKey && !supabaseAnonKey.includes('placeholder'),
     isConfigured: isSupabaseConfigured
-  });
+  };
   
-  if (!supabaseUrl || supabaseUrl.includes('placeholder')) {
-    console.error('Supabase URL is missing or placeholder. Please check VITE_SUPABASE_URL in Secrets.');
-  }
-  if (!supabaseAnonKey || supabaseAnonKey.includes('placeholder')) {
-    console.error('Supabase Anon Key is missing or placeholder. Please check VITE_SUPABASE_ANON_KEY in Secrets.');
+  if (!isSupabaseConfigured) {
+    console.group('🛡️ Supabase Config Status');
+    console.warn('Supabase is not fully configured.');
+    console.table(check);
+    console.info('Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in AI Studio Secrets.');
+    console.groupEnd();
   }
 }
 
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder-url.supabase.co', 
-  supabaseAnonKey || 'placeholder-key'
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce' // Use PKCE for better security and frame handling
+    }
+  }
 );
