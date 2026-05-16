@@ -507,15 +507,20 @@ function PricingCard({
       className={cn(
         "glass-card p-8 lg:p-10 relative flex flex-col transition-all duration-500 group overflow-visible border-2",
         isActive 
-          ? "border-brand-accent bg-brand-bg/60 md:scale-[1.02] shadow-[0_0_60px_-10px_rgba(85,205,209,0.7)] z-10" 
-          : "bg-brand-card/20 border-brand-border/40"
+          ? "border-brand-accent bg-brand-bg/90 md:scale-[1.02] shadow-[0_0_60px_-10px_rgba(85,205,209,0.8),inset_0_0_30px_rgba(85,205,209,0.15)] z-10" 
+          : "bg-brand-card/20 border-brand-border/40 hover:border-brand-accent/20"
       )}
     >
+      {/* Neon Glow Outer */}
+      {isActive && (
+        <div className="absolute inset-0 rounded-[2rem] shadow-[0_0_30px_rgba(85,205,209,0.2)] pointer-events-none -z-1" />
+      )}
+
       {/* Top Neon Bar Glow */}
       <div className={cn(
-        "absolute -top-[3px] left-1/2 -translate-x-1/2 w-3/4 h-[4px] transition-all duration-500 rounded-full",
+        "absolute -top-[2px] left-1/2 -translate-x-1/2 w-3/4 h-[4px] transition-all duration-500 rounded-full",
         isActive 
-          ? "bg-brand-accent shadow-[0_0_30px_6px_var(--color-brand-accent)] opacity-100" 
+          ? "bg-brand-accent shadow-[0_0_25px_4px_var(--color-brand-accent)] opacity-100" 
           : "bg-transparent opacity-0"
       )} />
 
