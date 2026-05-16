@@ -22,6 +22,13 @@ async function startServer() {
   const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY || "");
 
   // API Routes
+  app.get("/api/config/supabase", (req, res) => {
+    res.json({
+      url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+      anonKey: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+    });
+  });
+
   app.get("/api/health/secrets", (req, res) => {
     res.json({
       gemini: !!process.env.GEMINI_API_KEY,
@@ -133,8 +140,29 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+    
+    app.get("*", async (req, res) => {
+      // Inject environment variables into index.html before serving
+      try {
+        const fs = await import("fs/promises");
+        let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
+        
+        const config = {
+          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+        };
+        
+        const configScript = `
+          <script>
+            window.SUPABASE_CONFIG = ${JSON.stringify(config)};
+          </script>
+        `;
+        
+        html = html.replace("</head>", `${configScript}</head>`);
+        res.send(html);
+      } catch (e) {
+        res.sendFile(path.join(distPath, "index.html"));
+      }
     });
   }
 
