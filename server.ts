@@ -139,10 +139,14 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
     
-    app.get("*", async (req, res) => {
-      // Inject environment variables into index.html before serving
+    // Serve index.html with environment variable injection for all non-API/non-static routes
+    app.get("*", async (req, res, next) => {
+      // Skip if it's an API route or looks like a static asset (has extension)
+      if (req.path.startsWith('/api') || req.path.includes('.')) {
+        return next();
+      }
+
       try {
         const fs = await import("fs/promises");
         let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
@@ -155,15 +159,21 @@ async function startServer() {
         const configScript = `
           <script>
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
+            console.log('🛡️ Supabase Injection Success');
           </script>
         `;
         
         html = html.replace("</head>", `${configScript}</head>`);
+        res.setHeader('Content-Type', 'text/html');
         res.send(html);
       } catch (e) {
+        console.error("Injection failed:", e);
         res.sendFile(path.join(distPath, "index.html"));
       }
     });
+
+    // Serve static files for everything else
+    app.use(express.static(distPath));
   }
 
   app.listen(PORT, "0.0.0.0", () => {

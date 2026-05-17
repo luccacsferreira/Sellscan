@@ -13,21 +13,30 @@ export function AuthCallback() {
     // This component captures the Supabase session details from the hash/URL
     console.log('AuthCallback mounted', window.location.href);
     
-    // Safety timeout - if nothing happens in 10 seconds, show error
+    // Safety timeout - if nothing happens in 20 seconds, show error
     const timeout = setTimeout(() => {
       if (status === 'authenticating') {
-        console.warn('Authentication timed out after 10s');
+        console.warn('Authentication timed out after 20s');
         setStatus('error');
       }
-    }, 12000);
+    }, 20000);
 
     const checkSession = async () => {
       try {
-        console.log('Checking Supabase session...');
+        console.log('Checking Supabase session... (Runtime Info)', { 
+          host: window.location.hostname, 
+          href: window.location.href,
+          hasBaseUrl: !!supabase.auth,
+          configInjected: !!(window as any).SUPABASE_CONFIG
+        });
         
         // 1. Check if we already have a session
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Session check result:', { hasSession: !!session, error });
+        console.log('Session check result:', { 
+          hasSession: !!session, 
+          user: session?.user?.email,
+          error 
+        });
         
         if (session?.user) {
           handleSuccess(session.user);
@@ -40,15 +49,14 @@ export function AuthCallback() {
         const code = params.get('code');
         
         if (code) {
-          console.log('Explicit PKCE code exchange for:', code.substring(0, 5) + '...');
+          console.log('Explicit PKCE code exchange for:', code.substring(0, 10) + '...');
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           
           if (exchangeError) {
             console.error('PKCE Exchange Error:', exchangeError);
-            // If it's a verifier issue, we might be stuck. 
-            // Don't set error immediately, give onAuthStateChange a chance (sometimes they race)
+            // Don't set error immediately, give onAuthStateChange a chance
           } else if (data.session?.user) {
-            console.log('PKCE Exchange Success!');
+            console.log('PKCE Exchange Success via manual trigger!');
             handleSuccess(data.session.user);
             return;
           }

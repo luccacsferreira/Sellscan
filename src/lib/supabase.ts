@@ -3,18 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 // For client-side, we use import.meta.env which requires VITE_ prefix
 // We also check window.SUPABASE_CONFIG which is injected by our server in production
 const getSupabaseConfig = () => {
-  const envUrl = import.meta.env.VITE_SUPABASE_URL;
-  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
+  // If we already have window.SUPABASE_CONFIG, use it immediately
   if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
     const config = (window as any).SUPABASE_CONFIG;
     return {
-      url: config.VITE_SUPABASE_URL || envUrl,
-      key: config.VITE_SUPABASE_ANON_KEY || envKey
+      url: config.VITE_SUPABASE_URL,
+      key: config.VITE_SUPABASE_ANON_KEY
     };
   }
-  
-  return { url: envUrl, key: envKey };
+
+  // Fallback to build-time vars
+  return { 
+    url: import.meta.env.VITE_SUPABASE_URL, 
+    key: import.meta.env.VITE_SUPABASE_ANON_KEY 
+  };
 };
 
 const { url: supabaseUrl, key: supabaseAnonKey } = getSupabaseConfig();
