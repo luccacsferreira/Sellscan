@@ -29,7 +29,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: window.location.origin,
           skipBrowserRedirect: true // CRITICAL: Gives us the URL to open in popup
         }
       });

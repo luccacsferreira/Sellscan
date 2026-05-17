@@ -7,8 +7,7 @@ import React from 'react';
 import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import logoWhite from '../assets/logo_white_cropped.png';
-import logoBlack from '../assets/logo_black_cropped.png';
+import sellscanLogo from '../assets/sellscan_logo_transparent.png';
 
 import { supabase } from '../lib/supabase';
 
@@ -69,25 +68,14 @@ export function Navbar({
         
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between relative z-10">
           <div 
-            className="flex items-end h-16 cursor-pointer group pb-0 relative"
+            className="flex items-center h-16 cursor-pointer group pb-0 relative"
             onClick={onGoHome}
           >
-            <div className="relative h-12 w-28 md:h-14 md:w-40">
+            <div className="relative h-10 w-32 md:h-12 md:w-40 flex items-center">
               <img 
-                src={logoWhite} 
+                src={sellscanLogo} 
                 alt="Sellscan" 
-                className={cn(
-                  "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
-                  theme === 'dark' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-                )}
-              />
-              <img 
-                src={logoBlack} 
-                alt="Sellscan" 
-                className={cn(
-                  "absolute inset-0 h-full w-full object-contain object-bottom pointer-events-none transition-all duration-300",
-                  theme === 'light' ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-                )}
+                className="h-full w-auto object-contain pointer-events-none transition-all duration-300 group-hover:scale-[1.02]"
               />
             </div>
           </div>

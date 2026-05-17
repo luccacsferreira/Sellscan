@@ -576,6 +576,10 @@ function AppContent() {
     );
   }
 
+  if (view === 'auth-callback') {
+    return <AuthCallback />;
+  }
+
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg transition-colors duration-300">
       <Navbar 
@@ -902,17 +906,6 @@ function AppContent() {
                  userEmail={user?.email}
                />
              </motion.div>
-          )}
-
-          {view === 'auth-callback' && (
-            <motion.div
-              key="auth-callback"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <AuthCallback />
-            </motion.div>
           )}
 
           {view === 'docs' && (

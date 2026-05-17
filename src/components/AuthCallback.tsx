@@ -11,76 +11,114 @@ export function AuthCallback() {
 
   useEffect(() => {
     // This component captures the Supabase session details from the hash/URL
+    console.log('AuthCallback mounted', window.location.href);
     
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Auth callback error:', error);
+    // Safety timeout - if nothing happens in 10 seconds, show error
+    const timeout = setTimeout(() => {
+      if (status === 'authenticating') {
+        console.warn('Authentication timed out after 10s');
         setStatus('error');
-        return;
       }
+    }, 12000);
 
-      if (session?.user) {
-        setUser(session.user);
-        setStatus('success');
+    const checkSession = async () => {
+      try {
+        console.log('Checking Supabase session...');
         
-        // Wait a bit to show the nice "success" state before redirecting/messaging
-        setTimeout(() => {
-          if (window.opener) {
-            window.opener.postMessage({ 
-              type: 'SUPABASE_OAUTH_SUCCESS',
-              user: {
-                email: session.user.email,
-                name: session.user.user_metadata?.full_name,
-                avatar: session.user.user_metadata?.avatar_url
-              }
-            }, window.location.origin);
-            setTimeout(() => window.close(), 100);
-          } else {
-            // If not in a popup, redirect to home
-            window.location.href = '/';
+        // 1. Check if we already have a session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Session check result:', { hasSession: !!session, error });
+        
+        if (session?.user) {
+          handleSuccess(session.user);
+          return;
+        }
+
+        // 2. Explicitly handle PKCE code exchange if found in URL
+        // Supabase usually does this, but explicit call is more reliable on secondary domains
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        
+        if (code) {
+          console.log('Explicit PKCE code exchange for:', code.substring(0, 5) + '...');
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (exchangeError) {
+            console.error('PKCE Exchange Error:', exchangeError);
+            // If it's a verifier issue, we might be stuck. 
+            // Don't set error immediately, give onAuthStateChange a chance (sometimes they race)
+          } else if (data.session?.user) {
+            console.log('PKCE Exchange Success!');
+            handleSuccess(data.session.user);
+            return;
           }
-        }, 2000);
-      } else {
-        // If no session but we were redirected here, it might still be processing
-        // Supabase usually handles this automatically on load if detectSessionInUrl is true
+        }
+        
+        if (error && !code) {
+          console.error('Auth callback getSession error:', error);
+          setStatus('error');
+        }
+      } catch (e) {
+        console.error('Unexpected error in checkSession:', e);
+        setStatus('error');
       }
     };
 
-    // Listen for auth state change
+    const handleSuccess = (user: User) => {
+      console.log('Authentication successful for:', user.email);
+      setUser(user);
+      setStatus('success');
+      
+      // Wait a bit to show the nice "success" state
+      setTimeout(() => {
+        if (window.opener) {
+          console.log('Signaling window.opener and closing popup');
+          window.opener.postMessage({ 
+            type: 'SUPABASE_OAUTH_SUCCESS',
+            user: {
+              email: user.email,
+              name: user.user_metadata?.full_name,
+              avatar: user.user_metadata?.avatar_url
+            }
+          }, window.location.origin);
+          
+          // Close after a tiny delay to ensure message is sent
+          setTimeout(() => {
+            try {
+              window.close();
+            } catch (e) {
+              console.warn('Failed to close window, redirecting instead:', e);
+              window.location.href = '/';
+            }
+          }, 200);
+        } else {
+          console.log('No window.opener found, redirecting to home');
+          window.location.href = '/';
+        }
+      }, 1500);
+    };
+
+    // Listen for auth state change - this is often more reliable than getSession for OAuth callbacks
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, { hasSession: !!session });
       if (event === 'SIGNED_IN' && session?.user) {
-        setUser(session.user);
-        setStatus('success');
-        setTimeout(() => {
-          if (window.opener) {
-            window.opener.postMessage({ 
-              type: 'SUPABASE_OAUTH_SUCCESS',
-              user: {
-                email: session.user.email,
-                name: session.user.user_metadata?.full_name,
-                avatar: session.user.user_metadata?.avatar_url
-              }
-            }, window.location.origin);
-            setTimeout(() => window.close(), 100);
-          } else {
-            window.location.href = '/';
-          }
-        }, 2000);
+        handleSuccess(session.user);
       }
     });
 
     checkSession();
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   return (
-    <div className="min-h-screen bg-brand-bg flex items-center justify-center p-6">
+    <div className="fixed inset-0 min-h-screen bg-brand-bg flex items-center justify-center p-6 z-[9999]">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="w-full max-w-md glass-card p-10 bg-brand-bg border-brand-accent/20 text-center shadow-2xl relative overflow-hidden"
+        className="w-full max-w-md glass-card p-10 bg-brand-bg border-brand-accent/20 text-center shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
       >
         {/* Background glow */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-50" />
@@ -105,14 +143,18 @@ export function AuthCallback() {
                 <h2 className="text-2xl font-black italic tracking-tight mb-2">Verifying Identity</h2>
                 <p className="text-brand-text-muted text-sm font-medium">Securing your Sellscan account access...</p>
               </div>
+              
+              <div className="text-[10px] uppercase font-black tracking-widest text-brand-text-muted opacity-30 pt-4">
+                Origin: {window.location.hostname}
+              </div>
             </motion.div>
           )}
 
           {status === 'success' && (
             <motion.div 
               key="success"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="space-y-8"
             >
               <div className="flex flex-col items-center">
@@ -127,6 +169,7 @@ export function AuthCallback() {
                       <img 
                         src={user.user_metadata.avatar_url} 
                         alt="Profile" 
+                        referrerPolicy="no-referrer"
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
@@ -148,20 +191,20 @@ export function AuthCallback() {
                 </motion.div>
 
                 <div className="space-y-1">
-                   <h2 className="text-3xl font-black tracking-tight leading-none">
+                   <h2 className="text-3xl font-black tracking-tight leading-none italic">
                      {user?.user_metadata?.full_name?.split(' ')[0] || 'Welcome back'}!
                    </h2>
-                   <p className="text-brand-accent font-bold text-sm tracking-wide uppercase opacity-80">Logging you in</p>
+                   <p className="text-brand-accent font-black text-xs tracking-[0.2em] uppercase mt-2">Authenticated Successfully</p>
                 </div>
                 
-                <div className="mt-4 px-4 py-2 rounded-full bg-white/5 border border-white/5 text-brand-text-muted text-[11px] font-bold">
+                <div className="mt-6 px-4 py-2 rounded-full bg-black/40 border border-white/5 text-brand-text-muted text-[11px] font-bold">
                   {user?.email}
                 </div>
               </div>
 
               <div className="pt-4 flex items-center justify-center gap-3 text-brand-text-muted text-[10px] uppercase font-black tracking-[0.2em] opacity-40">
                 <Loader2 className="w-3 h-3 animate-spin" />
-                Finalizing redirection
+                Returning to Application
               </div>
             </motion.div>
           )}
@@ -173,17 +216,36 @@ export function AuthCallback() {
               animate={{ opacity: 1 }}
               className="space-y-6"
             >
-              <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
+              <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
                 <ShieldCheck className="w-10 h-10 text-red-500" />
               </div>
-              <div>
-                <h2 className="text-2xl font-black mb-2">Session Expired</h2>
-                <p className="text-brand-text-muted mb-6">We couldn't verify your session. Please try signing in again.</p>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-black mb-1 italic">Verification Failed</h2>
+                <p className="text-brand-text-muted text-sm leading-relaxed">
+                  We synchronized your account but couldn't verify the session. This can happen if the link expired or was opened in a different browser.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 pt-4">
                 <button 
                   onClick={() => window.location.href = '/'}
-                  className="px-8 py-3 rounded-xl bg-brand-accent text-brand-bg font-bold"
+                  className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg font-black uppercase tracking-widest text-sm"
                 >
-                  Return to Home
+                  Try Again
+                </button>
+                <button 
+                  onClick={() => {
+                     // Last resort: signal success anyway if we think we might have a session
+                     if (window.opener) {
+                       window.opener.postMessage({ type: 'SUPABASE_OAUTH_SUCCESS' }, window.location.origin);
+                       window.close();
+                     } else {
+                       window.location.href = '/';
+                     }
+                  }}
+                  className="w-full py-3 rounded-xl border border-white/10 text-brand-text-muted font-bold text-xs"
+                >
+                  I'm already logged in
                 </button>
               </div>
             </motion.div>
