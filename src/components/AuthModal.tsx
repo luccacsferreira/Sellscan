@@ -22,6 +22,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
   const handleGoogleLogin = async () => {
     setError(null);
+    setIsLoading(true);
     try {
       // Use popup flow for Google Login in AI Studio preview
       // This avoids the 403 X-Frame-Options error
@@ -42,15 +43,24 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         const left = window.screenX + (window.innerWidth - width) / 2;
         const top = window.screenY + (window.innerHeight - height) / 2;
         
-        window.open(
+        const popup = window.open(
           data.url, 
           'supabase_oauth_popup', 
           `width=${width},height=${height},left=${left},top=${top}`
         );
+
+        // Check if popup was blocked
+        if (!popup) {
+          setError({ message: "Popup was blocked. Please allow popups for this site.", type: 'error' });
+          setIsLoading(false);
+        } else {
+          // The loading state will be cleared when the message event is received in App.tsx
+        }
       }
     } catch (err: any) {
       console.error('Google OAuth Error:', err);
       setError({ message: err.message, type: 'error' });
+      setIsLoading(false);
     }
   };
 

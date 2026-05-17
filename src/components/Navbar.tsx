@@ -18,6 +18,7 @@ interface NavbarProps {
   onViewHistory?: () => void;
   onViewAnalytics?: () => void;
   onViewSettings?: () => void;
+  onViewDocs?: () => void;
   onSignInClick?: () => void;
   isLoggedIn?: boolean;
   userEmail?: string;
@@ -31,6 +32,7 @@ export function Navbar({
   onViewHistory,
   onViewAnalytics,
   onViewSettings,
+  onViewDocs,
   onSignInClick,
   isLoggedIn = false, 
   userEmail,
@@ -116,6 +118,7 @@ export function Navbar({
               <>
                 <a href="#features" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Features</a>
                 <a href="#pricing" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Pricing</a>
+                <button onClick={onViewDocs} className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Documentation</button>
               </>
             )}
             
@@ -237,6 +240,7 @@ export function Navbar({
                   <>
                     <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Features</a>
                     <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Pricing</a>
+                    <button onClick={() => { setIsMobileMenuOpen(false); onViewDocs?.(); }} className="text-left text-lg font-bold text-brand-text">Documentation</button>
                     <div className="h-px bg-brand-border my-2" />
                     <button onClick={() => { setIsMobileMenuOpen(false); onSignInClick?.(); }} className="text-left text-lg font-bold text-brand-text">Sign in</button>
                     <button onClick={() => { setIsMobileMenuOpen(false); onSignInClick?.(); }} className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2">

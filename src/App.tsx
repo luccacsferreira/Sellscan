@@ -25,8 +25,9 @@ import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin,
 import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
 import { AuthCallback } from './components/AuthCallback';
+import { DocsPage } from './components/DocsPage';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs';
 
 type LoadingStage = 
   | 'identifying' 
@@ -54,14 +55,26 @@ export default function App() {
 function AppContent() {
   const [view, setView] = useState<View>('landing');
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthInitializing, setIsAuthInitializing] = useState(true);
+  const [loadingUserInfo, setLoadingUserInfo] = useState<{ email?: string, name?: string, avatar?: string } | null>(null);
   
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+      } finally {
+        setIsAuthInitializing(false);
+      }
+    };
+
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (_event === 'SIGNED_IN') {
+        setIsAuthInitializing(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -152,18 +165,23 @@ function AppContent() {
       setView('auth-callback');
     }
 
-    const handleMessage = (event: MessageEvent) => {
+    const handleMessage = async (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       
       if (event.data?.type === 'SUPABASE_OAUTH_SUCCESS') {
+        if (event.data.user) {
+          setLoadingUserInfo(event.data.user);
+        }
+        setIsAuthInitializing(true);
         // Refresh session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session?.user) {
-            setUser(session.user);
-            setShowAuthModal(false);
-            // If we have a pending scan, it will be handled by the AuthModal callback
-          }
-        });
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          setShowAuthModal(false);
+          // If we have a pending scan, it will be handled by the AuthModal callback
+        }
+        setIsAuthInitializing(false);
+        setLoadingUserInfo(null);
       }
     };
 
@@ -451,13 +469,39 @@ function AppContent() {
     history.filter(scan => scan.projectId === activeProjectId)
   , [history, activeProjectId]);
 
+  const handleUpdateScan = async (updatedScan: ScanResult) => {
+    const updatedHistory = history.map(h => h.id === updatedScan.id ? updatedScan : h);
+    setHistory(updatedHistory);
+    localStorage.setItem('sellscan_history', JSON.stringify(updatedHistory));
+    
+    if (currentScan?.id === updatedScan.id) {
+       setCurrentScan(updatedScan);
+    }
+
+    if (user) {
+      // If it's a real scan (has UUID or from DB), we update it
+      // If it's a demo scan (short random string), it might not work with upsert if it expects UUID
+      // But scans from DB will have proper IDs.
+      try {
+        await supabase.from('scans').upsert({
+          id: updatedScan.id,
+          user_id: user.id,
+          project_id: updatedScan.projectId || null,
+          timestamp: updatedScan.timestamp,
+          image_url: updatedScan.imageUrl,
+          description: updatedScan.description,
+          analysis: updatedScan.analysis
+        });
+      } catch (e) {
+        console.error("Failed to sync updated scan to Supabase", e);
+      }
+    }
+  };
+
   const handleUpdateAnalysis = (newAnalysis: ProductAnalysis) => {
     if (currentScan) {
       const updatedScan = { ...currentScan, analysis: newAnalysis };
-      setCurrentScan(updatedScan);
-      const updatedHistory = history.map(h => h.id === currentScan.id ? updatedScan : h);
-      setHistory(updatedHistory);
-      localStorage.setItem('sellscan_history', JSON.stringify(updatedHistory));
+      handleUpdateScan(updatedScan);
     }
   };
 
@@ -474,6 +518,64 @@ function AppContent() {
     }
   };
 
+  if (isAuthInitializing && view !== 'auth-callback') {
+    return (
+      <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center p-6 text-brand-text">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-sm glass-card p-10 bg-brand-bg border-brand-accent/20 text-center shadow-2xl relative overflow-hidden"
+        >
+          {loadingUserInfo ? (
+            <div className="space-y-6">
+              <div className="relative mx-auto w-24 h-24">
+                <div className="absolute inset-0 rounded-full border-4 border-brand-accent/10" />
+                <div className="absolute inset-0 rounded-full border-4 border-brand-accent border-t-transparent animate-spin" />
+                <div className="absolute inset-0 p-1.5 flex items-center justify-center">
+                  <div className="w-full h-full rounded-full bg-brand-bg border border-brand-border overflow-hidden">
+                    {loadingUserInfo.avatar ? (
+                      <img src={loadingUserInfo.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-brand-accent/10">
+                        <Loader2 className="w-8 h-8 text-brand-accent animate-pulse" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h2 className="text-2xl font-black italic tracking-tight mb-1">
+                  {loadingUserInfo.name?.split(' ')[0] || 'Welcome back'}
+                </h2>
+                <div className="flex items-center justify-center gap-2 text-brand-accent font-bold text-[10px] uppercase tracking-[0.2em]">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Logging you in
+                </div>
+                <div className="mt-4 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-brand-text-muted text-[10px] inline-block font-bold">
+                  {loadingUserInfo.email}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="relative mx-auto w-16 h-16">
+                <div className="absolute inset-0 rounded-full border-4 border-brand-accent/20" />
+                <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-brand-accent border-t-transparent animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-brand-accent" />
+                </div>
+              </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-black italic tracking-tight mb-2">Sellscan</h2>
+                <p className="text-brand-text-muted text-[10px] font-black uppercase tracking-[0.2em] opacity-50">Initializing Secure Session</p>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg transition-colors duration-300">
       <Navbar 
@@ -482,6 +584,7 @@ function AppContent() {
         onViewHistory={() => setView('history')}
         onViewAnalytics={() => setView('analytics')}
         onViewSettings={() => setView('settings')}
+        onViewDocs={() => setView('docs')}
         onSignInClick={() => setShowAuthModal(true)}
         isLoggedIn={!!user}
         userEmail={user?.email}
@@ -757,6 +860,8 @@ function AppContent() {
               <ScanDashboard 
                 scan={currentScan} 
                 onUpdateAnalysis={handleUpdateAnalysis}
+                onUpdateScan={handleUpdateScan}
+                projects={projects}
                 onBack={() => setView('home')}
                 selectedModel={selectedModel}
               />
@@ -772,6 +877,8 @@ function AppContent() {
              >
                <HistoryPage 
                  history={history} 
+                 projects={projects}
+                 onUpdateScan={handleUpdateScan}
                  onSelect={(scan) => { setCurrentScan(scan); setView('dashboard'); }} 
                  onClear={() => { setHistory([]); localStorage.removeItem('sellscan_history'); }} 
                />
@@ -805,6 +912,18 @@ function AppContent() {
               exit={{ opacity: 0 }}
             >
               <AuthCallback />
+            </motion.div>
+          )}
+
+          {view === 'docs' && (
+            <motion.div
+              key="docs"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="min-h-screen pt-20"
+            >
+              <DocsPage onBack={() => setView('landing')} />
             </motion.div>
           )}
         </AnimatePresence>

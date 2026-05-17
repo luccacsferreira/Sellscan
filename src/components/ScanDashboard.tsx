@@ -8,11 +8,11 @@ import {
   Zap, Wrench, Paintbrush, Package, Plus, ExternalLink, 
   Copy, Check, Send, Sparkles, MessageCircle, ArrowLeft,
   DollarSign, TrendingUp, Info, Users, X, ShoppingBag, Eye, Heart, MessageSquare as LucideMessageSquare, Share2, MoreHorizontal, User as LucideUser,
-  Maximize2, Minimize2
+  Maximize2, Minimize2, FolderRoot, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
-import { ProductAnalysis, ChatMessage, ScanResult } from '../types';
+import { ProductAnalysis, ChatMessage, ScanResult, Project } from '../types';
 import { cn } from '../lib/utils';
 import { chatAboutProduct, AIModel } from '../services/aiService';
 import { useLocation } from '../lib/LocationContext';
@@ -27,11 +27,13 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 interface ScanDashboardProps {
   scan: ScanResult;
   onUpdateAnalysis: (newAnalysis: ProductAnalysis) => void;
+  onUpdateScan: (scan: ScanResult) => void;
+  projects: Project[];
   onBack: () => void;
   selectedModel: AIModel;
 }
 
-export function ScanDashboard({ scan, onUpdateAnalysis, onBack, selectedModel }: ScanDashboardProps) {
+export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, onBack, selectedModel }: ScanDashboardProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -40,6 +42,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack, selectedModel }:
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
   const [selectedMockup, setSelectedMockup] = useState<string | null>(null);
   const [isChatFullscreen, setIsChatFullscreen] = useState(false);
+  const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const { currency } = useLocation();
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
 
@@ -88,6 +91,13 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack, selectedModel }:
     setTimeout(() => chatInputRef.current?.focus(), 50);
   };
 
+  const currentProject = projects.find(p => p.id === scan.projectId);
+
+  const handleAssignProject = (projectId: string | null) => {
+    onUpdateScan({ ...scan, projectId: projectId || undefined });
+    setIsProjectMenuOpen(false);
+  };
+
   const analysis = scan.analysis;
 
   return (
@@ -107,14 +117,72 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onBack, selectedModel }:
         "flex-grow space-y-8 scroll-smooth transition-all duration-500",
         isChatFullscreen ? "opacity-0 pointer-events-none scale-95" : "opacity-100"
       )}>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button 
             onClick={onBack}
-            className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors group"
+            className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors group w-fit"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
             <span className="text-sm font-bold uppercase tracking-widest">Back to Scanner</span>
           </button>
+
+          {/* Project Selector */}
+          <div className="relative">
+            <button 
+              onClick={() => setIsProjectMenuOpen(!isProjectMenuOpen)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all text-xs font-bold uppercase tracking-wider",
+                currentProject 
+                  ? "bg-brand-accent/5 border-brand-accent/30 text-brand-accent" 
+                  : "bg-brand-bg border-brand-border text-brand-text-muted hover:text-brand-text hover:border-brand-text/30"
+              )}
+            >
+              <FolderRoot className="w-4 h-4" />
+              {currentProject ? currentProject.name : "Assign to Project"}
+              <ChevronDown className={cn("w-3 h-3 transition-transform", isProjectMenuOpen && "rotate-180")} />
+            </button>
+
+            <AnimatePresence>
+              {isProjectMenuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full mt-2 right-0 w-56 glass-card p-2 bg-brand-bg/95 backdrop-blur-xl z-[200] shadow-2xl border-brand-border"
+                >
+                  <p className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest px-3 py-2 mb-1 border-b border-brand-border/50">Select Project</p>
+                  <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                    <button 
+                      onClick={() => handleAssignProject(null)}
+                      className={cn(
+                        "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-between",
+                        !scan.projectId ? "text-brand-accent bg-brand-accent/10" : "text-brand-text-muted hover:bg-white/5 hover:text-brand-text"
+                      )}
+                    >
+                      None
+                      {!scan.projectId && <Check className="w-3 h-3" />}
+                    </button>
+                    {projects.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleAssignProject(p.id)}
+                        className={cn(
+                          "w-full text-left px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-between",
+                          scan.projectId === p.id ? "text-brand-accent bg-brand-accent/10" : "text-brand-text-muted hover:bg-white/5 hover:text-brand-text"
+                        )}
+                      >
+                         <div className="flex items-center gap-2 truncate">
+                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+                           <span className="truncate">{p.name}</span>
+                         </div>
+                         {scan.projectId === p.id && <Check className="w-3 h-3" />}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Quick Verdict */}
