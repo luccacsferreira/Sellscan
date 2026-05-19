@@ -23,17 +23,26 @@ async function startServer() {
 
   // API Routes
   app.get("/api/config/supabase", (req, res) => {
-    res.json({
-      url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-      anonKey: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+    const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const anonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    
+    console.log('API Config Request:', { 
+      hasUrl: !!url, 
+      hasKey: !!anonKey,
+      urlPrefix: url ? url.substring(0, 10) : 'none'
     });
+
+    res.json({ url, anonKey });
   });
 
   app.get("/api/health/secrets", (req, res) => {
     res.json({
       gemini: !!process.env.GEMINI_API_KEY,
       openai: !!process.env.OPENAI_API_KEY,
-      supabase: !!process.env.VITE_SUPABASE_URL && !!process.env.VITE_SUPABASE_ANON_KEY
+      supabase: !!(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL),
+      supabaseKey: !!(process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
+      node_env: process.env.NODE_ENV,
+      all_keys: Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('URL'))
     });
   });
 
@@ -152,14 +161,20 @@ async function startServer() {
         let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
         
         const config = {
-          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "",
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || ""
         };
         
+        console.log('💉 Injecting Supabase Config:', {
+          hasUrl: !!config.VITE_SUPABASE_URL,
+          hasKey: !!config.VITE_SUPABASE_ANON_KEY,
+          urlSnippet: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : 'EMPTY'
+        });
+
         const configScript = `
           <script>
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ Supabase Injection Success');
+            console.log('🛡️ Supabase Injection Applied', { hasUrl: !!window.SUPABASE_CONFIG.VITE_SUPABASE_URL });
           </script>
         `;
         

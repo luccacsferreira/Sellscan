@@ -3,19 +3,24 @@ import { createClient } from '@supabase/supabase-js';
 // For client-side, we use import.meta.env which requires VITE_ prefix
 // We also check window.SUPABASE_CONFIG which is injected by our server in production
 const getSupabaseConfig = () => {
-  // If we already have window.SUPABASE_CONFIG, use it immediately
+  // If we already have window.SUPABASE_CONFIG, use it
   if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
     const config = (window as any).SUPABASE_CONFIG;
+    console.log('📡 Config found in window.SUPABASE_CONFIG:', { hasUrl: !!config.VITE_SUPABASE_URL });
     return {
-      url: config.VITE_SUPABASE_URL,
-      key: config.VITE_SUPABASE_ANON_KEY
+      url: config.VITE_SUPABASE_URL || "",
+      key: config.VITE_SUPABASE_ANON_KEY || ""
     };
   }
 
+  const buildUrl = import.meta.env.VITE_SUPABASE_URL;
+  const buildKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  console.log('📡 Using build-time config:', { hasUrl: !!buildUrl });
+
   // Fallback to build-time vars
   return { 
-    url: import.meta.env.VITE_SUPABASE_URL, 
-    key: import.meta.env.VITE_SUPABASE_ANON_KEY 
+    url: buildUrl || "", 
+    key: buildKey || "" 
   };
 };
 
@@ -48,8 +53,8 @@ if (typeof window !== 'undefined') {
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder-url.supabase.co', 
-  supabaseAnonKey || 'placeholder-key',
+  supabaseUrl || 'https://MISSING_SUPABASE_URL.supabase.co', 
+  supabaseAnonKey || 'MISSING_ANON_KEY',
   {
     auth: {
       persistSession: true,

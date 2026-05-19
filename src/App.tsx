@@ -19,7 +19,7 @@ import { AuthModal } from './components/AuthModal';
 import { ScanResult, Project, UserStats, ProductAnalysis } from './types';
 import { analyzeProduct, AIModel } from './services/aiService';
 import { cn } from './lib/utils';
-import { supabase } from './lib/supabase';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign, Check } from 'lucide-react';
 import { LocationProvider, useLocation } from './lib/LocationContext';
@@ -582,6 +582,11 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg transition-colors duration-300">
+      {!isSupabaseConfigured && (
+        <div className="fixed top-0 left-0 right-0 z-[1000] bg-red-500 text-white p-2 text-center text-xs font-black uppercase tracking-widest shadow-2xl animate-pulse">
+          ⚠️ MISSING SUPABASE CREDENTIALS - Login & Cloud Save will not work. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Settings > Secrets.
+        </div>
+      )}
       <Navbar 
         onGoHome={handleGoHome}
         onNewScan={() => setView('upload')}
