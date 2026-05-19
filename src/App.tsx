@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import sellscanLogo from './assets/sellscan_logo_transparent.png';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './components/LandingPage';
 import { ImageUpload } from './components/ImageUpload';
@@ -566,7 +567,7 @@ function AppContent() {
                 </div>
               </div>
               <div className="text-center">
-                <h2 className="text-2xl font-black italic tracking-tight mb-2">Sellscan</h2>
+                <img src={sellscanLogo} alt="Sellscan" className="h-4 mx-auto mb-2 opacity-80" />
                 <p className="text-brand-text-muted text-[10px] font-black uppercase tracking-[0.2em] opacity-50">Initializing Secure Session</p>
               </div>
             </div>

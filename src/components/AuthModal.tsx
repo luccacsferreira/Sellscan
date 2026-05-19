@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import sellscanLogo from '../assets/sellscan_logo_transparent.png';
 import { X, Mail, Lock, Loader2, Sparkles, AlertCircle, Eye, EyeOff, Wand2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -174,6 +175,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               </button>
 
               <div className="text-center mb-8">
+                <img src={sellscanLogo} alt="Sellscan" className="h-4 mx-auto mb-6 opacity-60" />
                 <div className="inline-flex w-14 h-14 items-center justify-center rounded-2xl bg-brand-accent/20 text-brand-accent mb-4 shadow-[0_0_20px_rgba(85,205,209,0.2)]">
                   {mode === 'magic-link' ? <Wand2 className="w-7 h-7" /> : <Sparkles className="w-7 h-7" />}
                 </div>

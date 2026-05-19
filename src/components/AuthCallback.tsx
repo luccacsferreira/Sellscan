@@ -7,80 +7,79 @@ import { cn } from '../lib/utils';
 
 export function AuthCallback() {
   const [status, setStatus] = useState<'authenticating' | 'success' | 'error'>('authenticating');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const addLog = (msg: string) => {
+    console.log(`[AuthCallback] ${msg}`);
+    setLogs(prev => [...prev.slice(-4), msg]);
+  };
 
   useEffect(() => {
-    // This component captures the Supabase session details from the hash/URL
-    console.log('AuthCallback mounted', window.location.href);
+    addLog('Mounted: ' + window.location.hostname);
     
-    // Safety timeout - if nothing happens in 20 seconds, show error
+    // Safety timeout - if nothing happens in 15 seconds, show error with more info
     const timeout = setTimeout(() => {
       if (status === 'authenticating') {
-        console.warn('Authentication timed out after 20s');
+        addLog('Authentication timed out');
         setStatus('error');
+        setErrorMessage('The connection timed out while verifying your session. This might be due to a poor network connection or session expiry.');
       }
-    }, 20000);
+    }, 15000);
 
     const checkSession = async () => {
       try {
-        console.log('Checking Supabase session... (Runtime Info)', { 
-          host: window.location.hostname, 
-          href: window.location.href,
-          hasBaseUrl: !!supabase.auth,
-          configInjected: !!(window as any).SUPABASE_CONFIG
-        });
+        addLog('Checking session status...');
         
         // 1. Check if we already have a session
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Session check result:', { 
-          hasSession: !!session, 
-          user: session?.user?.email,
-          error 
-        });
         
         if (session?.user) {
+          addLog('Session found for ' + session.user.email);
           handleSuccess(session.user);
           return;
         }
 
+        if (error) {
+          addLog('Session check error: ' + error.message);
+        }
+
         // 2. Explicitly handle PKCE code exchange if found in URL
-        // Supabase usually does this, but explicit call is more reliable on secondary domains
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
         
         if (code) {
-          console.log('Explicit PKCE code exchange for:', code.substring(0, 10) + '...');
+          addLog('Exchanging code...');
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           
           if (exchangeError) {
-            console.error('PKCE Exchange Error:', exchangeError);
-            // Don't set error immediately, give onAuthStateChange a chance
+            addLog('Exchange error: ' + exchangeError.message);
+            // Don't set error immediately, wait for onAuthStateChange
           } else if (data.session?.user) {
-            console.log('PKCE Exchange Success via manual trigger!');
+            addLog('Exchange success!');
             handleSuccess(data.session.user);
             return;
           }
+        } else {
+          addLog('No code found in URL');
         }
         
-        if (error && !code) {
-          console.error('Auth callback getSession error:', error);
-          setStatus('error');
-        }
-      } catch (e) {
-        console.error('Unexpected error in checkSession:', e);
+      } catch (e: any) {
+        addLog('Critical error: ' + e.message);
         setStatus('error');
+        setErrorMessage(e.message);
       }
     };
 
     const handleSuccess = (user: User) => {
-      console.log('Authentication successful for:', user.email);
+      addLog('Auth success: ' + user.email);
       setUser(user);
       setStatus('success');
       
-      // Wait a bit to show the nice "success" state
       setTimeout(() => {
         if (window.opener) {
-          console.log('Signaling window.opener and closing popup');
+          addLog('Notifying parent window');
           window.opener.postMessage({ 
             type: 'SUPABASE_OAUTH_SUCCESS',
             user: {
@@ -90,26 +89,19 @@ export function AuthCallback() {
             }
           }, window.location.origin);
           
-          // Close after a tiny delay to ensure message is sent
           setTimeout(() => {
-            try {
-              window.close();
-            } catch (e) {
-              console.warn('Failed to close window, redirecting instead:', e);
-              window.location.href = '/';
-            }
-          }, 200);
+            try { window.close(); } catch (e) { window.location.href = '/'; }
+          }, 300);
         } else {
-          console.log('No window.opener found, redirecting to home');
+          addLog('Redirecting to home');
           window.location.href = '/';
         }
       }, 1500);
     };
 
-    // Listen for auth state change - this is often more reliable than getSession for OAuth callbacks
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, { hasSession: !!session });
-      if (event === 'SIGNED_IN' && session?.user) {
+      addLog('Auth event: ' + event);
+      if (session?.user) {
         handleSuccess(session.user);
       }
     });
@@ -150,6 +142,14 @@ export function AuthCallback() {
               <div>
                 <h2 className="text-2xl font-black italic tracking-tight mb-2">Verifying Identity</h2>
                 <p className="text-brand-text-muted text-sm font-medium">Securing your Sellscan account access...</p>
+              </div>
+
+              <div className="bg-black/20 rounded-lg p-3 text-[10px] font-mono text-brand-text-muted text-left space-y-1">
+                {logs.map((log, i) => (
+                  <div key={i} className="truncate opacity-60">
+                    {i === logs.length - 1 ? '> ' : '  '}{log}
+                  </div>
+                ))}
               </div>
               
               <div className="text-[10px] uppercase font-black tracking-widest text-brand-text-muted opacity-30 pt-4">
@@ -230,30 +230,22 @@ export function AuthCallback() {
               <div className="space-y-2">
                 <h2 className="text-2xl font-black mb-1 italic">Verification Failed</h2>
                 <p className="text-brand-text-muted text-sm leading-relaxed">
-                  We synchronized your account but couldn't verify the session. This can happen if the link expired or was opened in a different browser.
+                  {errorMessage || "We synchronized your account but couldn't verify the session. This can happen if the link expired or was opened in a different browser."}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 pt-4">
                 <button 
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => window.location.reload()}
                   className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg font-black uppercase tracking-widest text-sm"
                 >
-                  Try Again
+                  Retry Connection
                 </button>
                 <button 
-                  onClick={() => {
-                     // Last resort: signal success anyway if we think we might have a session
-                     if (window.opener) {
-                       window.opener.postMessage({ type: 'SUPABASE_OAUTH_SUCCESS' }, window.location.origin);
-                       window.close();
-                     } else {
-                       window.location.href = '/';
-                     }
-                  }}
+                  onClick={() => window.location.href = '/'}
                   className="w-full py-3 rounded-xl border border-white/10 text-brand-text-muted font-bold text-xs"
                 >
-                  I'm already logged in
+                  Return to Landing
                 </button>
               </div>
             </motion.div>
