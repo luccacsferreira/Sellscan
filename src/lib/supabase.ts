@@ -6,24 +6,33 @@ const getSupabaseConfig = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  // If we already have window.SUPABASE_CONFIG, try to use it
+  // Check window.SUPABASE_CONFIG first
   if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
     const config = (window as any).SUPABASE_CONFIG;
-    // Only use injected config if it actually contains values to avoid overwriting build-time vars with empty ones
-    if (config.VITE_SUPABASE_URL && config.VITE_SUPABASE_ANON_KEY && !config.VITE_SUPABASE_URL.includes('undefined')) {
-      console.log('🛡️ Using injected Supabase config');
-      return {
-        url: config.VITE_SUPABASE_URL,
-        key: config.VITE_SUPABASE_ANON_KEY
-      };
+    const injectedUrl = config.VITE_SUPABASE_URL;
+    const injectedKey = config.VITE_SUPABASE_ANON_KEY;
+
+    if (injectedUrl && injectedKey && !injectedUrl.includes('placeholder') && !injectedUrl.includes('undefined')) {
+      console.log('🛡️ Using injected Supabase URL:', injectedUrl.substring(0, 20) + '...');
+      return { url: injectedUrl, key: injectedKey };
+    } else {
+      console.warn('🛡️ Injected Supabase config is invalid or missing:', { 
+        hasUrl: !!injectedUrl, 
+        isPlaceholder: injectedUrl?.includes('placeholder') 
+      });
     }
   }
 
   // Fallback to build-time vars
-  console.log('🛡️ Using build-time Supabase config');
+  if (envUrl && !envUrl.includes('placeholder')) {
+    console.log('🛡️ Using build-time Supabase URL');
+    return { url: envUrl, key: envKey };
+  }
+  
+  console.error('🛡️ NO VALID SUPABASE CONFIG FOUND. Using fallback placeholders which will FAIL auth.');
   return { 
-    url: envUrl, 
-    key: envKey 
+    url: envUrl || 'https://placeholder-url.supabase.co', 
+    key: envKey || 'placeholder-key' 
   };
 };
 

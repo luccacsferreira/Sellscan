@@ -142,10 +142,16 @@ async function startServer() {
     
     // Serve index.html with environment variable injection for all non-API/non-static routes
     app.get("*", async (req, res, next) => {
-      // Skip if it's an API route or looks like a static asset (has extension)
-      if (req.path.startsWith('/api') || req.path.includes('.')) {
+      // Very strict check for when NOT to inject
+      // Only skip if it's an API route or explicitly has a file extension that isn't .html
+      const hasExtension = /\.[a-z0-9]+$/i.test(req.path);
+      const isHtml = req.path.endsWith('.html');
+      
+      if (req.path.startsWith('/api') || (hasExtension && !isHtml)) {
         return next();
       }
+
+      console.log(`🛡️ Injecting Supabase config for path: ${req.path}`);
 
       try {
         const fs = await import("fs/promises");
@@ -155,20 +161,29 @@ async function startServer() {
           VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
           VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
         };
+
+        if (!config.VITE_SUPABASE_URL) {
+          console.error("❌ SUPABASE_URL is missing in server environment!");
+        }
         
         const configScript = `
           <script>
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ Supabase Injection Success');
+            console.log('🛡️ Supabase Injection Result:', { 
+              url: window.SUPABASE_CONFIG.VITE_SUPABASE_URL ? 'SET' : 'MISSING',
+              host: window.location.hostname
+            });
           </script>
         `;
         
         html = html.replace("</head>", `${configScript}</head>`);
         res.setHeader('Content-Type', 'text/html');
+        // Disable caching for the index.html to ensure fresh injection
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.send(html);
       } catch (e) {
         console.error("Injection failed:", e);
-        res.sendFile(path.join(distPath, "index.html"));
+        res.status(500).sendFile(path.join(distPath, "index.html"));
       }
     });
 

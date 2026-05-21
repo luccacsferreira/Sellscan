@@ -224,17 +224,33 @@ export function AuthCallback() {
               animate={{ opacity: 1 }}
               className="space-y-6"
             >
-              <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-                <ShieldCheck className="w-10 h-10 text-red-500" />
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-2">
+                <ShieldCheck className="w-8 h-8 text-red-500" />
               </div>
               <div className="space-y-2">
                 <h2 className="text-2xl font-black mb-1 italic">Verification Failed</h2>
-                <p className="text-brand-text-muted text-sm leading-relaxed">
+                <p className="text-brand-text-muted text-xs leading-relaxed max-w-xs mx-auto">
                   {errorMessage || "We synchronized your account but couldn't verify the session. This can happen if the link expired or was opened in a different browser."}
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 pt-4">
+              <div className="bg-black/40 rounded-xl p-4 text-[10px] font-mono text-brand-text-muted text-left space-y-2 border border-white/5">
+                <div className="text-brand-accent font-bold uppercase mb-1">Runtime Diagnostic:</div>
+                <div className="grid grid-cols-[80px_1fr] gap-x-2 opacity-80">
+                  <span>Domain:</span> <span className="text-white truncate">{window.location.hostname}</span>
+                  <span>Supabase:</span> <span className={cn("truncate", !supabase.auth ? "text-red-500" : "text-green-500")}>
+                    { (supabase as any).supabaseUrl?.includes('placeholder') ? '❌ PLACEHOLDER' : '✅ REAL' }
+                  </span>
+                  <span>Config:</span> <span className="text-white">{(window as any).SUPABASE_CONFIG ? 'INJECTED' : 'MISSING'}</span>
+                </div>
+                <div className="pt-2 border-t border-white/5 mt-2 space-y-1">
+                  {logs.slice(-3).map((log, i) => (
+                    <div key={i} className="truncate opacity-50 italic">→ {log}</div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
                 <button 
                   onClick={() => window.location.reload()}
                   className="w-full py-4 rounded-xl bg-brand-accent text-brand-bg font-black uppercase tracking-widest text-sm"
