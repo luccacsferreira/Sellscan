@@ -13,6 +13,29 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' }));
 
+  // Dynamic environment configuration for the client (available in all environments)
+  app.get("/env-config.js", (req, res) => {
+    const config = {
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+    };
+    
+    // Debug info (safe partial keys)
+    const debug = {
+      url_prefix: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : 'MISSING',
+      key_present: !!config.VITE_SUPABASE_ANON_KEY,
+      timestamp: new Date().toISOString(),
+      env_keys: Object.keys(process.env).filter(k => k.includes('SUPABASE'))
+    };
+
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.send(`
+      window.SUPABASE_CONFIG = ${JSON.stringify(config)};
+      console.log('🛡️ Env config loaded from server:', ${JSON.stringify(debug)});
+    `);
+  });
+
   // OpenAI Instance
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -33,7 +56,9 @@ async function startServer() {
     res.json({
       gemini: !!process.env.GEMINI_API_KEY,
       openai: !!process.env.OPENAI_API_KEY,
-      supabase: !!process.env.VITE_SUPABASE_URL && !!process.env.VITE_SUPABASE_ANON_KEY
+      supabase: !!(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL),
+      supabaseKey: !!(process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
+      node_env: process.env.NODE_ENV
     });
   });
 
@@ -140,55 +165,13 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     
-    // Serve index.html with environment variable injection for all non-API/non-static routes
-    app.get("*", async (req, res, next) => {
-      // Very strict check for when NOT to inject
-      // Only skip if it's an API route or explicitly has a file extension that isn't .html
-      const hasExtension = /\.[a-z0-9]+$/i.test(req.path);
-      const isHtml = req.path.endsWith('.html');
-      
-      if (req.path.startsWith('/api') || (hasExtension && !isHtml)) {
-        return next();
-      }
-
-      console.log(`🛡️ Injecting Supabase config for path: ${req.path}`);
-
-      try {
-        const fs = await import("fs/promises");
-        let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
-        
-        const config = {
-          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
-        };
-
-        if (!config.VITE_SUPABASE_URL) {
-          console.error("❌ SUPABASE_URL is missing in server environment!");
-        }
-        
-        const configScript = `
-          <script>
-            window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ Supabase Injection Result:', { 
-              url: window.SUPABASE_CONFIG.VITE_SUPABASE_URL ? 'SET' : 'MISSING',
-              host: window.location.hostname
-            });
-          </script>
-        `;
-        
-        html = html.replace("</head>", `${configScript}</head>`);
-        res.setHeader('Content-Type', 'text/html');
-        // Disable caching for the index.html to ensure fresh injection
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.send(html);
-      } catch (e) {
-        console.error("Injection failed:", e);
-        res.status(500).sendFile(path.join(distPath, "index.html"));
-      }
-    });
-
-    // Serve static files for everything else
+    // Serve static files (including env-config.js if it was a file, but here it's caught by the route above)
     app.use(express.static(distPath));
+
+    // Fallback for SPA
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
   }
 
   app.listen(PORT, "0.0.0.0", () => {
