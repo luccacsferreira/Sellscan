@@ -15,24 +15,25 @@ async function startServer() {
 
   // Dynamic environment configuration for the client (available in all environments)
   app.get("/env-config.js", (req, res) => {
+    console.log('🛡️ Serving /env-config.js request');
     const config = {
       VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANC
     };
     
     // Debug info (safe partial keys)
     const debug = {
       url_prefix: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : 'MISSING',
       key_present: !!config.VITE_SUPABASE_ANON_KEY,
-      timestamp: new Date().toISOString(),
-      env_keys: Object.keys(process.env).filter(k => k.includes('SUPABASE'))
+      node_env: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
     };
 
     res.setHeader('Content-Type', 'application/javascript');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.send(`
       window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-      console.log('🛡️ Env config loaded from server:', ${JSON.stringify(debug)});
+      console.log('🛡️ Env config loaded from /env-config.js:', ${JSON.stringify(debug)});
     `);
   });
 
@@ -168,13 +169,21 @@ async function startServer() {
     
     // Explicitly handle root and index.html with injection BEFORE static middleware
     const handleInjection = async (req: express.Request, res: express.Response) => {
+      console.log(`🛡️ Injection requested for: ${req.path}`);
       try {
         const fs = await import("fs/promises");
-        let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
+        let htmlContent = "";
+        try {
+          htmlContent = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
+        } catch (readErr) {
+          console.error("❌ Failed to read index.html from dist:", readErr);
+          // Fallback to a very basic recovery HTML if even the file read fails
+          return res.status(500).send("Server Error: Missing index.html");
+        }
         
         const config = {
           VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANC
         };
         
         // Detailed debug info for console
@@ -182,22 +191,23 @@ async function startServer() {
           status: config.VITE_SUPABASE_URL ? 'CONFIGURED' : 'UNCONFIGURED',
           env: process.env.NODE_ENV,
           keys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
-          url_preview: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : null
+          url_preview: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : null,
+          time: new Date().toISOString()
         };
 
         const configScript = `
           <script id="supabase-config-injection">
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ Supabase Injection:', ${JSON.stringify(debug)});
+            console.log('🛡️ Supabase Inline Injection:', ${JSON.stringify(debug)});
           </script>
         `;
         
-        html = html.replace("</head>", `${configScript}</head>`);
+        const injectedHtml = htmlContent.replace("</head>", `${configScript}</head>`);
         res.setHeader('Content-Type', 'text/html');
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        return res.send(html);
+        return res.send(injectedHtml);
       } catch (e) {
-        console.error("Injection failed:", e);
+        console.error("❌ Critical Injection failure:", e);
         return res.sendFile(path.join(distPath, "index.html"));
       }
     };
