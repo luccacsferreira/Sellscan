@@ -4,24 +4,30 @@ import { createClient } from '@supabase/supabase-js';
 // We also check window.SUPABASE_CONFIG which is injected by our server in production
 const getSupabaseConfig = () => {
   // 1. Check for window.SUPABASE_CONFIG (Injected by server at runtime in production)
-  if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
+  if (typeof window !== 'undefined') {
     const config = (window as any).SUPABASE_CONFIG;
-    const url = config.VITE_SUPABASE_URL || config.SUPABASE_URL;
-    const key = config.VITE_SUPABASE_ANON_KEY || config.SUPABASE_ANON_KEY;
+    if (config) {
+      const url = config.VITE_SUPABASE_URL || config.SUPABASE_URL;
+      const key = config.VITE_SUPABASE_ANON_KEY || config.SUPABASE_ANON_KEY;
 
-    if (url && key && !url.includes('placeholder') && url.trim() !== '') {
-      return { url, key };
+      if (url && key && !url.includes('placeholder') && url.trim() !== '') {
+        console.log('🛡️ Using runtime Supabase config from server');
+        return { url, key };
+      }
+      console.warn('🛡️ window.SUPABASE_CONFIG found but is invalid:', config);
     }
   }
 
-  // 2. Fallback to build-time vars
+  // 2. Fallback to build-time vars (from .env at build time)
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   if (envUrl && !envUrl.includes('placeholder') && envUrl.trim() !== '') {
+    console.log('🛡️ Using build-time Supabase config');
     return { url: envUrl, key: envKey };
   }
   
+  console.error('🛡️ NO VALID SUPABASE CONFIG FOUND');
   return { 
     url: 'https://placeholder-url.supabase.co', 
     key: 'placeholder-key' 

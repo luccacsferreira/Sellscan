@@ -58,7 +58,8 @@ async function startServer() {
       openai: !!process.env.OPENAI_API_KEY,
       supabase: !!(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL),
       supabaseKey: !!(process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
-      node_env: process.env.NODE_ENV
+      node_env: process.env.NODE_ENV,
+      env_keys: Object.keys(process.env).filter(k => k.includes('SUPABASE'))
     });
   });
 
@@ -165,19 +166,8 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     
-    // Serve static files first
-    app.use(express.static(distPath));
-    
-    // Serve index.html with environment variable injection for all non-API/non-static routes
-    app.get("*", async (req, res, next) => {
-      // Skip if it's an API route or explicitly has a file extension that isn't .html
-      const hasExtension = /\.[a-z0-9]+$/i.test(req.path);
-      const isHtml = req.path.endsWith('.html');
-      
-      if (req.path.startsWith('/api') || (hasExtension && !isHtml)) {
-        return next();
-      }
-
+    // Explicitly handle root and index.html with injection BEFORE static middleware
+    const handleInjection = async (req: express.Request, res: express.Response) => {
       try {
         const fs = await import("fs/promises");
         let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
@@ -187,30 +177,44 @@ async function startServer() {
           VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
         };
         
-        // Debug info for the client console
+        // Detailed debug info for console
         const debug = {
-          url: config.VITE_SUPABASE_URL ? 'PRESENT' : 'MISSING',
-          key: config.VITE_SUPABASE_ANON_KEY ? 'PRESENT' : 'MISSING',
+          status: config.VITE_SUPABASE_URL ? 'CONFIGURED' : 'UNCONFIGURED',
           env: process.env.NODE_ENV,
-          timestamp: new Date().toISOString()
+          keys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
+          url_preview: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : null
         };
 
         const configScript = `
           <script id="supabase-config-injection">
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ Supabase config injected by server:', ${JSON.stringify(debug)});
+            console.log('🛡️ Supabase Injection:', ${JSON.stringify(debug)});
           </script>
         `;
         
         html = html.replace("</head>", `${configScript}</head>`);
         res.setHeader('Content-Type', 'text/html');
-        // Disable caching for the index.html to ensure fresh injection
         res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-        res.send(html);
+        return res.send(html);
       } catch (e) {
-        console.error("Injection failed, falling back to static file:", e);
-        res.sendFile(path.join(distPath, "index.html"));
+        console.error("Injection failed:", e);
+        return res.sendFile(path.join(distPath, "index.html"));
       }
+    };
+
+    app.get("/", (req, res) => handleInjection(req, res));
+    app.get("/index.html", (req, res) => handleInjection(req, res));
+    
+    // Serve static files (exclude index.html from being served automatically at /)
+    app.use(express.static(distPath, { index: false }));
+
+    // Fallback for SPA routing - handle injection here too
+    app.get("*", async (req, res, next) => {
+      // If it looks like a route (no dot in the path), serve injected index.html
+      if (!req.path.includes(".")) {
+        return handleInjection(req, res);
+      }
+      next();
     });
   }
 
