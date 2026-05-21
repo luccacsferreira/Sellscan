@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, getSupabaseDebugInfo } from '../lib/supabase';
 import sellscanLogo from '../assets/sellscan_logo_transparent.png';
 import { X, Mail, Lock, Loader2, Sparkles, AlertCircle, Eye, EyeOff, Wand2 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -20,6 +20,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
+  const [diagnosticClicks, setDiagnosticClicks] = useState(0);
+
+  const handleLogoClick = () => {
+    setDiagnosticClicks(prev => prev + 1);
+  };
 
   const handleGoogleLogin = async () => {
     if (!isSupabaseConfigured) {
@@ -179,7 +184,29 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               </button>
 
               <div className="text-center mb-8">
-                <img src={sellscanLogo} alt="Sellscan" className="h-4 mx-auto mb-6 opacity-60" />
+                <img 
+                  src={sellscanLogo} 
+                  alt="Sellscan" 
+                  className="h-4 mx-auto mb-6 opacity-60 cursor-help" 
+                  onClick={handleLogoClick}
+                />
+                
+                {diagnosticClicks >= 3 && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mb-6 p-4 bg-black/40 rounded-xl text-[10px] font-mono text-left border border-white/10 space-y-1"
+                  >
+                    <div className="text-brand-accent font-bold mb-2">DEBUG DIAGNOSTICS:</div>
+                    <div className="grid grid-cols-[80px_1fr] gap-1 opacity-80">
+                      <span>Configured:</span> <span className={isSupabaseConfigured ? "text-green-400" : "text-red-400"}>{String(isSupabaseConfigured)}</span>
+                      <span>URL:</span> <span className="text-white truncate">{getSupabaseDebugInfo().url}</span>
+                      <span>Injected:</span> <span className="text-white">{String(getSupabaseDebugInfo().hasInjectedConfig)}</span>
+                      <span>Origin:</span> <span className="text-white">{getSupabaseDebugInfo().origin}</span>
+                    </div>
+                  </motion.div>
+                )}
+
                 <div className="inline-flex w-14 h-14 items-center justify-center rounded-2xl bg-brand-accent/20 text-brand-accent mb-4 shadow-[0_0_20px_rgba(85,205,209,0.2)]">
                   {mode === 'magic-link' ? <Wand2 className="w-7 h-7" /> : <Sparkles className="w-7 h-7" />}
                 </div>

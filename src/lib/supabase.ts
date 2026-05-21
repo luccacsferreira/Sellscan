@@ -42,6 +42,14 @@ export const isSupabaseConfigured = Boolean(
   supabaseUrl.trim() !== ''
 );
 
+export const getSupabaseDebugInfo = () => ({
+  url: supabaseUrl,
+  isConfigured: isSupabaseConfigured,
+  hasInjectedConfig: typeof window !== 'undefined' && !!(window as any).SUPABASE_CONFIG,
+  buildTimeUrl: import.meta.env.VITE_SUPABASE_URL,
+  origin: typeof window !== 'undefined' ? window.location.origin : 'server'
+});
+
 if (typeof window !== 'undefined') {
   // Enhanced debugging for the user
   const check = { 
