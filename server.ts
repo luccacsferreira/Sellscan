@@ -165,12 +165,52 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     
-    // Serve static files (including env-config.js if it was a file, but here it's caught by the route above)
+    // Serve static files first
     app.use(express.static(distPath));
+    
+    // Serve index.html with environment variable injection for all non-API/non-static routes
+    app.get("*", async (req, res, next) => {
+      // Skip if it's an API route or explicitly has a file extension that isn't .html
+      const hasExtension = /\.[a-z0-9]+$/i.test(req.path);
+      const isHtml = req.path.endsWith('.html');
+      
+      if (req.path.startsWith('/api') || (hasExtension && !isHtml)) {
+        return next();
+      }
 
-    // Fallback for SPA
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+      try {
+        const fs = await import("fs/promises");
+        let html = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
+        
+        const config = {
+          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+        };
+        
+        // Debug info for the client console
+        const debug = {
+          url: config.VITE_SUPABASE_URL ? 'PRESENT' : 'MISSING',
+          key: config.VITE_SUPABASE_ANON_KEY ? 'PRESENT' : 'MISSING',
+          env: process.env.NODE_ENV,
+          timestamp: new Date().toISOString()
+        };
+
+        const configScript = `
+          <script id="supabase-config-injection">
+            window.SUPABASE_CONFIG = ${JSON.stringify(config)};
+            console.log('🛡️ Supabase config injected by server:', ${JSON.stringify(debug)});
+          </script>
+        `;
+        
+        html = html.replace("</head>", `${configScript}</head>`);
+        res.setHeader('Content-Type', 'text/html');
+        // Disable caching for the index.html to ensure fresh injection
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.send(html);
+      } catch (e) {
+        console.error("Injection failed, falling back to static file:", e);
+        res.sendFile(path.join(distPath, "index.html"));
+      }
     });
   }
 

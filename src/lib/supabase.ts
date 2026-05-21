@@ -3,32 +3,28 @@ import { createClient } from '@supabase/supabase-js';
 // For client-side, we use import.meta.env which requires VITE_ prefix
 // We also check window.SUPABASE_CONFIG which is injected by our server in production
 const getSupabaseConfig = () => {
+  // 1. Check for window.SUPABASE_CONFIG (Injected by server at runtime in production)
+  if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
+    const config = (window as any).SUPABASE_CONFIG;
+    const url = config.VITE_SUPABASE_URL || config.SUPABASE_URL;
+    const key = config.VITE_SUPABASE_ANON_KEY || config.SUPABASE_ANON_KEY;
+
+    if (url && key && !url.includes('placeholder') && url.trim() !== '') {
+      return { url, key };
+    }
+  }
+
+  // 2. Fallback to build-time vars
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  // 1. Check for window.SUPABASE_CONFIG (Injected by server at runtime)
-  if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
-    const config = (window as any).SUPABASE_CONFIG;
-    const injectedUrl = config.VITE_SUPABASE_URL;
-    const injectedKey = config.VITE_SUPABASE_ANON_KEY;
-
-    if (injectedUrl && injectedKey && !injectedUrl.includes('placeholder') && !injectedUrl.includes('undefined')) {
-      console.log('🛡️ Using runtime Supabase config');
-      return { url: injectedUrl, key: injectedKey };
-    }
-    console.warn('🛡️ Injected config found but invalid, falling back...');
-  }
-
-  // 2. Fallback to build-time vars (Hardcoded in bundle)
   if (envUrl && !envUrl.includes('placeholder') && envUrl.trim() !== '') {
-    console.log('🛡️ Using build-time Supabase URL');
     return { url: envUrl, key: envKey };
   }
   
-  console.error('🛡️ CRITICAL: No Supabase config found! This app will fail auth.');
   return { 
-    url: envUrl || 'https://placeholder-url.supabase.co', 
-    key: envKey || 'placeholder-key' 
+    url: 'https://placeholder-url.supabase.co', 
+    key: 'placeholder-key' 
   };
 };
 
