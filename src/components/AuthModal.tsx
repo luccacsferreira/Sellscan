@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { supabase, isSupabaseConfigured, getSupabaseDebugInfo } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, getSupabaseDebugInfo, saveManualConfig, clearManualConfig } from '../lib/supabase';
 import sellscanLogo from '../assets/sellscan_logo_transparent.png';
 import { X, Mail, Lock, Loader2, Sparkles, AlertCircle, Eye, EyeOff, Wand2 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -21,6 +21,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<{ message: string; type: 'error' | 'success' } | null>(null);
   const [diagnosticClicks, setDiagnosticClicks] = useState(0);
+  const [showManualConfig, setShowManualConfig] = useState(false);
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualKey, setManualKey] = useState('');
+
+  const dbInfo = getSupabaseDebugInfo();
 
   const handleLogoClick = () => {
     setDiagnosticClicks(prev => prev + 1);
@@ -195,15 +200,61 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="mb-6 p-4 bg-black/40 rounded-xl text-[10px] font-mono text-left border border-white/10 space-y-1"
+                    className="mb-6 p-4 bg-black/40 rounded-xl text-[10px] font-mono text-left border border-white/10 space-y-2"
                   >
-                    <div className="text-brand-accent font-bold mb-2">DEBUG DIAGNOSTICS:</div>
-                    <div className="grid grid-cols-[80px_1fr] gap-1 opacity-80">
-                      <span>Configured:</span> <span className={isSupabaseConfigured ? "text-green-400" : "text-red-400"}>{String(isSupabaseConfigured)}</span>
-                      <span>URL:</span> <span className="text-white truncate">{getSupabaseDebugInfo().url}</span>
-                      <span>Injected:</span> <span className="text-white">{String(getSupabaseDebugInfo().hasInjectedConfig)}</span>
-                      <span>Origin:</span> <span className="text-white">{getSupabaseDebugInfo().origin}</span>
+                    <div className="flex justify-between items-center text-brand-accent font-bold mb-1">
+                      <span>DEBUG DIAGNOSTICS:</span>
+                      <button 
+                        onClick={() => setShowManualConfig(!showManualConfig)}
+                        className="text-[8px] bg-white/10 px-2 py-0.5 rounded hover:bg-white/20"
+                      >
+                        {showManualConfig ? 'CLOSE' : 'MANUAL CONFIG'}
+                      </button>
                     </div>
+                    
+                    {!showManualConfig ? (
+                      <div className="grid grid-cols-[80px_1fr] gap-1 opacity-80">
+                        <span>Configured:</span> <span className={isSupabaseConfigured ? "text-green-400" : "text-red-400"}>{String(isSupabaseConfigured)}</span>
+                        <span>Source:</span> <span className="text-white capitalize">{(dbInfo as any).source}</span>
+                        <span>URL:</span> <span className="text-white truncate">{dbInfo.url}</span>
+                        <span>Injected:</span> <span className="text-white">{String(dbInfo.hasInjectedConfig)}</span>
+                        <span>Origin:</span> <span className="text-white">{dbInfo.origin}</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 py-1">
+                        <input 
+                          type="text" 
+                          placeholder="Supabase Project URL"
+                          value={manualUrl}
+                          onChange={e => setManualUrl(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 focus:border-brand-accent outline-none"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Anon API Key"
+                          value={manualKey}
+                          onChange={e => setManualKey(e.target.value)}
+                          className="w-full bg-black/40 border border-white/10 rounded px-2 py-1.5 focus:border-brand-accent outline-none"
+                        />
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => saveManualConfig(manualUrl, manualKey)}
+                            className="flex-1 bg-brand-accent text-brand-bg font-bold py-1.5 rounded transition-all active:scale-95"
+                          >
+                            SAVE & REFRESH
+                          </button>
+                          <button 
+                            onClick={clearManualConfig}
+                            className="bg-red-500/20 text-red-400 font-bold px-3 py-1.5 rounded hover:bg-red-500/30 transition-all active:scale-95"
+                          >
+                            RESET
+                          </button>
+                        </div>
+                        <p className="text-[8px] opacity-60 leading-tight">
+                          Manual config is saved in your browser's local storage. This overrides server injection.
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 

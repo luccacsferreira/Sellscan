@@ -1,124 +1,125 @@
 import { createClient } from '@supabase/supabase-js';
 
-// For client-side, we use import.meta.env which requires VITE_ prefix
-// We also check window.SUPABASE_CONFIG which is injected by our server in production
-const getSupabaseConfig = () => {
-  // 1. Check for window.SUPABASE_CONFIG (Injected by server at runtime in production)
-  if (typeof window !== 'undefined') {
-    const config = (window as any).SUPABASE_CONFIG;
-    if (config) {
-      const url = config.VITE_SUPABASE_URL || config.SUPABASE_URL;
-      const key = config.VITE_SUPABASE_ANON_KEY || config.SUPABASE_ANON_KEY;
+import { createClient } from '@supabase/supabase-js';
 
-      if (url && key && !url.includes('placeholder') && url.trim() !== '') {
-        console.log('🛡️ Using runtime Supabase config from server');
-        return { url, key };
-      }
-      console.warn('🛡️ window.SUPABASE_CONFIG found but is invalid:', config);
+// Configuration interface
+export interface SupabaseConfig {
+  url: string;
+  anonKey: string;
+  source: 'injected' | 'build-time' | 'late-fetch' | 'manual' | 'none';
+}
+
+const STORAGE_KEY = 'sellscan_manual_supabase_config';
+
+/**
+ * Resolves the Supabase configuration from multiple sources in priority order:
+ * 1. window.SUPABASE_CONFIG (Injected by server at runtime)
+ * 2. Manual configuration (Saved in localStorage)
+ * 3. import.meta.env (Build-time variables - usually empty in AI Studio)
+ */
+const resolveConfig = (): SupabaseConfig => {
+  // 1. Injected by Express server in index.html or env-config.js
+  if (typeof window !== 'undefined' && (window as any).SUPABASE_CONFIG) {
+    const c = (window as any).SUPABASE_CONFIG;
+    const url = c.VITE_SUPABASE_URL || c.SUPABASE_URL;
+    const key = c.VITE_SUPABASE_ANON_KEY || c.SUPABASE_ANON_KEY;
+    if (url && key && !url.includes('placeholder') && url.trim() !== '') {
+      return { url, anonKey: key, source: 'injected' };
     }
   }
 
-  // 2. Fallback to build-time vars (from .env at build time)
+  // 2. Manual backup (Developer fallback)
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.url && parsed.anonKey && !parsed.url.includes('placeholder')) {
+          return { ...parsed, source: 'manual' };
+        }
+      }
+    } catch (e) {}
+  }
+
+  // 3. Build-time variables
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
   if (envUrl && !envUrl.includes('placeholder') && envUrl.trim() !== '') {
-    console.log('🛡️ Using build-time Supabase config');
-    return { url: envUrl, key: envKey };
-  }
-  
-  // 3. Last resort: Try to fetch configuration from the server-side proxy asynchronously
-  // This helps if index.html was cached without injection
-  if (typeof window !== 'undefined') {
-    const apiPath = '/api/config/supabase';
-    console.log(`🛡️ Attempting late-fetch from ${apiPath}...`);
-    fetch(apiPath)
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error(`Server returned ${response.status} for ${apiPath}`);
-      })
-      .then(data => {
-        const url = data.url;
-        const key = data.anonKey;
-        if (url && key && !url.includes('placeholder') && url.trim() !== '') {
-          console.log('🛡️ Late-fetch successful, updating and reloading...');
-          (window as any).SUPABASE_CONFIG = {
-            VITE_SUPABASE_URL: url,
-            VITE_SUPABASE_ANON_KEY: key
-          };
-          
-          const currentUrl = new URL(window.location.href);
-          if (!currentUrl.searchParams.has('config_refreshed')) {
-            currentUrl.searchParams.set('config_refreshed', 'true');
-            window.location.href = currentUrl.toString();
-          }
-        } else {
-          console.warn('🛡️ Late-fetch returned empty or invalid config:', data);
-        }
-      })
-      .catch(e => {
-        console.error('🛡️ Failed to late-fetch Supabase config:', e.message);
-        // Special diagnostic for the user
-        if (typeof window !== 'undefined') {
-          console.info('💡 PRO-TIP: If you see a 404 for /api/config/supabase on your custom domain, it means the domain is likely pointing to a static host (like GitHub Pages) instead of your Google Cloud server.');
-        }
-      });
+    return { url: envUrl, anonKey: envKey, source: 'build-time' };
   }
 
-  console.error('🛡️ NO VALID SUPABASE CONFIG FOUND');
-  return { 
-    url: 'https://placeholder-url.supabase.co', 
-    key: 'placeholder-key' 
+  return {
+    url: 'https://placeholder-url.supabase.co',
+    anonKey: 'placeholder-key',
+    source: 'none'
   };
 };
 
-const { url: supabaseUrl, key: supabaseAnonKey } = getSupabaseConfig();
+const config = resolveConfig();
 
-// Check if variables exist and are not placeholders
-export const isSupabaseConfigured = Boolean(
-  supabaseUrl && 
-  supabaseAnonKey && 
-  !supabaseUrl.includes('placeholder') && 
-  supabaseUrl.trim() !== ''
-);
+// Late fetch helper (doesn't block export)
+if (typeof window !== 'undefined' && config.source === 'none') {
+  fetch('/api/config/supabase')
+    .then(async (res) => {
+      const isExpress = res.headers.get('X-Backend-Server') === 'AI-Studio-Express';
+      
+      if (!res.ok || !isExpress) {
+        throw new Error(isExpress ? 'Config not found on server' : 'Static host detected (missing Express backend)');
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (data.url && data.anonKey && !data.url.includes('placeholder')) {
+        console.log('🛡️ Late-fetch successful, persisting...');
+        const newConfig = { url: data.url, anonKey: data.anonKey, source: 'late-fetch' };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newConfig));
+        
+        // Refresh if not already refreshed
+        const url = new URL(window.location.href);
+        if (!url.searchParams.has('ref')) {
+          url.searchParams.set('ref', Date.now().toString());
+          window.location.href = url.toString();
+        }
+      }
+    })
+    .catch((e) => {
+      console.warn(`🛡️ Config fetch failed: ${e.message}`);
+      if (e.message.includes('Static host')) {
+        console.info('💡 DIAGNOSIS: Your custom domain trysellscan.com is likely pointing to a static server (like GitHub Pages) instead of your Cloud Run instance.');
+      }
+    });
+}
+
+export const isSupabaseConfigured = config.source !== 'none';
+export const getSupabaseConfig = () => config;
+
+export const saveManualConfig = (url: string, key: string) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ url, anonKey: key, source: 'manual' }));
+  window.location.reload();
+};
+
+export const clearManualConfig = () => {
+  localStorage.removeItem(STORAGE_KEY);
+  window.location.reload();
+};
 
 export const getSupabaseDebugInfo = () => ({
-  url: supabaseUrl,
+  url: config.url,
   isConfigured: isSupabaseConfigured,
+  source: config.source,
   hasInjectedConfig: typeof window !== 'undefined' && !!(window as any).SUPABASE_CONFIG,
-  buildTimeUrl: import.meta.env.VITE_SUPABASE_URL,
   origin: typeof window !== 'undefined' ? window.location.origin : 'server'
 });
 
-if (typeof window !== 'undefined') {
-  // Enhanced debugging for the user
-  const check = { 
-    url: supabaseUrl ? (supabaseUrl.includes('placeholder') ? 'PLACEHOLDER' : 'SET') : 'MISSING',
-    hasKey: !!supabaseAnonKey && !supabaseAnonKey.includes('placeholder'),
-    isConfigured: isSupabaseConfigured,
-    injected: !!(window as any).SUPABASE_CONFIG
-  };
-  
-  if (!isSupabaseConfigured) {
-    console.group('🛡️ Supabase Config Status');
-    console.warn('Supabase is not fully configured.');
-    console.table(check);
-    console.info('Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in AI Studio Secrets.');
-    console.groupEnd();
-  }
-}
-
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder-url.supabase.co', 
-  supabaseAnonKey || 'placeholder-key',
+  config.url,
+  config.anonKey,
   {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      flowType: 'pkce' // Use PKCE for better security and frame handling
+      flowType: 'pkce'
     }
   }
 );

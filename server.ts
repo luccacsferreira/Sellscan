@@ -13,6 +13,12 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' }));
 
+  // Global middleware to add diagnostic header
+  app.use((req, res, next) => {
+    res.setHeader('X-Backend-Server', 'AI-Studio-Express');
+    next();
+  });
+
   // Dynamic environment configuration for the client (available in all environments)
   app.get("/env-config.js", (req, res) => {
     const config = {

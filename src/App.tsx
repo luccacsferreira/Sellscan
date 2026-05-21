@@ -20,9 +20,10 @@ import { AuthModal } from './components/AuthModal';
 import { ScanResult, Project, UserStats, ProductAnalysis } from './types';
 import { analyzeProduct, AIModel } from './services/aiService';
 import { cn } from './lib/utils';
-import { supabase } from './lib/supabase';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
+import { dbService } from './services/dbService';
 import { User } from '@supabase/supabase-js';
-import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign, Check } from 'lucide-react';
+import { Search, Globe, Users, TrendingUp, Sparkles, Loader2, X, Trash2, MapPin, CircleDollarSign, Check, AlertTriangle, Settings2 } from 'lucide-react';
 import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
 import { AuthCallback } from './components/AuthCallback';
@@ -233,29 +234,18 @@ function AppContent() {
 
   useEffect(() => {
     if (user) {
-      // Sync from Supabase
+      // Sync from Supabase using dbService
       const fetchData = async () => {
-        const { data: projectsData } = await supabase.from('projects').select('*');
-        if (projectsData) {
-          setProjects(projectsData.map(p => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            color: p.color,
-            createdAt: new Date(p.created_at).getTime()
-          })));
-        }
-
-        const { data: scansData } = await supabase.from('scans').select('*').order('timestamp', { ascending: false });
-        if (scansData) {
-          setHistory(scansData.map(s => ({
-            id: s.id,
-            timestamp: s.timestamp,
-            imageUrl: s.image_url,
-            description: s.description,
-            analysis: s.analysis,
-            projectId: s.project_id
-          })));
+        try {
+          const [projectsData, scansData] = await Promise.all([
+            dbService.getProjects(),
+            dbService.getScans()
+          ]);
+          
+          if (projectsData) setProjects(projectsData);
+          if (scansData) setHistory(scansData);
+        } catch (e) {
+          console.error("Failed to sync from database", e);
         }
       };
       fetchData();
@@ -268,24 +258,17 @@ function AppContent() {
     localStorage.setItem('sellscan_history', JSON.stringify(updated));
 
     if (user) {
-      await supabase.from('scans').upsert({
-        id: scan.id.includes('-') ? scan.id : undefined, // Check if it looks like a UUID
-        user_id: user.id,
-        project_id: scan.projectId,
-        timestamp: scan.timestamp,
-        image_url: scan.imageUrl,
-        description: scan.description,
-        analysis: scan.analysis
-      });
+      try {
+        await dbService.saveScan(scan);
+      } catch (e) {
+        console.error("Failed to save scan to DB", e);
+      }
     }
   };
 
   const saveProjects = async (updatedProjects: Project[]) => {
     setProjects(updatedProjects);
     localStorage.setItem('sellscan_projects', JSON.stringify(updatedProjects));
-    
-    // We would need to implement a more robust sync here
-    // For now, let's just handle it in the create/update functions
   };
 
   const stats: UserStats = useMemo(() => {
@@ -401,26 +384,28 @@ function AppContent() {
   };
 
   const handleCreateProject = async () => {
-    const newProject: Project = {
-      id: Math.random().toString(36).substring(7),
+    const projectTemplate: Omit<Project, 'id' | 'createdAt'> = {
       name: newProjectData.name,
       description: newProjectData.description,
       color: newProjectData.color,
-      createdAt: Date.now()
     };
     
+    let projectId = Math.random().toString(36).substring(7);
+
     if (user) {
-      const { data, error } = await supabase.from('projects').insert({
-        name: newProject.name,
-        description: newProject.description,
-        color: newProject.color,
-        user_id: user.id
-      }).select().single();
-      
-      if (data) {
-        newProject.id = data.id;
+      try {
+        const data = await dbService.createProject(projectTemplate);
+        if (data) projectId = data.id;
+      } catch (e) {
+        console.error("Failed to create project in DB", e);
       }
     }
+
+    const newProject: Project = {
+      ...projectTemplate,
+      id: projectId,
+      createdAt: Date.now()
+    };
 
     saveProjects([...projects, newProject]);
     setShowNewProjectModal(false);
@@ -436,11 +421,14 @@ function AppContent() {
     );
 
     if (user) {
-      await supabase.from('projects').update({
-        name: newProjectData.name,
-        description: newProjectData.description,
-        color: newProjectData.color
-      }).eq('id', editingProject.id);
+      try {
+        await dbService.updateProject({
+          ...editingProject,
+          ...newProjectData
+        });
+      } catch (e) {
+        console.error("Failed to update project in DB", e);
+      }
     }
 
     saveProjects(updated);
@@ -453,7 +441,11 @@ function AppContent() {
     const updated = projects.filter(p => p.id !== projectToDelete.id);
     
     if (user) {
-      await supabase.from('projects').delete().eq('id', projectToDelete.id);
+      try {
+        await dbService.deleteProject(projectToDelete.id);
+      } catch (e) {
+        console.error("Failed to delete project from DB", e);
+      }
     }
 
     saveProjects(updated);
@@ -596,6 +588,27 @@ function AppContent() {
         theme={theme}
         onToggleTheme={toggleTheme}
       />
+
+      {/* Critical Configuration Warning Banner */}
+      {!isSupabaseConfigured && view !== 'landing' && (
+        <div className="fixed top-16 left-0 right-0 z-[100] bg-red-500/10 backdrop-blur-md border-y border-red-500/20 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-red-400">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <p className="text-[10px] font-black uppercase tracking-widest leading-tight">
+                Database Not Configured: trysellscan.com may be pointing to a static host (like GitHub Pages).
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowAuthModal(true)}
+              className="flex items-center gap-2 bg-red-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:brightness-110 transition-all whitespace-nowrap"
+            >
+              <Settings2 className="w-3 h-3" />
+              Open Troubleshooter
+            </button>
+          </div>
+        </div>
+      )}
       
       <main className={cn(
         "min-h-[calc(100vh-64px)] overflow-x-hidden pt-16 transition-all duration-300",
