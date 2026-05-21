@@ -15,26 +15,31 @@ async function startServer() {
 
   // Dynamic environment configuration for the client (available in all environments)
   app.get("/env-config.js", (req, res) => {
-    console.log('🛡️ Serving /env-config.js request');
     const config = {
       VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANC
     };
     
-    // Debug info (safe partial keys)
-    const debug = {
-      url_prefix: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : 'MISSING',
-      key_present: !!config.VITE_SUPABASE_ANON_KEY,
-      node_env: process.env.NODE_ENV,
-      timestamp: new Date().toISOString()
-    };
+    console.log(`🛡️ Serving /env-config.js | URL: ${config.VITE_SUPABASE_URL ? 'FOUND' : 'MISSING'}`);
 
     res.setHeader('Content-Type', 'application/javascript');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.send(`
       window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-      console.log('🛡️ Env config loaded from /env-config.js:', ${JSON.stringify(debug)});
+      console.log('🛡️ Config loaded via /env-config.js');
     `);
+  });
+
+  app.get("/api/diag", (req, res) => {
+    res.json({
+      timestamp: new Date().toISOString(),
+      node_env: process.env.NODE_ENV,
+      host: req.headers.host,
+      supabase_url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL ? 'CONFIGURED' : 'MISSING',
+      supabase_key: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANC ? 'CONFIGURED' : 'MISSING',
+      all_supabase_keys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
+      url_prefix: (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').substring(0, 15)
+    });
   });
 
   // OpenAI Instance
@@ -169,7 +174,7 @@ async function startServer() {
     
     // Explicitly handle root and index.html with injection BEFORE static middleware
     const handleInjection = async (req: express.Request, res: express.Response) => {
-      console.log(`🛡️ Injection requested for: ${req.path}`);
+      console.log(`🛡️ Injection requested for: ${req.path} | Host: ${req.headers.host}`);
       try {
         const fs = await import("fs/promises");
         let htmlContent = "";
@@ -177,7 +182,6 @@ async function startServer() {
           htmlContent = await fs.readFile(path.join(distPath, "index.html"), "utf-8");
         } catch (readErr) {
           console.error("❌ Failed to read index.html from dist:", readErr);
-          // Fallback to a very basic recovery HTML if even the file read fails
           return res.status(500).send("Server Error: Missing index.html");
         }
         
@@ -192,6 +196,7 @@ async function startServer() {
           env: process.env.NODE_ENV,
           keys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
           url_preview: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : null,
+          host: req.headers.host,
           time: new Date().toISOString()
         };
 
@@ -202,9 +207,16 @@ async function startServer() {
           </script>
         `;
         
-        const injectedHtml = htmlContent.replace("</head>", `${configScript}</head>`);
+        // Use a more robust regex for case-insensitive head tag matching
+        const injectedHtml = htmlContent.replace(/<\/head>/i, `${configScript}</head>`);
+        
         res.setHeader('Content-Type', 'text/html');
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        // Very aggressive cache-control to bypass CDN caching
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader('X-Injection-Status', config.VITE_SUPABASE_URL ? 'success' : 'missing-keys');
+        
         return res.send(injectedHtml);
       } catch (e) {
         console.error("❌ Critical Injection failure:", e);

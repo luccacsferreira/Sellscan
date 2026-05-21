@@ -27,6 +27,34 @@ const getSupabaseConfig = () => {
     return { url: envUrl, key: envKey };
   }
   
+  // 3. Last resort: Try to fetch configuration from the server-side proxy asynchronously
+  // This helps if index.html was cached without injection
+  if (typeof window !== 'undefined') {
+    fetch('/api/config/supabase')
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Failed to fetch');
+      })
+      .then(data => {
+        if (data.url && data.anonKey && !data.url.includes('placeholder')) {
+          console.log('🛡️ Late-fetch successful, updating and reloading...');
+          (window as any).SUPABASE_CONFIG = {
+            VITE_SUPABASE_URL: data.url,
+            VITE_SUPABASE_ANON_KEY: data.anonKey
+          };
+          
+          const url = new URL(window.location.href);
+          if (!url.searchParams.has('config_refreshed')) {
+            url.searchParams.set('config_refreshed', 'true');
+            window.location.href = url.toString();
+          }
+        }
+      })
+      .catch(e => console.error('🛡️ Failed to late-fetch Supabase config:', e));
+  }
+
   console.error('🛡️ NO VALID SUPABASE CONFIG FOUND');
   return { 
     url: 'https://placeholder-url.supabase.co', 
