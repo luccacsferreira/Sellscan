@@ -17,10 +17,13 @@ async function startServer() {
   app.get("/env-config.js", (req, res) => {
     const config = {
       VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANC
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 
+                              process.env.SUPABASE_ANON_KEY || 
+                              process.env.VITE_SUPABASE_ANC || 
+                              process.env.SUPABASE_ANON_KE
     };
     
-    console.log(`🛡️ Serving /env-config.js | URL: ${config.VITE_SUPABASE_URL ? 'FOUND' : 'MISSING'}`);
+    console.log(`🛡️ Serving /env-config.js | Host: ${req.headers.host} | URL: ${config.VITE_SUPABASE_URL ? 'FOUND' : 'MISSING'}`);
 
     res.setHeader('Content-Type', 'application/javascript');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -52,9 +55,15 @@ async function startServer() {
 
   // API Routes
   app.get("/api/config/supabase", (req, res) => {
+    console.log(`🛡️ API Config requested | Host: ${req.headers.host}`);
     res.json({
       url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-      anonKey: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+      anonKey: process.env.VITE_SUPABASE_ANON_KEY || 
+               process.env.SUPABASE_ANON_KEY || 
+               process.env.VITE_SUPABASE_ANC || 
+               process.env.SUPABASE_ANON_KE ||
+               process.env.VITE_SUPABASE_ANON ||
+               process.env.SUPABASE_ANON
     });
   });
 
@@ -187,7 +196,12 @@ async function startServer() {
         
         const config = {
           VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANC
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 
+                                  process.env.SUPABASE_ANON_KEY || 
+                                  process.env.VITE_SUPABASE_ANC || 
+                                  process.env.SUPABASE_ANON_KE ||
+                                  process.env.VITE_SUPABASE_ANON ||
+                                  process.env.SUPABASE_ANON
         };
         
         // Detailed debug info for console
@@ -195,9 +209,10 @@ async function startServer() {
           status: config.VITE_SUPABASE_URL ? 'CONFIGURED' : 'UNCONFIGURED',
           env: process.env.NODE_ENV,
           keys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
-          url_preview: config.VITE_SUPABASE_URL ? config.VITE_SUPABASE_URL.substring(0, 15) : null,
+          url_preview: config.VITE_SUPABASE_URL ? `${config.VITE_SUPABASE_URL.substring(0, 15)}...` : null,
           host: req.headers.host,
-          time: new Date().toISOString()
+          time: new Date().toISOString(),
+          version: '1.0.1'
         };
 
         const configScript = `

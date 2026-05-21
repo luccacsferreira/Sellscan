@@ -30,29 +30,41 @@ const getSupabaseConfig = () => {
   // 3. Last resort: Try to fetch configuration from the server-side proxy asynchronously
   // This helps if index.html was cached without injection
   if (typeof window !== 'undefined') {
-    fetch('/api/config/supabase')
+    const apiPath = '/api/config/supabase';
+    console.log(`🛡️ Attempting late-fetch from ${apiPath}...`);
+    fetch(apiPath)
       .then(response => {
         if (response.ok) {
           return response.json();
         }
-        throw new Error('Failed to fetch');
+        throw new Error(`Server returned ${response.status} for ${apiPath}`);
       })
       .then(data => {
-        if (data.url && data.anonKey && !data.url.includes('placeholder')) {
+        const url = data.url;
+        const key = data.anonKey;
+        if (url && key && !url.includes('placeholder') && url.trim() !== '') {
           console.log('🛡️ Late-fetch successful, updating and reloading...');
           (window as any).SUPABASE_CONFIG = {
-            VITE_SUPABASE_URL: data.url,
-            VITE_SUPABASE_ANON_KEY: data.anonKey
+            VITE_SUPABASE_URL: url,
+            VITE_SUPABASE_ANON_KEY: key
           };
           
-          const url = new URL(window.location.href);
-          if (!url.searchParams.has('config_refreshed')) {
-            url.searchParams.set('config_refreshed', 'true');
-            window.location.href = url.toString();
+          const currentUrl = new URL(window.location.href);
+          if (!currentUrl.searchParams.has('config_refreshed')) {
+            currentUrl.searchParams.set('config_refreshed', 'true');
+            window.location.href = currentUrl.toString();
           }
+        } else {
+          console.warn('🛡️ Late-fetch returned empty or invalid config:', data);
         }
       })
-      .catch(e => console.error('🛡️ Failed to late-fetch Supabase config:', e));
+      .catch(e => {
+        console.error('🛡️ Failed to late-fetch Supabase config:', e.message);
+        // Special diagnostic for the user
+        if (typeof window !== 'undefined') {
+          console.info('💡 PRO-TIP: If you see a 404 for /api/config/supabase on your custom domain, it means the domain is likely pointing to a static host (like GitHub Pages) instead of your Google Cloud server.');
+        }
+      });
   }
 
   console.error('🛡️ NO VALID SUPABASE CONFIG FOUND');
