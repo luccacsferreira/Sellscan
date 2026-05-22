@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X } from 'lucide-react';
+import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import sellscanLogo from '../assets/sellscan_logo_transparent.png';

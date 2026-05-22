@@ -28,6 +28,7 @@ import { LocationProvider, useLocation } from './lib/LocationContext';
 import { UserLocation } from './types';
 import { AuthCallback } from './components/AuthCallback';
 import { DocsPage } from './components/DocsPage';
+import { AffiliatePage } from './components/AffiliatePage';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate';
 

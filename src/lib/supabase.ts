@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-import { createClient } from '@supabase/supabase-js';
-
 // Configuration interface
 export interface SupabaseConfig {
   url: string;

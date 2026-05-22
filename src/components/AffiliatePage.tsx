@@ -13,7 +13,8 @@ import {
   Sparkles,
   Percent,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { dbService } from '../services/dbService';
 import { supabase } from '../lib/supabase';
@@ -203,8 +204,9 @@ export const AffiliatePage: React.FC = () => {
               </motion.div>
 
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95, delay: 0.1 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
                 className="bg-white/5 border border-white/10 p-6 rounded-2xl group hover:border-brand-accent/30 transition-all"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -217,8 +219,9 @@ export const AffiliatePage: React.FC = () => {
               </motion.div>
 
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95, delay: 0.2 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
                 className="bg-white/5 border border-white/10 p-6 rounded-2xl group hover:border-brand-accent/30 transition-all"
               >
                 <div className="flex justify-between items-start mb-4">
@@ -408,8 +411,9 @@ export const AffiliatePage: React.FC = () => {
 
             {/* Support/FAQ CTA */}
             <motion.div 
-              initial={{ opacity: 0, x: 20, delay: 0.1 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
               className="bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden group"
             >
               <div className="absolute top-0 right-0 p-12 bg-blue-500/10 blur-[50px] transition-all group-hover:scale-150" />
@@ -425,8 +429,9 @@ export const AffiliatePage: React.FC = () => {
             
             {/* Withdrawal Section */}
             <motion.div 
-              initial={{ opacity: 0, x: 20, delay: 0.2 }}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
               className="bg-white/5 border border-white/10 p-6 rounded-2xl"
             >
               <div className="flex justify-between items-end mb-4">
