@@ -51,14 +51,6 @@ async function startServer() {
     });
   });
 
-  // OpenAI Instance
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  // Gemini Instance
-  const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY || "");
-
   // API Routes
   app.get("/api/config/supabase", (req, res) => {
     console.log(`🛡️ API Config requested | Host: ${req.headers.host}`);
@@ -86,6 +78,10 @@ async function startServer() {
 
   app.post("/api/ai/gemini", async (req, res) => {
     try {
+      if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({ error: "GEMINI_API_KEY is not configured on the server." });
+      }
+      const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
       const { prompt, image, messages, analysis } = req.body;
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -132,6 +128,10 @@ async function startServer() {
 
   app.post("/api/ai/gpt", async (req, res) => {
     try {
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ error: "OPENAI_API_KEY is not configured on the server." });
+      }
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const { prompt, image, messages } = req.body;
       
       let gptMessages: any[] = [];

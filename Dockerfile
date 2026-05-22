@@ -6,14 +6,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies
+# Install all dependencies (including devDependencies for build)
 RUN npm install
 
 # Copy source code
 COPY . .
 
-# Run the build script defined in package.json
-# This runs 'vite build' and then bundles server.ts with esbuild
+# Run the build script
 RUN npm run build
 
 # Final production stage
@@ -21,16 +20,20 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Copy package files for production install
+# Set production environment
+ENV NODE_ENV=production
+
+# Copy package files
 COPY package*.json ./
 
 # Install only production dependencies
 RUN npm install --omit=dev
 
-# Copy the built assets from the builder stage
+# Copy the built assets - ensure it's copied to dist/
 COPY --from=builder /app/dist ./dist
 
-# The server listens on the PORT environment variable (default 3000)
+# The server listens on the PORT environment variable
+# Cloud Run sets this automatically, but we provide a default just in case.
 ENV PORT=3000
 EXPOSE 3000
 
