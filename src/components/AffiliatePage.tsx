@@ -16,6 +16,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { dbService } from '../services/dbService';
+import { supabase } from '../lib/supabase';
 import { AffiliateProfile, Referral } from '../types';
 import { cn } from '../lib/utils';
 
@@ -280,24 +281,23 @@ export const AffiliatePage: React.FC = () => {
               </p>
               <div className="flex gap-2">
                 <button 
-                  onClick={() => {
-                    const amount = Math.floor(Math.random() * 50) + 10;
-                    const commission = amount * 0.2;
-                    setProfile(prev => prev ? { 
-                      ...prev, 
-                      pendingEarnings: prev.pendingEarnings + commission 
-                    } : null);
+                  onClick={async () => {
+                   const { data: { user } } = await supabase.auth.getUser();
+                   if (!user) return;
+                   await dbService.processSale(user.id, 50);
+                   fetchAffiliateData();
                   }}
                   className="px-3 py-1.5 bg-yellow-400/20 text-yellow-400 text-[9px] font-bold uppercase rounded-lg hover:bg-yellow-400/30 transition-all"
                 >
                   Simulate $50 Sale (+20%)
                 </button>
                 <button 
-                  onClick={() => {
-                    const commission = 2.5; // Fixed 5% of $50
+                  onClick={async () => {
+                    // This is harder to simulate fully without another user context, 
+                    // but we'll manually increment pending for the visual demo
                     setProfile(prev => prev ? { 
                       ...prev, 
-                      pendingEarnings: prev.pendingEarnings + commission 
+                      pendingEarnings: prev.pendingEarnings + 2.5 
                     } : null);
                   }}
                   className="px-3 py-1.5 bg-yellow-400/5 text-yellow-400/40 text-[9px] font-bold uppercase rounded-lg hover:bg-yellow-400/10 transition-all border border-yellow-400/10"

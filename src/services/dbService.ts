@@ -246,5 +246,84 @@ export const dbService = {
     } catch (e) {
       console.error('Error linking referral:', e);
     }
+  },
+
+  /**
+   * Process a sale and distribute commissions (20% Tier-1, 5% Tier-2)
+   */
+  async processSale(buyerUserId: string, amount: number) {
+    try {
+      // 1. Find who referred this buyer (Tier 1)
+      const { data: referral, error: refError } = await supabase
+        .from('referrals')
+        .select('*, affiliate_profiles(*)')
+        .eq('referred_user_id', buyerUserId)
+        .eq('type', 'conversion')
+        .single();
+
+      if (refError || !referral || !referral.affiliate_profiles) {
+        console.log('No direct referrer found for user:', buyerUserId);
+        return;
+      }
+
+      const affiliate1 = referral.affiliate_profiles;
+      const commission1 = amount * 0.20; // 20% Tier 1
+
+      // 2. record the sale for Tier 1
+      await supabase
+        .from('referrals')
+        .insert({
+          affiliate_id: affiliate1.id,
+          referred_user_id: buyerUserId,
+          status: 'pending',
+          commission_amount: commission1,
+          type: 'sale'
+        });
+
+      // 3. Update Tier 1 Balance
+      await supabase
+        .from('affiliate_profiles')
+        .update({ 
+          pending_earnings: (affiliate1.pending_earnings || 0) + commission1 
+        })
+        .eq('id', affiliate1.id);
+
+      // 4. Find if Affiliate 1 was referred by someone else (Tier 2)
+      const { data: parentReferral, error: parentRefError } = await supabase
+        .from('referrals')
+        .select('*, affiliate_profiles(*)')
+        .eq('referred_user_id', affiliate1.user_id)
+        .eq('type', 'conversion')
+        .single();
+
+      if (!parentRefError && parentReferral && parentReferral.affiliate_profiles) {
+        const affiliate2 = parentReferral.affiliate_profiles;
+        const commission2 = amount * 0.05; // 5% Tier 2
+
+        // Record the sale for Tier 2
+        await supabase
+          .from('referrals')
+          .insert({
+            affiliate_id: affiliate2.id,
+            referred_user_id: buyerUserId, // The original buyer
+            status: 'pending',
+            commission_amount: commission2,
+            type: 'sale' // Mark as sale commission
+          });
+
+        // Update Tier 2 Balance
+        await supabase
+          .from('affiliate_profiles')
+          .update({ 
+            pending_earnings: (affiliate2.pending_earnings || 0) + commission2 
+          })
+          .eq('id', affiliate2.id);
+      }
+
+      return { success: true, tier1: commission1 };
+    } catch (e) {
+      console.error('Error processing affiliate sale:', e);
+      return { success: false, error: e };
+    }
   }
 };

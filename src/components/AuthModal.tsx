@@ -200,7 +200,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="mb-6 p-4 bg-black/40 rounded-xl text-[10px] font-mono text-left border border-white/10 space-y-2"
+                    className="mb-6 p-4 bg-black/40 rounded-xl text-[10px] font-mono text-left border border-white/10 space-y-2 overflow-hidden"
                   >
                     <div className="flex justify-between items-center text-brand-accent font-bold mb-1">
                       <span>DEBUG DIAGNOSTICS:</span>
@@ -213,13 +213,44 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     </div>
                     
                     {!showManualConfig ? (
-                      <div className="grid grid-cols-[80px_1fr] gap-1 opacity-80">
-                        <span>Configured:</span> <span className={isSupabaseConfigured ? "text-green-400" : "text-red-400"}>{String(isSupabaseConfigured)}</span>
-                        <span>Source:</span> <span className="text-white capitalize">{(dbInfo as any).source}</span>
-                        <span>URL:</span> <span className="text-white truncate">{dbInfo.url}</span>
-                        <span>Injected:</span> <span className="text-white">{String(dbInfo.hasInjectedConfig)}</span>
-                        <span>Origin:</span> <span className="text-white">{dbInfo.origin}</span>
-                      </div>
+                      <>
+                        <div className="grid grid-cols-[80px_1fr] gap-1 opacity-80">
+                          <span>Configured:</span> <span className={isSupabaseConfigured ? "text-green-400" : "text-red-400"}>{String(isSupabaseConfigured)}</span>
+                          <span>Source:</span> <span className="text-white capitalize">{(dbInfo as any).source}</span>
+                          <span>URL:</span> <span className="text-white truncate">{dbInfo.url}</span>
+                          <span>Injected:</span> <span className="text-white">{String(dbInfo.hasInjectedConfig)}</span>
+                          <span>Origin:</span> <span className="text-white">{dbInfo.origin}</span>
+                        </div>
+                        
+                        {/* Status Tools UI moved here for cohesion */}
+                        <div className="mt-4 pt-4 border-t border-white/5 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Advanced Infrastructure</p>
+                            <div className="flex items-center gap-1.5">
+                              <div className="w-1 h-1 rounded-full bg-brand-accent animate-pulse" />
+                              <span className="text-[8px] font-bold text-brand-accent uppercase">Live Monitoring</span>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                              <p className="text-[8px] font-bold text-white/40 uppercase mb-1">Injected Config</p>
+                              <p className={cn(
+                                "text-[10px] font-mono",
+                                dbInfo.hasInjectedConfig ? "text-green-400" : "text-white/20"
+                              )}>
+                                {dbInfo.hasInjectedConfig ? "ACTIVE" : "PENDING"}
+                              </p>
+                            </div>
+                            <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                              <p className="text-[8px] font-bold text-white/40 uppercase mb-1">Backend Origin</p>
+                              <p className="text-[10px] font-mono text-white/60 truncate italic">
+                                {dbInfo.origin}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
                       <div className="space-y-2 py-1">
                         <input 
@@ -239,7 +270,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                         <div className="flex gap-2">
                           <button 
                             onClick={() => saveManualConfig(manualUrl, manualKey)}
-                            className="flex-1 bg-brand-accent text-brand-bg font-bold py-1.5 rounded transition-all active:scale-95"
+                            className="flex-1 bg-brand-accent text-brand-bg font-bold py-1.5 rounded transition-all active:scale-[0.98]"
                           >
                             SAVE & REFRESH
                           </button>
@@ -250,68 +281,29 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                             RESET
                           </button>
                         </div>
-                        <p className="text-[8px] opacity-60 leading-tight">
-                          Manual config is saved in your browser's local storage. This overrides server injection.
-                        </p>
                       </div>
                     )}
                   </motion.div>
                 )}
-                
-                {/* Infrastructure & Status Tools */}
-                {view !== 'landing' && (
-                  <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Advanced Infrastructure</p>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1 h-1 rounded-full bg-brand-accent animate-pulse" />
-                        <span className="text-[8px] font-bold text-brand-accent uppercase">Live Monitoring</span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-brand-accent/30 transition-all cursor-help relative">
-                        <p className="text-[8px] font-bold text-white/40 uppercase mb-1">Injected Config</p>
-                        <p className={cn(
-                          "text-[10px] font-mono",
-                          dbInfo.hasInjectedConfig ? "text-green-400" : "text-white/20"
-                        )}>
-                          {dbInfo.hasInjectedConfig ? "ACTIVE" : "PENDING"}
-                        </p>
-                      </div>
-                      <div className="bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-brand-accent/30 transition-all cursor-help">
-                        <p className="text-[8px] font-bold text-white/40 uppercase mb-1">Backend Origin</p>
-                        <p className="text-[10px] font-mono text-white/60 truncate italic">
-                          {dbInfo.origin}
-                        </p>
-                      </div>
-                    </div>
 
-                    {!isSupabaseConfigured && (
-                      <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl space-y-3">
-                        <p className="text-[9px] font-bold text-orange-400 uppercase leading-snug">
-                          <AlertCircle className="w-3 h-3 inline mr-1 -mt-0.5" />
-                          Deployment Checklist
-                        </p>
-                        <ul className="text-[8px] text-orange-300/60 space-y-2 uppercase tracking-wide font-medium">
-                          <li className="flex items-start gap-2">
-                            <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">1</span>
-                            <span>Points DNS A-Records to Cloud Run IP</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">2</span>
-                            <span>Wait for Let's Encrypt SSL Issuance (15-60m)</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">3</span>
-                            <span>Verify trysellscan.com does not serve GH Pages 404</span>
-                          </li>
-                        </ul>
-                      </div>
-                    )}
+                {!isSupabaseConfigured && (
+                  <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl space-y-3">
+                    <p className="text-[9px] font-bold text-orange-400 uppercase leading-snug flex items-center">
+                      <AlertCircle className="w-3 h-3 mr-1.5" />
+                      Deployment Checklist
+                    </p>
+                    <ul className="text-[8px] text-orange-300/60 space-y-2 uppercase tracking-wide font-medium">
+                      <li className="flex items-start gap-2">
+                        <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">1</span>
+                        <span>Points DNS A-Records to Cloud Run IP</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">2</span>
+                        <span>Wait for SSL Issuance (15-60m)</span>
+                      </li>
+                    </ul>
                   </div>
                 )}
-              </div>
 
                 <div className="inline-flex w-14 h-14 items-center justify-center rounded-2xl bg-brand-accent/20 text-brand-accent mb-4 shadow-[0_0_20px_rgba(85,205,209,0.2)]">
                   {mode === 'magic-link' ? <Wand2 className="w-7 h-7" /> : <Sparkles className="w-7 h-7" />}
@@ -326,6 +318,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                       ? 'Create a free account to get started' 
                       : 'No password needed. Simple and secure.'}
                 </p>
+              </div>
               
               {error && (
                 <motion.div 
