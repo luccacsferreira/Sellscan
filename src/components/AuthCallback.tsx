@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, CheckCircle2, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+import { dbService } from '../services/dbService';
+
 export function AuthCallback() {
   const [status, setStatus] = useState<'authenticating' | 'success' | 'error'>('authenticating');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -76,6 +78,9 @@ export function AuthCallback() {
       addLog('Auth success: ' + user.email);
       setUser(user);
       setStatus('success');
+      
+      // Link referral if code exists
+      dbService.linkReferral(user.id).catch(console.error);
       
       setTimeout(() => {
         if (window.opener) {

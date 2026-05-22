@@ -116,5 +116,135 @@ export const dbService = {
       });
 
     if (error) throw error;
+  },
+
+  /**
+   * Affiliate methods
+   */
+  async getAffiliateProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('affiliate_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "not found"
+    
+    if (!data) return null;
+
+    return {
+      id: data.id,
+      userId: data.user_id,
+      affiliateCode: data.affiliate_code,
+      totalEarnings: data.total_earnings,
+      pendingEarnings: data.pending_earnings,
+      referralCount: data.referral_count,
+      createdAt: new Date(data.created_at).getTime()
+    };
+  },
+
+  async createAffiliateProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    const { data, error } = await supabase
+      .from('affiliate_profiles')
+      .insert({
+        user_id: user.id,
+        affiliate_code: code,
+        total_earnings: 0,
+        pending_earnings: 0,
+        referral_count: 0
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    return {
+      id: data.id,
+      userId: data.user_id,
+      affiliateCode: data.affiliate_code,
+      totalEarnings: data.total_earnings,
+      pendingEarnings: data.pending_earnings,
+      referralCount: data.referral_count,
+      createdAt: new Date(data.created_at).getTime()
+    };
+  },
+
+  async getReferrals() {
+    const profile = await this.getAffiliateProfile();
+    if (!profile) return [];
+
+    const { data, error } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('affiliate_id', profile.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return data.map(r => ({
+      id: r.id,
+      affiliateId: r.affiliate_id,
+      referredUserId: r.referred_user_id,
+      status: r.status,
+      commissionAmount: r.commission_amount,
+      type: r.type,
+      createdAt: new Date(r.created_at).getTime()
+    }));
+  },
+
+  async linkReferral(referredUserId: string) {
+    const refCode = localStorage.getItem('sellscan_ref_code');
+    if (!refCode) return;
+
+    try {
+      // 1. Find the affiliate with this code
+      const { data: affiliate, error: affError } = await supabase
+        .from('affiliate_profiles')
+        .select('*')
+        .eq('affiliate_code', refCode)
+        .single();
+
+      if (affError || !affiliate) return;
+
+      // 2. Prevent self-referral
+      if (affiliate.user_id === referredUserId) return;
+
+      // 3. Create the referral record
+      const { error: refError } = await supabase
+        .from('referrals')
+        .insert({
+          affiliate_id: affiliate.id,
+          referred_user_id: referredUserId,
+          status: 'pending',
+          commission_amount: 0,
+          type: 'conversion' // Initial signup
+        });
+
+      if (!refError) {
+        // Clear the code after successful linking
+        localStorage.removeItem('sellscan_ref_code');
+        
+        // Try to increment referral count
+        try {
+          await supabase.rpc('increment_referral_count', { profile_id: affiliate.id });
+        } catch (e) {
+          console.warn('RPC increment_referral_count not found, falling back to direct update');
+          await supabase
+            .from('affiliate_profiles')
+            .update({ referral_count: (affiliate.referral_count || 0) + 1 })
+            .eq('id', affiliate.id);
+        }
+      }
+    } catch (e) {
+      console.error('Error linking referral:', e);
+    }
   }
 };

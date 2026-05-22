@@ -257,6 +257,61 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     )}
                   </motion.div>
                 )}
+                
+                {/* Infrastructure & Status Tools */}
+                {view !== 'landing' && (
+                  <div className="mt-8 pt-6 border-t border-white/5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Advanced Infrastructure</p>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-brand-accent animate-pulse" />
+                        <span className="text-[8px] font-bold text-brand-accent uppercase">Live Monitoring</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-brand-accent/30 transition-all cursor-help relative">
+                        <p className="text-[8px] font-bold text-white/40 uppercase mb-1">Injected Config</p>
+                        <p className={cn(
+                          "text-[10px] font-mono",
+                          dbInfo.hasInjectedConfig ? "text-green-400" : "text-white/20"
+                        )}>
+                          {dbInfo.hasInjectedConfig ? "ACTIVE" : "PENDING"}
+                        </p>
+                      </div>
+                      <div className="bg-white/5 p-3 rounded-xl border border-white/5 group hover:border-brand-accent/30 transition-all cursor-help">
+                        <p className="text-[8px] font-bold text-white/40 uppercase mb-1">Backend Origin</p>
+                        <p className="text-[10px] font-mono text-white/60 truncate italic">
+                          {dbInfo.origin}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!isSupabaseConfigured && (
+                      <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl space-y-3">
+                        <p className="text-[9px] font-bold text-orange-400 uppercase leading-snug">
+                          <AlertCircle className="w-3 h-3 inline mr-1 -mt-0.5" />
+                          Deployment Checklist
+                        </p>
+                        <ul className="text-[8px] text-orange-300/60 space-y-2 uppercase tracking-wide font-medium">
+                          <li className="flex items-start gap-2">
+                            <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">1</span>
+                            <span>Points DNS A-Records to Cloud Run IP</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">2</span>
+                            <span>Wait for Let's Encrypt SSL Issuance (15-60m)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">3</span>
+                            <span>Verify trysellscan.com does not serve GH Pages 404</span>
+                          </li>
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
                 <div className="inline-flex w-14 h-14 items-center justify-center rounded-2xl bg-brand-accent/20 text-brand-accent mb-4 shadow-[0_0_20px_rgba(85,205,209,0.2)]">
                   {mode === 'magic-link' ? <Wand2 className="w-7 h-7" /> : <Sparkles className="w-7 h-7" />}
@@ -271,8 +326,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                       ? 'Create a free account to get started' 
                       : 'No password needed. Simple and secure.'}
                 </p>
-              </div>
-
+              
               {error && (
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}

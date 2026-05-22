@@ -73,3 +73,23 @@ export interface UserLocation {
   method: 'auto' | 'manual';
   timestamp: number;
 }
+
+export interface AffiliateProfile {
+  id: string;
+  userId: string;
+  affiliateCode: string;
+  totalEarnings: number;
+  pendingEarnings: number;
+  referralCount: number;
+  createdAt: number;
+}
+
+export interface Referral {
+  id: string;
+  affiliateId: string;
+  referredUserId: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  commissionAmount: number;
+  type: 'sale' | 'conversion';
+  createdAt: number;
+}

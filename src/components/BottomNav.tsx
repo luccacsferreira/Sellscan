@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { LayoutDashboard, Camera, History, BarChart2, Settings } from 'lucide-react';
+import { LayoutDashboard, Camera, History, BarChart2, Settings, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface BottomNavProps {
@@ -15,8 +15,10 @@ interface BottomNavProps {
 export function BottomNav({ activeView, onNavigate }: BottomNavProps) {
   const navItems = [
     { id: 'home', label: 'Home', icon: LayoutDashboard },
-    { id: 'upload', label: 'Scan', icon: Camera, primary: true },
     { id: 'history', label: 'History', icon: History },
+    { id: 'upload', label: 'Scan', icon: Camera, primary: true },
+    { id: 'affiliate', label: 'Partner', icon: Sparkles },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (

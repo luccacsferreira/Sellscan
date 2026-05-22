@@ -29,7 +29,7 @@ import { UserLocation } from './types';
 import { AuthCallback } from './components/AuthCallback';
 import { DocsPage } from './components/DocsPage';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate';
 
 type LoadingStage = 
   | 'identifying' 
@@ -80,6 +80,18 @@ function AppContent() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Check for referral code in URL
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      localStorage.setItem('sellscan_ref_code', refCode);
+      // Clean up URL without refreshing
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
   }, []);
 
   const [history, setHistory] = useState<ScanResult[]>(() => {
@@ -582,12 +594,36 @@ function AppContent() {
         onViewAnalytics={() => setView('analytics')}
         onViewSettings={() => setView('settings')}
         onViewDocs={() => setView('docs')}
+        onViewAffiliate={() => setView('affiliate')}
         onSignInClick={() => setShowAuthModal(true)}
         isLoggedIn={!!user}
         userEmail={user?.email}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
+
+      {/* Referral Welcome Banner */}
+      {localStorage.getItem('sellscan_ref_code') && view !== 'landing' && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[90]">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-brand-accent text-brand-bg px-4 py-2 rounded-full shadow-2xl flex items-center gap-3 border border-white/20 whitespace-nowrap"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Partner Referral Applied</span>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('sellscan_ref_code');
+                window.location.reload();
+              }}
+              className="p-1 hover:bg-black/10 rounded-full"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       {/* Critical Configuration Warning Banner */}
       {!isSupabaseConfigured && view !== 'landing' && (
@@ -931,6 +967,18 @@ function AppContent() {
               className="min-h-screen pt-20"
             >
               <DocsPage onBack={() => setView('landing')} />
+            </motion.div>
+          )}
+
+          {view === 'affiliate' && (
+            <motion.div
+              key="affiliate"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              className="min-h-screen pt-20"
+            >
+              <AffiliatePage />
             </motion.div>
           )}
         </AnimatePresence>

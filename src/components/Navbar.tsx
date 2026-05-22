@@ -18,6 +18,7 @@ interface NavbarProps {
   onViewAnalytics?: () => void;
   onViewSettings?: () => void;
   onViewDocs?: () => void;
+  onViewAffiliate?: () => void;
   onSignInClick?: () => void;
   isLoggedIn?: boolean;
   userEmail?: string;
@@ -32,6 +33,7 @@ export function Navbar({
   onViewAnalytics,
   onViewSettings,
   onViewDocs,
+  onViewAffiliate,
   onSignInClick,
   isLoggedIn = false, 
   userEmail,
@@ -100,6 +102,13 @@ export function Navbar({
                   className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
                 >
                   History
+                </button>
+                <button 
+                  onClick={onViewAffiliate} 
+                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest flex items-center gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-brand-accent" />
+                  Partners
                 </button>
               </>
             ) : (
@@ -210,6 +219,12 @@ export function Navbar({
                       className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
                     >
                       History
+                    </button>
+                    <button 
+                      onClick={() => handleMobileNav(onViewAffiliate!)} 
+                      className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
+                    >
+                      Partner Program
                     </button>
                     <button 
                       onClick={() => handleMobileNav(onViewSettings!)} 
