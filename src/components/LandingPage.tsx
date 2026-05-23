@@ -5,8 +5,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search, Check, X } from 'lucide-react';
+import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search, Check, X, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { supabase } from '../lib/supabase';
 
 import af1Example from '../assets/Example_Image.jpeg';
 import clothesImg from '../assets/clothes.png';
@@ -26,12 +27,86 @@ import shoeImg from '../assets/612eQB-fcqL._AC_UF894,1000_QL80_.png';
 import slImg from '../assets/s-l400.png';
 import clocksImg from '../assets/antique-clocks.png';
 
+// Configuration for Stripe Price IDs
+const STRIPE_PRICES = {
+  BASIC_MONTHLY: 'price_1TX3cnRCzE4WmLf5UJseWbYZ',
+  BASIC_YEARLY: 'price_1TX3iCRCzE4WmLf5fwXNkaBB',
+  PREMIUM_MONTHLY: 'price_1TX3f0RCzE4WmLf5519Kp8zO',
+  PREMIUM_YEARLY: 'price_1TX3jjRCzE4WmLf59KuysZhL',
+};
+
 interface LandingPageProps {
   onStart: () => void;
 }
 
 export function LandingPage({ onStart }: LandingPageProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+
+  const handleCheckout = async (tier: string) => {
+    if (tier === 'Free') {
+      onStart();
+      return;
+    }
+
+    try {
+      setLoadingTier(tier);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        onStart(); // Open auth modal
+        return;
+      }
+
+      let priceId = '';
+      if (tier === 'Basic') {
+        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.BASIC_MONTHLY : STRIPE_PRICES.BASIC_YEARLY;
+      } else if (tier === 'Premium') {
+        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.PREMIUM_MONTHLY : STRIPE_PRICES.PREMIUM_YEARLY;
+      }
+
+      if (priceId.includes('_1PXXXXXXXXXXXXXX')) {
+        alert("Action Required: Please copy your actual Price IDs from Stripe into LandingePage.tsx (STRIPE_PRICES constant).");
+        setLoadingTier(null);
+        return;
+      }
+
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId,
+          userId: session.user.id,
+          userEmail: session.user.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("💳 Checkout session created:", data);
+      
+      if (data.url) {
+        // Use top-level navigation to ensure Stripe Checkout opens even from an iframe
+        try {
+          window.top!.location.href = data.url;
+        } catch (e) {
+          window.location.href = data.url;
+        }
+      } else {
+        throw new Error("No checkout URL returned from server");
+      }
+    } catch (err: any) {
+      console.error("Checkout failed:", err);
+      alert("Checkout could not be started: " + (err.message || "Unknown error") + "\n\nTip: Make sure STRIPE_SECRET_KEY is set in your environment variables.");
+    } finally {
+      setLoadingTier(null);
+    }
+  };
 
   return (
     <div className="pt-32 pb-20 px-4">
@@ -293,7 +368,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: false, margin: "-100px" }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="text-center mb-24"
+          className="text-center mb-12"
         >
           <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4 block">Pricing Plans</span>
           <h2 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter leading-none">Level up your <br className="hidden md:block" /> resale game.</h2>
@@ -302,6 +377,36 @@ export function LandingPage({ onStart }: LandingPageProps) {
             Upgrade or cancel anytime.
           </p>
         </motion.div>
+
+        {/* Monthly/Yearly Toggle */}
+        <div className="flex justify-center mb-16">
+          <div className="bg-brand-card/30 p-1 rounded-2xl border border-brand-border flex gap-1">
+            <button 
+              onClick={() => setBillingCycle('monthly')}
+              className={cn(
+                "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all",
+                billingCycle === 'monthly' ? "bg-brand-accent text-brand-bg shadow-lg" : "text-brand-text-muted hover:text-brand-text underline-none"
+              )}
+            >
+              Monthly
+            </button>
+            <button 
+              onClick={() => setBillingCycle('yearly')}
+              className={cn(
+                "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2",
+                billingCycle === 'yearly' ? "bg-brand-accent text-brand-bg shadow-lg" : "text-brand-text-muted hover:text-brand-text"
+              )}
+            >
+              Yearly
+              <span className={cn(
+                "text-[8px] px-1.5 py-0.5 rounded-full border lowercase",
+                billingCycle === 'yearly' ? "bg-white/20 border-white/30 text-white" : "bg-brand-accent/10 border-brand-accent/20 text-brand-accent"
+              )}>
+                -20%
+              </span>
+            </button>
+          </div>
+        </div>
 
         <motion.div 
           initial="initial"
@@ -319,7 +424,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           <PricingCard 
              tier="Free"
              description="Perfect for occasional decluttering."
-             priceMonthly="€0"
+             priceLabel="$0"
              credits="7 Credits / Month"
              features={[
                { text: "Uses Gemini Flash only", included: true },
@@ -334,12 +439,14 @@ export function LandingPage({ onStart }: LandingPageProps) {
              isActive={hoveredIndex === 0}
              onHover={() => setHoveredIndex(0)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Free')}
+             isLoading={loadingTier === 'Free'}
           />
 
           <PricingCard 
              tier="Basic"
              description="For the regular flipper hitting the local charity shops."
-             priceMonthly="€8.99"
+             priceLabel={billingCycle === 'monthly' ? '$8.99' : '$6.74'}
              credits="40 Credits / Month"
              features={[
                { text: "Gemini Pro + GPT-4o", included: true },
@@ -349,18 +456,20 @@ export function LandingPage({ onStart }: LandingPageProps) {
                { text: "Limited Chatbot access", included: true },
                { text: "Price range estimation", included: true },
              ]}
-             cta="Go Basic"
+             cta={billingCycle === 'monthly' ? 'Go Basic' : 'Save with Yearly'}
              variant="primary"
              popular
              isActive={hoveredIndex === 1 || hoveredIndex === null}
              onHover={() => setHoveredIndex(1)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Basic')}
+             isLoading={loadingTier === 'Basic'}
           />
 
           <PricingCard 
-             tier="Pro"
+             tier="Premium"
              description="For pro resellers scaling their business to full-time."
-             priceMonthly="€14.99"
+             priceLabel={billingCycle === 'monthly' ? '$14.99' : '$10.34'}
              credits="120 Credits / Month"
              features={[
                { text: "Best Gemini + GPT-4o", included: true },
@@ -370,11 +479,13 @@ export function LandingPage({ onStart }: LandingPageProps) {
                { text: "Scam & Risk detection", included: true },
                { text: "Full Priority processing", included: true },
              ]}
-             cta="Go Pro"
+             cta="Go Premium"
              variant="accent"
              isActive={hoveredIndex === 2}
              onHover={() => setHoveredIndex(2)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Premium')}
+             isLoading={loadingTier === 'Premium'}
           />
         </motion.div>
 
@@ -468,7 +579,7 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
 
 function PricingCard({ 
   tier, 
-  priceMonthly, 
+  priceLabel, 
   description, 
   features, 
   cta, 
@@ -477,10 +588,12 @@ function PricingCard({
   credits,
   isActive,
   onHover,
-  onLeave
+  onLeave,
+  onAction,
+  isLoading
 }: { 
   tier: string, 
-  priceMonthly: string, 
+  priceLabel: string, 
   description: string, 
   features: { text: string, included: boolean }[], 
   cta: string, 
@@ -489,7 +602,9 @@ function PricingCard({
   credits: string,
   isActive: boolean,
   onHover: () => void,
-  onLeave: () => void
+  onLeave: () => void,
+  onAction?: () => void,
+  isLoading?: boolean
 }) {
   return (
     <motion.div 
@@ -546,7 +661,7 @@ function PricingCard({
           {description}
         </p>
         <div className="flex items-baseline gap-1 mb-6">
-          <span className="text-5xl font-black tracking-tight">{priceMonthly}</span>
+          <span className="text-5xl font-black tracking-tight">{priceLabel}</span>
           <span className="text-brand-text-muted text-sm font-bold">/mo</span>
         </div>
         <div className={cn(
@@ -578,13 +693,17 @@ function PricingCard({
         ))}
       </div>
 
-      <button className={cn(
-        "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 active:scale-[0.98] cursor-pointer",
-        isActive 
-          ? "bg-brand-accent text-brand-bg shadow-[0_0_40px_-5px_rgba(85,205,209,0.7)] hover:brightness-110" 
-          : "bg-white/5 border border-brand-border/60 text-brand-text-muted"
-      )}>
-        {cta}
+      <button 
+        onClick={onAction}
+        disabled={isLoading}
+        className={cn(
+          "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+          isActive 
+            ? "bg-brand-accent text-brand-bg shadow-[0_0_40px_-5px_rgba(85,205,209,0.7)] hover:brightness-110" 
+            : "bg-white/5 border border-brand-border/60 text-brand-text-muted hover:bg-white/10"
+        )}
+      >
+        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : cta}
       </button>
     </motion.div>
   );
