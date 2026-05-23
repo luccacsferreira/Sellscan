@@ -171,6 +171,22 @@ function AppContent() {
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
 
+  const handleAuthSuccess = (authenticatedUser: User) => {
+    setShowAuthModal(false);
+    setUser(authenticatedUser);
+
+    if (pendingScan) {
+      handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
+      setPendingScan(null);
+    } else if (pendingCheckout) {
+      // If we're on the landing page and have a pending checkout, stay here
+      // so the user can click the button again, now logged in.
+      setPendingCheckout(null);
+    } else if (view === 'landing') {
+      setView('home');
+    }
+  };
+
   // Handle OAuth Callback from Popup
   useEffect(() => {
     const isCallback = window.location.hash.includes('access_token') || 
@@ -192,9 +208,7 @@ function AppContent() {
         // Refresh session
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          setUser(session.user);
-          setShowAuthModal(false);
-          // If we have a pending scan, it will be handled by the AuthModal callback
+          handleAuthSuccess(session.user);
         }
         setIsAuthInitializing(false);
         setLoadingUserInfo(null);
@@ -1272,22 +1286,7 @@ function AppContent() {
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
-        onSuccess={(authenticatedUser) => {
-          setShowAuthModal(false);
-          setUser(authenticatedUser); // Just in case onAuthStateChange is slower
-
-          if (pendingScan) {
-            handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
-            setPendingScan(null);
-          } else if (pendingCheckout) {
-            // If they were trying to buy a plan, DON'T switch view to home.
-            // Let them stay on landing page so they can click the button again, 
-            // now that they are logged in.
-            setPendingCheckout(null);
-          } else if (view === 'landing') {
-            setView('home');
-          }
-        }} 
+        onSuccess={handleAuthSuccess} 
       />
     </div>
   );
