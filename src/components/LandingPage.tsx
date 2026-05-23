@@ -37,9 +37,11 @@ const STRIPE_PRICES = {
 
 interface LandingPageProps {
   onStart: () => void;
+  onSignIn: (tier?: string) => void;
+  isLoggedIn: boolean;
 }
 
-export function LandingPage({ onStart }: LandingPageProps) {
+export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.user) {
-        onStart(); // Open auth modal
+        onSignIn(tier); // Open auth modal and save intent
         return;
       }
 

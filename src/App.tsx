@@ -167,6 +167,7 @@ function AppContent() {
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(null);
+  const [pendingCheckout, setPendingCheckout] = useState<string | null>(null);
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
 
@@ -824,7 +825,14 @@ function AppContent() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <LandingPage onStart={() => setView('home')} />
+              <LandingPage 
+                onStart={() => user ? setView('home') : setShowAuthModal(true)} 
+                onSignIn={(tier) => {
+                  if (tier) setPendingCheckout(tier);
+                  setShowAuthModal(true);
+                }}
+                isLoggedIn={!!user}
+              />
             </motion.div>
           )}
 
@@ -1265,11 +1273,21 @@ function AppContent() {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
         onSuccess={(authenticatedUser) => {
+          setShowAuthModal(false);
+          setUser(authenticatedUser); // Just in case onAuthStateChange is slower
+
           if (pendingScan) {
             handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
             setPendingScan(null);
+          } else if (pendingCheckout) {
+            // If they were trying to buy a plan, DON'T switch view to home.
+            // Let them stay on landing page so they can click the button again, 
+            // now that they are logged in.
+            setPendingCheckout(null);
+          } else if (view === 'landing') {
+            setView('home');
           }
-        }}
+        }} 
       />
     </div>
   );

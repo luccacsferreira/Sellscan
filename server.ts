@@ -277,11 +277,18 @@ async function startServer() {
 
       console.log(`💳 Creating Stripe checkout session for ${userEmail} | Price: ${priceId}`);
 
+      if (!process.env.STRIPE_SECRET_KEY) {
+        console.error("❌ STRIPE_SECRET_KEY is missing in env variables.");
+        return res.status(500).json({ error: "Stripe is not configured on the server." });
+      }
+
       const protocol = req.headers['x-forwarded-proto'] || 'http';
       const host = req.headers.host;
       const origin = `${protocol}://${host}`;
 
-      const session = await stripe.checkout.sessions.create({
+      console.log(`🌐 Origins: SUCCESS=${origin}/dashboard, CANCEL=${origin}/#pricing`);
+
+      const sessionOpts: Stripe.Checkout.SessionCreateParams = {
         payment_method_types: ['card'],
         line_items: [
           {
@@ -293,12 +300,15 @@ async function startServer() {
         success_url: successUrl || `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: cancelUrl || `${origin}/#pricing`,
         customer_email: userEmail,
-        client_reference_id: userId, // Useful for fulfillment in webhooks
+        client_reference_id: userId,
         metadata: {
-          userId: userId || ""
+          userId: userId || "",
+          priceId: priceId
         }
-      });
+      };
 
+      const session = await stripe.checkout.sessions.create(sessionOpts);
+      console.log(`✅ Session created: ${session.id} | URL: ${session.url?.substring(0, 30)}...`);
       res.json({ url: session.url });
     } catch (error: any) {
       console.error("Stripe Checkout Error:", error);
