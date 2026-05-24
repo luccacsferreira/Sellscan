@@ -21,6 +21,12 @@ async function startServer() {
   console.log("🔍 Scanning environment for keys...");
   const envKeys = Object.keys(process.env);
   
+  // Log all keys found (censored) to help debug presence
+  console.log("🔑 Detected Env Keys:", envKeys.map(k => {
+    if (k.includes('SESSION') || k.includes('TOKEN') || k.includes('PASS')) return `${k}: [SECRET]`;
+    return k;
+  }).join(', '));
+
   envKeys.forEach(envKey => {
     const key = envKey.toUpperCase();
     let val = process.env[envKey];
@@ -35,7 +41,7 @@ async function startServer() {
     if (val.startsWith('AIza')) {
        if (!process.env.GEMINI_API_KEY) {
          process.env.GEMINI_API_KEY = val;
-         console.log(`✨ [AUTO-DETECT] Identified Gemini Key in ${envKey}`);
+         console.log(`✨ [AUTO-DETECT] Identified Gemini-compatible Key in ${envKey}`);
        }
     }
     // Stripe keys start with sk_live_ or sk_test_
@@ -51,6 +57,14 @@ async function startServer() {
          process.env.OPENAI_API_KEY = val;
          console.log(`✨ [AUTO-DETECT] Identified OpenAI Key in ${envKey}`);
        }
+    }
+    // Supabase URL identification
+    if (val.includes('.supabase.co')) {
+      if (!process.env.SUPABASE_URL) {
+        process.env.SUPABASE_URL = val;
+        process.env.VITE_SUPABASE_URL = val;
+        console.log(`✨ [AUTO-DETECT] Identified Supabase URL in ${envKey}`);
+      }
     }
 
     // 2. Name-based fallback (Existing logic)
@@ -106,8 +120,8 @@ async function startServer() {
   
   const configStatus = {
     NODE_ENV: process.env.NODE_ENV || 'development',
-    STRIPE: process.env.STRIPE_SECRET_KEY ? "CONFIGURED (Ends in: " + process.env.STRIPE_SECRET_KEY.slice(-4) + ")" : "MISSING",
-    GEMINI: process.env.GEMINI_API_KEY ? "CONFIGURED (Ends in: " + process.env.GEMINI_API_KEY.slice(-4) + ")" : "MISSING",
+    STRIPE: process.env.STRIPE_SECRET_KEY ? "CONFIGURED (Ends: " + process.env.STRIPE_SECRET_KEY.slice(-4) + ")" : "MISSING",
+    GEMINI: process.env.GEMINI_API_KEY ? "CONFIGURED (Ends: " + process.env.GEMINI_API_KEY.slice(-4) + ")" : "MISSING",
     OPENAI: process.env.OPENAI_API_KEY ? "CONFIGURED" : "MISSING",
     SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "CONFIGURED" : "MISSING",
     ADMIN: process.env.SUPABASE_SERVICE_ROLE_KEY ? "CONFIGURED" : "MISSING",
@@ -486,7 +500,7 @@ async function startServer() {
         
         // Detailed debug info for console
         const debug = {
-          status: config.VITE_SUPABASE_URL ? 'CONFIGURED' : 'UNCONFIGURED',
+          status: config.VITE_SUPABASE_URL ? 'READY' : 'WAITING_FOR_CONFIG',
           env: process.env.NODE_ENV,
           detected_keys: Object.keys(process.env).filter(k => 
             !k.includes('SESSION') && !k.includes('TOKEN') && !k.includes('PASS')
@@ -495,18 +509,26 @@ async function startServer() {
             gemini: !!process.env.GEMINI_API_KEY,
             stripe: !!process.env.STRIPE_SECRET_KEY,
             openai: !!process.env.OPENAI_API_KEY,
-            supabase: !!process.env.SUPABASE_URL
+            supabase: !!(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL)
           },
-          url_preview: config.VITE_SUPABASE_URL ? `${config.VITE_SUPABASE_URL.substring(0, 15)}...` : null,
           host: req.headers.host,
           time: new Date().toISOString(),
-          version: '1.0.2'
+          version: '1.1.0'
         };
 
         const configScript = `
           <script id="supabase-config-injection">
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ System Environment Audit:', ${JSON.stringify(debug)});
+            console.log('%c SELLSCAN SYSTEM BOOT ', 'background: #55cdd1; color: #000; font-weight: bold; padding: 4px; border-radius: 4px;');
+            console.log('🛡️ Status:', ${JSON.stringify(debug.status)});
+            console.log('🤖 Gemini:', ${debug.resolved.gemini ? "'✅ Configured'" : "'❌ Missing'"});
+            console.log('💳 Stripe:', ${debug.resolved.stripe ? "'✅ Configured'" : "'❌ Missing'"});
+            console.log('📊 Supabase:', ${debug.resolved.supabase ? "'✅ Configured'" : "'❌ Missing'"});
+            console.log('🧩 Env Keys detected:', ${JSON.stringify(debug.detected_keys || [])});
+            
+            if (!${debug.resolved.gemini}) {
+              console.warn('⚡ SELLSCAN: GEMINI_API_KEY is missing. AI analysis will run in Demo Mode only.');
+            }
           </script>
         `;
         
