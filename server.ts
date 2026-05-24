@@ -10,15 +10,61 @@ import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 
+// Helper to find a key across multiple naming conventions (VITE_ prefix, etc.)
+const getEnv = (key: string) => {
+  return process.env[key] || process.env[`VITE_${key}`] || process.env[`NEXT_PUBLIC_${key}`];
+};
+
 async function startServer() {
+  // Sync environment variables to handle common AIS setup patterns (handling prefixes)
+  const keysToSync = [
+    'STRIPE_SECRET_KEY', 
+    'GEMINI_API_KEY', 
+    'GOOGLE_API_KEY', // Check for GOOGLE_API_KEY as well
+    'OPENAI_API_KEY', 
+    'SUPABASE_URL', 
+    'SUPABASE_ANON_KEY', 
+    'SUPABASE_SERVICE_ROLE_KEY'
+  ];
+  
+  keysToSync.forEach(k => {
+    const val = getEnv(k);
+    if (val && !process.env[k]) {
+      process.env[k] = val;
+    }
+  });
+
+  // If GEMINI_API_KEY is missing but GOOGLE_API_KEY is present, bridge them
+  if (!process.env.GEMINI_API_KEY && process.env.GOOGLE_API_KEY) {
+    process.env.GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
+  }
+
+  console.log("🚀 Server starting...");
+  console.log("🛠️ Environment Audit (Keys Found):", 
+    Object.keys(process.env).filter(k => 
+      !k.includes('SESSION') && !k.includes('TOKEN') && !k.includes('PASS')
+    ).join(', ')
+  );
+  
+  console.log("📋 Configuration Status:", {
+    NODE_ENV: process.env.NODE_ENV,
+    STRIPE: process.env.STRIPE_SECRET_KEY ? "SET" : "MISSING",
+    GEMINI: process.env.GEMINI_API_KEY ? "SET" : "MISSING",
+    OPENAI: process.env.OPENAI_API_KEY ? "SET" : "MISSING",
+    SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "SET" : "MISSING",
+  });
+
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
   const getStripe = () => {
-    if (!process.env.STRIPE_SECRET_KEY) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      console.error("❌ getStripe triggered but STRIPE_SECRET_KEY is undefined/empty in process.env");
+      console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(process.env.STRIPE_SECRET_KEY);
+    return new Stripe(key);
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
@@ -167,10 +213,12 @@ async function startServer() {
 
   app.post("/api/ai/gemini", async (req, res) => {
     try {
-      if (!process.env.GEMINI_API_KEY) {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        console.error("❌ Gemini API request failed: GEMINI_API_KEY is missing.");
         return res.status(500).json({ error: "GEMINI_API_KEY is not configured on the server." });
       }
-      const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
+      const genAI = new GoogleGenAI(apiKey);
       const { prompt, image, messages, analysis } = req.body;
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -217,10 +265,12 @@ async function startServer() {
 
   app.post("/api/ai/gpt", async (req, res) => {
     try {
-      if (!process.env.OPENAI_API_KEY) {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        console.error("❌ GPT API request failed: OPENAI_API_KEY is missing.");
         return res.status(500).json({ error: "OPENAI_API_KEY is not configured on the server." });
       }
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const openai = new OpenAI({ apiKey });
       const { prompt, image, messages } = req.body;
       
       let gptMessages: any[] = [];
