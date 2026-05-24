@@ -23,9 +23,37 @@ async function startServer() {
   
   envKeys.forEach(envKey => {
     const key = envKey.toUpperCase();
-    const val = process.env[envKey];
+    let val = process.env[envKey];
     if (!val || typeof val !== 'string' || val.trim() === '') return;
 
+    // Aggressive quote stripping
+    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+    if (val.startsWith("'") && val.endsWith("'")) val = val.slice(1, -1);
+
+    // 1. Value-based identification (THE MOST RELIABLE)
+    // Gemini/Google keys start with AIza
+    if (val.startsWith('AIza')) {
+       if (!process.env.GEMINI_API_KEY) {
+         process.env.GEMINI_API_KEY = val;
+         console.log(`✨ [AUTO-DETECT] Identified Gemini Key in ${envKey}`);
+       }
+    }
+    // Stripe keys start with sk_live_ or sk_test_
+    if (val.startsWith('sk_')) {
+       if (!process.env.STRIPE_SECRET_KEY) {
+         process.env.STRIPE_SECRET_KEY = val;
+         console.log(`✨ [AUTO-DETECT] Identified Stripe Secret Key in ${envKey}`);
+       }
+    }
+    // OpenAI keys start with sk-
+    if (val.startsWith('sk-') && !val.includes('sk_')) { // sk- is OpenAI, sk_ is Stripe
+       if (!process.env.OPENAI_API_KEY) {
+         process.env.OPENAI_API_KEY = val;
+         console.log(`✨ [AUTO-DETECT] Identified OpenAI Key in ${envKey}`);
+       }
+    }
+
+    // 2. Name-based fallback (Existing logic)
     // Gemini / Google Check: Look for GEMINI, GOOGLE, AI, or even just "KEY" patterns
     if (
       key.includes('GEMINI') || 
@@ -83,6 +111,7 @@ async function startServer() {
     OPENAI: process.env.OPENAI_API_KEY ? "CONFIGURED" : "MISSING",
     SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "CONFIGURED" : "MISSING",
     ADMIN: process.env.SUPABASE_SERVICE_ROLE_KEY ? "CONFIGURED" : "MISSING",
+    CWD: process.cwd(),
     TOTAL_ENV_KEYS: envKeys.length
   };
   
@@ -195,10 +224,10 @@ async function startServer() {
       VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 
                               process.env.SUPABASE_ANON_KEY || 
                               process.env.VITE_SUPABASE_ANC || 
-                              process.env.SUPABASE_ANON_KE
+                              process.env.SUPABASE_ANON_KEY
     };
     
-    console.log(`🛡️ Serving /env-config.js | Host: ${req.headers.host} | URL: ${config.VITE_SUPABASE_URL ? 'FOUND' : 'MISSING'}`);
+    console.log(`🛡️ Serving /env-config.js | Host: ${req.headers.host} | CWD: ${process.cwd()} | URL: ${config.VITE_SUPABASE_URL ? 'FOUND' : 'MISSING'}`);
 
     res.setHeader('Content-Type', 'application/javascript');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -450,7 +479,7 @@ async function startServer() {
           VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 
                                   process.env.SUPABASE_ANON_KEY || 
                                   process.env.VITE_SUPABASE_ANC || 
-                                  process.env.SUPABASE_ANON_KE ||
+                                  process.env.SUPABASE_ANON_KEY ||
                                   process.env.VITE_SUPABASE_ANON ||
                                   process.env.SUPABASE_ANON
         };

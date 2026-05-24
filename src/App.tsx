@@ -399,7 +399,10 @@ function AppContent() {
       setView('dashboard');
     } catch (error) {
       console.error("Analysis failed:", error);
-      if (error instanceof Error && error.message === "API_KEY_MISSING") {
+      const isMissingKey = error instanceof Error && 
+        (error.message === "API_KEY_MISSING" || error.message.includes("GEMINI_API_KEY is not configured"));
+        
+      if (isMissingKey) {
         if (confirm("Gemini API Key is not set in project settings. Would you like to run in Demo Mode to check the layout? \n\nOtherwise, you can add your key in the Settings > Secrets panel.")) {
           handleAnalyze(image, description, true);
         }
