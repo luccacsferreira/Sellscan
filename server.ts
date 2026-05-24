@@ -16,43 +16,62 @@ const getEnv = (key: string) => {
 };
 
 async function startServer() {
-  // Sync environment variables to handle common AIS setup patterns (handling prefixes)
-  const keysToSync = [
-    'STRIPE_SECRET_KEY', 
-    'GEMINI_API_KEY', 
-    'GOOGLE_API_KEY', // Check for GOOGLE_API_KEY as well
-    'OPENAI_API_KEY', 
-    'SUPABASE_URL', 
-    'SUPABASE_ANON_KEY', 
-    'SUPABASE_SERVICE_ROLE_KEY'
-  ];
-  
-  keysToSync.forEach(k => {
-    const val = getEnv(k);
-    if (val && !process.env[k]) {
-      process.env[k] = val;
+  // 1. Aggressive Brute-Force Sync: Scan all env vars for common key patterns
+  // This handles naming variations, case sensitivity, and unexpected prefixes
+  Object.keys(process.env).forEach(envKey => {
+    const key = envKey.toUpperCase();
+    const val = process.env[envKey];
+    if (!val || typeof val !== 'string' || val.trim() === '') return;
+
+    // Gemini / Google Check
+    if ((key.includes('GEMINI') && key.includes('KEY')) || (key.includes('GOOGLE') && key.includes('KEY'))) {
+      if (!process.env.GEMINI_API_KEY) {
+        console.log(`🔀 Mapping ${envKey} -> GEMINI_API_KEY`);
+        process.env.GEMINI_API_KEY = val;
+      }
+    }
+    // Stripe Check
+    if (key.includes('STRIPE') && (key.includes('SECRET') || key.includes('KEY') || key.includes('SK_'))) {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        console.log(`🔀 Mapping ${envKey} -> STRIPE_SECRET_KEY`);
+        process.env.STRIPE_SECRET_KEY = val;
+      }
+    }
+    // OpenAI Check
+    if (key.includes('OPENAI') && key.includes('KEY')) {
+      if (!process.env.OPENAI_API_KEY) {
+        console.log(`🔀 Mapping ${envKey} -> OPENAI_API_KEY`);
+        process.env.OPENAI_API_KEY = val;
+      }
+    }
+    // Supabase URL
+    if (key.includes('SUPABASE') && key.includes('URL')) {
+      if (!process.env.SUPABASE_URL) process.env.SUPABASE_URL = val;
+      if (!process.env.VITE_SUPABASE_URL) process.env.VITE_SUPABASE_URL = val;
+    }
+    // Supabase Anon Key
+    if (key.includes('SUPABASE') && (key.includes('ANON') || key.includes('PUBLIC')) && key.includes('KEY')) {
+      if (!process.env.SUPABASE_ANON_KEY) process.env.SUPABASE_ANON_KEY = val;
+      if (!process.env.VITE_SUPABASE_ANON_KEY) process.env.VITE_SUPABASE_ANON_KEY = val;
+    }
+    // Supabase Service Role
+    if (key.includes('SUPABASE') && (key.includes('SERVICE') || key.includes('SECRET') || key.includes('ADMIN')) && key.includes('KEY')) {
+      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = val;
     }
   });
 
-  // If GEMINI_API_KEY is missing but GOOGLE_API_KEY is present, bridge them
-  if (!process.env.GEMINI_API_KEY && process.env.GOOGLE_API_KEY) {
-    process.env.GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
-  }
-
   console.log("🚀 Server starting...");
-  console.log("🛠️ Environment Audit (Keys Found):", 
-    Object.keys(process.env).filter(k => 
-      !k.includes('SESSION') && !k.includes('TOKEN') && !k.includes('PASS')
-    ).join(', ')
-  );
   
-  console.log("📋 Configuration Status:", {
-    NODE_ENV: process.env.NODE_ENV,
-    STRIPE: process.env.STRIPE_SECRET_KEY ? "SET" : "MISSING",
-    GEMINI: process.env.GEMINI_API_KEY ? "SET" : "MISSING",
+  const configStatus = {
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    STRIPE: process.env.STRIPE_SECRET_KEY ? "SET (Last 4: " + process.env.STRIPE_SECRET_KEY.slice(-4) + ")" : "MISSING",
+    GEMINI: process.env.GEMINI_API_KEY ? "SET (Last 4: " + process.env.GEMINI_API_KEY.slice(-4) + ")" : "MISSING",
     OPENAI: process.env.OPENAI_API_KEY ? "SET" : "MISSING",
     SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "SET" : "MISSING",
-  });
+    SUPABASE_ADMIN: process.env.SUPABASE_SERVICE_ROLE_KEY ? "SET" : "MISSING",
+  };
+  
+  console.log("📋 Configuration Status:", configStatus);
 
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
@@ -204,10 +223,32 @@ async function startServer() {
     res.json({
       gemini: !!process.env.GEMINI_API_KEY,
       openai: !!process.env.OPENAI_API_KEY,
+      stripe: !!process.env.STRIPE_SECRET_KEY,
       supabase: !!(process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL),
       supabaseKey: !!(process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
       node_env: process.env.NODE_ENV,
-      env_keys: Object.keys(process.env).filter(k => k.includes('SUPABASE'))
+      env_keys: Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN'))
+    });
+  });
+
+  app.get("/api/debug/env", (req, res) => {
+    // Only return keys, NEVER values for security
+    const audit = Object.keys(process.env).map(k => ({
+      key: k,
+      hasValue: !!process.env[k],
+      length: process.env[k]?.length || 0,
+      suffix: process.env[k]?.slice(-4) || 'N/A'
+    }));
+
+    res.json({
+      status: "Aggressive Env Check",
+      audit,
+      resolved: {
+        GEMINI: !!process.env.GEMINI_API_KEY,
+        STRIPE: !!process.env.STRIPE_SECRET_KEY,
+        OPENAI: !!process.env.OPENAI_API_KEY,
+        SUPABASE: !!process.env.SUPABASE_URL
+      }
     });
   });
 
