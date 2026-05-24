@@ -198,7 +198,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           <div className="flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider mb-3">
             <Zap className="w-3 h-3 fill-current" /> Quick Verdict
           </div>
-          <p className="text-2xl font-bold leading-tight tracking-tight text-white/90">{analysis.quickVerdict}</p>
+          <p className="text-2xl font-bold leading-tight tracking-tight text-white/90">{analysis?.quickVerdict || 'No verdict available'}</p>
         </motion.div>
 
         <div className="space-y-6 pb-12">
@@ -214,14 +214,14 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
               <div className="mb-6">
                 <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-[0.2em] block mb-3 opacity-60">Identified Item</span>
                 <h3 className="text-3xl font-black tracking-tight text-white/95 leading-tight mb-2">
-                  {analysis.productDetails.brand} <span className="text-brand-accent">{analysis.productDetails.type}</span>
+                  {analysis?.productDetails?.brand || 'Unknown'} <span className="text-brand-accent">{analysis?.productDetails?.type || 'Product'}</span>
                 </h3>
                 <p className="text-brand-text-muted text-sm max-w-xl">This item has been cross-referenced across major reselling databases for accurate valuation.</p>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-                <DetailItem label="Condition" value={analysis.productDetails.condition} />
-                <DetailItem label="Category" value={analysis.productDetails.category} />
-                <DetailItem label="Brand" value={analysis.productDetails.brand} />
+                <DetailItem label="Condition" value={analysis?.productDetails?.condition || 'Unknown'} />
+                <DetailItem label="Category" value={analysis?.productDetails?.category || 'Other'} />
+                <DetailItem label="Brand" value={analysis?.productDetails?.brand || 'Generic'} />
                 <DetailItem label="Method" value="AI Optical Scan" />
               </div>
             </div>
@@ -234,7 +234,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
                 <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Sweet Spot Price</h3>
                 <div className="flex items-baseline gap-2 mb-4">
                   <span className="text-6xl font-black tracking-tighter text-white">
-                    {currencySymbol}{analysis.priceRange.sweetSpot}
+                    {currencySymbol}{analysis?.priceRange?.sweetSpot || 0}
                   </span>
                 </div>
               </div>
@@ -244,13 +244,13 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
                 <div className="h-2 w-full bg-brand-border/20 rounded-full overflow-hidden">
                    <motion.div 
                      initial={{ width: 0 }}
-                     animate={{ width: `${((analysis.priceRange.sweetSpot - (analysis.priceRange.min * 0.5)) / (analysis.priceRange.max * 1.5 - (analysis.priceRange.min * 0.5))) * 100}%` }}
+                     animate={{ width: `${(((analysis?.priceRange?.sweetSpot || 0) - ((analysis?.priceRange?.min || 0) * 0.5)) / ((analysis?.priceRange?.max || 1) * 1.5 - ((analysis?.priceRange?.min || 0) * 0.5))) * 100}%` }}
                      className="h-full bg-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.4)]"
                    />
                 </div>
                 <div className="flex justify-between mt-3 text-xs font-bold text-brand-text-muted/60">
-                  <span>{currencySymbol}{analysis.priceRange.min}</span>
-                  <span>{currencySymbol}{analysis.priceRange.max}</span>
+                  <span>{currencySymbol}{analysis?.priceRange?.min || 0}</span>
+                  <span>{currencySymbol}{analysis?.priceRange?.max || 0}</span>
                 </div>
               </div>
 
@@ -268,11 +268,11 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                  <div>
                    <h4 className="text-[10px] font-black text-brand-accent uppercase tracking-widest mb-2">Market Sentiment</h4>
-                   <p className="text-sm text-brand-text-muted leading-relaxed">Buyers are moving fast on {analysis.productDetails.brand}. Similar items are clearing in under 4 days when priced around {currencySymbol}{analysis.priceRange.sweetSpot}.</p>
+                   <p className="text-sm text-brand-text-muted leading-relaxed">Buyers are moving fast on {analysis?.productDetails?.brand || 'this brand'}. Similar items are clearing in under 4 days when priced around {currencySymbol}{analysis?.priceRange?.sweetSpot || 0}.</p>
                  </div>
                  <div>
                    <h4 className="text-[10px] font-black text-brand-accent uppercase tracking-widest mb-2">Pricing Logic</h4>
-                   <p className="text-sm text-brand-text-muted leading-relaxed">Adjusted for {analysis.productDetails.condition} state and current platform seasonal trends.</p>
+                   <p className="text-sm text-brand-text-muted leading-relaxed">Adjusted for {analysis?.productDetails?.condition || 'current'} state and current platform seasonal trends.</p>
                  </div>
                </div>
             </div>
@@ -283,7 +283,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           <div className="glass-card p-6 lg:col-span-1 border-brand-border/10 flex flex-col">
              <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Top Platforms</h3>
              <div className="space-y-3 mb-6">
-               {analysis.platforms.slice(0, 5).map((p, i) => (
+               {(analysis?.platforms || []).slice(0, 5).map((p, i) => (
                  <div 
                   key={i} 
                   onClick={() => setSelectedMockup(p.name)}
@@ -318,7 +318,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           <div className="glass-card p-6 lg:col-span-1 border-brand-border/10">
              <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-6">Execution Steps</h3>
              <ul className="space-y-5">
-               {analysis.improvements.map((imp, i) => (
+               {(analysis?.improvements || []).map((imp, i) => (
                  <li key={i} className="flex items-start gap-4">
                    <div className="w-8 h-8 rounded-xl bg-brand-bg/50 border border-brand-border flex items-center justify-center flex-shrink-0 mt-0.5">
                      {i === 0 ? <Wrench className="w-4 h-4 text-brand-accent" /> : 
@@ -420,26 +420,26 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
               <div className="flex items-center justify-between mb-2">
                  <h4 className="text-xs font-bold uppercase text-brand-text-muted tracking-wider">Suggested Title</h4>
                  <button 
-                   onClick={() => handleCopy(analysis.suggestedTitle, 'title')}
+                   onClick={() => handleCopy(analysis?.suggestedTitle || '', 'title')}
                    className="text-brand-text-muted hover:text-brand-text transition-colors flex items-center gap-1 text-xs"
                  >
                    {copying === 'title' ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
                  </button>
               </div>
-              <p className="text-lg font-bold leading-tight">{analysis.suggestedTitle}</p>
+              <p className="text-lg font-bold leading-tight">{analysis?.suggestedTitle || 'Untitled Scan'}</p>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
                  <h4 className="text-xs font-bold uppercase text-brand-text-muted tracking-wider">Suggested Description</h4>
                  <button 
-                   onClick={() => handleCopy(analysis.suggestedDescription, 'description')}
+                   onClick={() => handleCopy(analysis?.suggestedDescription || '', 'description')}
                    className="text-brand-text-muted hover:text-brand-text transition-colors flex items-center gap-1 text-xs"
                  >
                    {copying === 'description' ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy</>}
                  </button>
               </div>
               <div className="prose prose-invert prose-sm max-w-none text-brand-text-muted leading-relaxed">
-                <ReactMarkdown>{analysis.suggestedDescription}</ReactMarkdown>
+                <ReactMarkdown>{analysis?.suggestedDescription || 'No description provided'}</ReactMarkdown>
               </div>
             </div>
             <div className="pt-6 border-t border-brand-border/50 flex flex-col gap-6">

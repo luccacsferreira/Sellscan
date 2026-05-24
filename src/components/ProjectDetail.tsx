@@ -108,7 +108,7 @@ export function ProjectDetail({
                   </div>
                 )}
                 <div className="absolute top-3 right-3 px-2 py-1 bg-brand-bg/80 backdrop-blur-md border border-brand-border rounded text-[10px] font-bold uppercase tracking-widest">
-                  {scan.analysis.productDetails.category}
+                  {scan.analysis?.productDetails?.category || 'Other'}
                 </div>
               </div>
               <div className="p-5 flex-1 flex flex-col">
@@ -116,12 +116,12 @@ export function ProjectDetail({
                   {new Date(scan.timestamp).toLocaleDateString()}
                 </div>
                 <h3 className="font-bold text-lg leading-tight mb-4 group-hover:text-brand-accent transition-colors line-clamp-2">
-                  {scan.analysis.suggestedTitle}
+                  {scan.analysis?.suggestedTitle || 'Untitled Scan'}
                 </h3>
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">Target Price</span>
-                    <span className="text-xl font-bold">{currencySymbol}{scan.analysis.priceRange.sweetSpot}</span>
+                    <span className="text-xl font-bold">{currencySymbol}{scan.analysis?.priceRange?.sweetSpot || 0}</span>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-brand-bg border border-brand-border flex items-center justify-center group-hover:bg-brand-accent group-hover:text-brand-bg transition-all">
                     <ArrowRight className="w-4 h-4" />

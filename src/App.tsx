@@ -198,7 +198,15 @@ function AppContent() {
     }
 
     const handleMessage = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
+      // Be more permissive with origins in development/preview environments
+      const isAllowedOrigin = event.origin === window.location.origin || 
+                             event.origin.includes('run.app') || 
+                             event.origin.includes('localhost');
+      
+      if (!isAllowedOrigin && window.location.hostname !== 'localhost') {
+        console.warn('⚠️ Ignored cross-origin message:', event.origin);
+        return;
+      }
       
       if (event.data?.type === 'SUPABASE_OAUTH_SUCCESS') {
         if (event.data.user) {
@@ -301,15 +309,15 @@ function AppContent() {
 
   const stats: UserStats = useMemo(() => {
     const totalScans = history.length;
-    const totalMarketValue = history.reduce((acc, scan) => acc + scan.analysis.priceRange.sweetSpot, 0);
+    const totalMarketValue = history.reduce((acc, scan) => acc + (scan.analysis?.priceRange?.sweetSpot || 0), 0);
     const averageSweetSpot = totalScans > 0 ? totalMarketValue / totalScans : 0;
     
     const catMap: Record<string, { count: number; value: number }> = {};
     history.forEach(scan => {
-      const cat = scan.analysis.productDetails.category || 'Other';
+      const cat = scan.analysis?.productDetails?.category || 'Other';
       if (!catMap[cat]) catMap[cat] = { count: 0, value: 0 };
       catMap[cat].count++;
-      catMap[cat].value += scan.analysis.priceRange.sweetSpot;
+      catMap[cat].value += (scan.analysis?.priceRange?.sweetSpot || 0);
     });
 
     const categories = Object.entries(catMap).map(([name, data]) => ({

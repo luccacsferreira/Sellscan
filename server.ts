@@ -516,7 +516,7 @@ async function startServer() {
           },
           host: req.headers.host,
           time: new Date().toISOString(),
-          version: '1.1.0'
+          version: '1.2.0'
         };
 
         const configScript = `

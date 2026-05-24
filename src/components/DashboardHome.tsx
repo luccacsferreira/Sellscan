@@ -186,8 +186,8 @@ export function DashboardHome({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-bold truncate group-hover:text-brand-accent transition-colors">{scan.analysis.suggestedTitle}</h4>
-                  <p className="text-xs text-brand-text-muted">{currencySymbol}{scan.analysis.priceRange.sweetSpot}</p>
+                  <h4 className="text-sm font-bold truncate group-hover:text-brand-accent transition-colors">{scan.analysis?.suggestedTitle || 'Untitled Scan'}</h4>
+                  <p className="text-xs text-brand-text-muted">{currencySymbol}{scan.analysis?.priceRange?.sweetSpot || 0}</p>
                 </div>
                 <div className="text-[10px] font-mono text-brand-text-muted uppercase">
                   {new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
