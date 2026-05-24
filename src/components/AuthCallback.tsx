@@ -83,8 +83,11 @@ export function AuthCallback() {
       dbService.linkReferral(user.id).catch(console.error);
       
       setTimeout(() => {
+        const origin = window.location.origin;
         if (window.opener) {
-          addLog('Notifying parent window');
+          addLog('Notifying parent window (Origin: ' + origin + ')');
+          
+          // Send to exact origin first
           window.opener.postMessage({ 
             type: 'SUPABASE_OAUTH_SUCCESS',
             user: {
@@ -92,11 +95,23 @@ export function AuthCallback() {
               name: user.user_metadata?.full_name,
               avatar: user.user_metadata?.avatar_url
             }
-          }, window.location.origin);
+          }, origin);
+          
+          // Fallback for AI Studio strange origins
+          if (origin.includes('run.app') || origin.includes('localhost')) {
+            window.opener.postMessage({ 
+              type: 'SUPABASE_OAUTH_SUCCESS',
+              user: {
+                email: user.email,
+                name: user.user_metadata?.full_name,
+                avatar: user.user_metadata?.avatar_url
+              }
+            }, '*');
+          }
           
           setTimeout(() => {
             try { window.close(); } catch (e) { window.location.href = '/'; }
-          }, 300);
+          }, 500);
         } else {
           addLog('Redirecting to home');
           window.location.href = '/';

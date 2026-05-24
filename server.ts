@@ -23,7 +23,10 @@ async function startServer() {
   
   // Log all keys found (censored) to help debug presence
   console.log("🔑 Detected Env Keys:", envKeys.map(k => {
-    if (k.includes('SESSION') || k.includes('TOKEN') || k.includes('PASS')) return `${k}: [SECRET]`;
+    const lowerKey = k.toLowerCase();
+    if (lowerKey.includes('session') || lowerKey.includes('token') || lowerKey.includes('pass') || lowerKey.includes('secret') || lowerKey.includes('key')) {
+      return `${k}: [REDACTED]`;
+    }
     return k;
   }).join(', '));
 
@@ -524,10 +527,15 @@ async function startServer() {
             console.log('🤖 Gemini:', ${debug.resolved.gemini ? "'✅ Configured'" : "'❌ Missing'"});
             console.log('💳 Stripe:', ${debug.resolved.stripe ? "'✅ Configured'" : "'❌ Missing'"});
             console.log('📊 Supabase:', ${debug.resolved.supabase ? "'✅ Configured'" : "'❌ Missing'"});
-            console.log('🧩 Env Keys detected:', ${JSON.stringify(debug.detected_keys || [])});
+            console.log('🧩 Env Keys Audit:', ${JSON.stringify(debug.detected_keys || [])});
             
-            if (!${debug.resolved.gemini}) {
-              console.warn('⚡ SELLSCAN: GEMINI_API_KEY is missing. AI analysis will run in Demo Mode only.');
+            if (!${debug.resolved.gemini} || !${debug.resolved.stripe}) {
+              console.group('%c ⚠️ CRITICAL CONFIGURATION WARNING ', 'background: #ff4d4d; color: #fff; font-weight: bold;');
+              console.warn('One or more API keys are missing on the server.');
+              console.info('If you are on trysellscan.com (Custom Domain), you MUST set these secrets in your Google Cloud Console / Deployment Settings.');
+              console.info('AI Studio sidebar secrets ONLY apply to the preview environments.');
+              console.info('Required Keys: GEMINI_API_KEY, STRIPE_SECRET_KEY, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY');
+              console.groupEnd();
             }
           </script>
         `;

@@ -286,22 +286,22 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   </motion.div>
                 )}
 
-                {!isSupabaseConfigured && (
+                {(!isSupabaseConfigured || (window.location.hostname !== 'localhost' && !window.location.hostname.includes('run.app'))) && (
                   <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl space-y-3">
                     <p className="text-[9px] font-bold text-orange-400 uppercase leading-snug flex items-center">
                       <AlertCircle className="w-3 h-3 mr-1.5" />
-                      Deployment Checklist
+                      Production Sync Troubleshooting
                     </p>
-                    <ul className="text-[8px] text-orange-300/60 space-y-2 uppercase tracking-wide font-medium">
-                      <li className="flex items-start gap-2">
-                        <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">1</span>
-                        <span>Points DNS A-Records to Cloud Run IP</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center text-[6px]">2</span>
-                        <span>Wait for SSL Issuance (15-60m)</span>
-                      </li>
-                    </ul>
+                    <div className="text-[10px] text-orange-300 text-left space-y-2">
+                       <p className="font-bold">Detected Host: <span className="text-white">{window.location.hostname}</span></p>
+                       <p className="opacity-70 leading-relaxed font-medium">If your API keys work in the preview but NOT on this domain, you must set them in your **Google Cloud Console** under your Cloud Run service settings.</p>
+                       <div className="bg-black/20 p-3 rounded-lg font-mono text-[8.5px] space-y-1.5 border border-white/5">
+                          <p>1. Open Google Cloud Console &rarr; Cloud Run</p>
+                          <p>2. Select your Sellscan service</p>
+                          <p>3. Edit & Deploy New Revision</p>
+                          <p>4. Add Variables: GEMINI_API_KEY, STRIPE_SECRET_KEY, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY</p>
+                       </div>
+                    </div>
                   </div>
                 )}
 

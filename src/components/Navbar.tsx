@@ -131,7 +131,13 @@ export function Navbar({
               {isLoggedIn ? (
                 <div className="flex items-center gap-4">
                   <div className="hidden lg:flex flex-col items-end mr-2">
-                     <span className="text-[9px] font-bold uppercase text-brand-text-muted">Account</span>
+                     <div className="flex items-center gap-1.5 mb-0.5">
+                       <span className="text-[9px] font-bold uppercase text-brand-text-muted">Account</span>
+                       <div className={cn(
+                         "w-1 h-1 rounded-full animate-pulse",
+                         (window as any).SUPABASE_CONFIG?.VITE_SUPABASE_URL ? "bg-green-500" : "bg-red-500"
+                       )} />
+                     </div>
                      <span className="text-[10px] font-medium text-brand-text truncate max-w-[120px]">{userEmail}</span>
                   </div>
                   <button 
