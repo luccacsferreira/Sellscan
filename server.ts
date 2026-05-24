@@ -16,46 +16,60 @@ const getEnv = (key: string) => {
 };
 
 async function startServer() {
-  // 1. Aggressive Brute-Force Sync: Scan all env vars for common key patterns
+  // 1. Extreme Brute-Force Sync: Scan all env vars for common key patterns
   // This handles naming variations, case sensitivity, and unexpected prefixes
-  Object.keys(process.env).forEach(envKey => {
+  console.log("🔍 Scanning environment for keys...");
+  const envKeys = Object.keys(process.env);
+  
+  envKeys.forEach(envKey => {
     const key = envKey.toUpperCase();
     const val = process.env[envKey];
     if (!val || typeof val !== 'string' || val.trim() === '') return;
 
-    // Gemini / Google Check
-    if ((key.includes('GEMINI') && key.includes('KEY')) || (key.includes('GOOGLE') && key.includes('KEY'))) {
+    // Gemini / Google Check: Look for GEMINI, GOOGLE, AI, or even just "KEY" patterns
+    if (
+      key.includes('GEMINI') || 
+      (key.includes('GOOGLE') && key.includes('AI')) || 
+      (key.includes('GOOGLE') && key.includes('KEY')) ||
+      key === 'GOOGLE_API_KEY' || 
+      key === 'AI_KEY'
+    ) {
       if (!process.env.GEMINI_API_KEY) {
-        console.log(`🔀 Mapping ${envKey} -> GEMINI_API_KEY`);
         process.env.GEMINI_API_KEY = val;
+        console.log(`✅ [SYNC] Mapped ${envKey} -> GEMINI_API_KEY`);
       }
     }
-    // Stripe Check
-    if (key.includes('STRIPE') && (key.includes('SECRET') || key.includes('KEY') || key.includes('SK_'))) {
-      if (!process.env.STRIPE_SECRET_KEY) {
-        console.log(`🔀 Mapping ${envKey} -> STRIPE_SECRET_KEY`);
+    
+    // Stripe Check: Look for STRIPE, SK_, PK_, or SECRET
+    if (key.includes('STRIPE') || key.startsWith('SK_') || (key.includes('STRIPE') && key.includes('SECRET'))) {
+      if (!process.env.STRIPE_SECRET_KEY && (key.includes('SECRET') || key.includes('SK_'))) {
         process.env.STRIPE_SECRET_KEY = val;
+        console.log(`✅ [SYNC] Mapped ${envKey} -> STRIPE_SECRET_KEY`);
       }
     }
+    
     // OpenAI Check
-    if (key.includes('OPENAI') && key.includes('KEY')) {
-      if (!process.env.OPENAI_API_KEY) {
-        console.log(`🔀 Mapping ${envKey} -> OPENAI_API_KEY`);
+    if (key.includes('OPENAI') || key.includes('GPT')) {
+      if (!process.env.OPENAI_API_KEY && key.includes('KEY')) {
         process.env.OPENAI_API_KEY = val;
+        console.log(`✅ [SYNC] Mapped ${envKey} -> OPENAI_API_KEY`);
       }
     }
+    
     // Supabase URL
-    if (key.includes('SUPABASE') && key.includes('URL')) {
+    if (key.includes('SUPABASE') && (key.includes('URL') || key.includes('URI'))) {
       if (!process.env.SUPABASE_URL) process.env.SUPABASE_URL = val;
       if (!process.env.VITE_SUPABASE_URL) process.env.VITE_SUPABASE_URL = val;
     }
+    
     // Supabase Anon Key
-    if (key.includes('SUPABASE') && (key.includes('ANON') || key.includes('PUBLIC')) && key.includes('KEY')) {
+    if (key.includes('SUPABASE') && (key.includes('ANON') || key.includes('PUBLIC') || key.includes('CLIENT'))) {
       if (!process.env.SUPABASE_ANON_KEY) process.env.SUPABASE_ANON_KEY = val;
       if (!process.env.VITE_SUPABASE_ANON_KEY) process.env.VITE_SUPABASE_ANON_KEY = val;
     }
+    
     // Supabase Service Role
-    if (key.includes('SUPABASE') && (key.includes('SERVICE') || key.includes('SECRET') || key.includes('ADMIN')) && key.includes('KEY')) {
+    if (key.includes('SUPABASE') && (key.includes('SERVICE') || key.includes('ROLE') || key.includes('ADMIN') || key.includes('SK_SUPA'))) {
       if (!process.env.SUPABASE_SERVICE_ROLE_KEY) process.env.SUPABASE_SERVICE_ROLE_KEY = val;
     }
   });
@@ -64,11 +78,12 @@ async function startServer() {
   
   const configStatus = {
     NODE_ENV: process.env.NODE_ENV || 'development',
-    STRIPE: process.env.STRIPE_SECRET_KEY ? "SET (Last 4: " + process.env.STRIPE_SECRET_KEY.slice(-4) + ")" : "MISSING",
-    GEMINI: process.env.GEMINI_API_KEY ? "SET (Last 4: " + process.env.GEMINI_API_KEY.slice(-4) + ")" : "MISSING",
-    OPENAI: process.env.OPENAI_API_KEY ? "SET" : "MISSING",
-    SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "SET" : "MISSING",
-    SUPABASE_ADMIN: process.env.SUPABASE_SERVICE_ROLE_KEY ? "SET" : "MISSING",
+    STRIPE: process.env.STRIPE_SECRET_KEY ? "CONFIGURED (Ends in: " + process.env.STRIPE_SECRET_KEY.slice(-4) + ")" : "MISSING",
+    GEMINI: process.env.GEMINI_API_KEY ? "CONFIGURED (Ends in: " + process.env.GEMINI_API_KEY.slice(-4) + ")" : "MISSING",
+    OPENAI: process.env.OPENAI_API_KEY ? "CONFIGURED" : "MISSING",
+    SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "CONFIGURED" : "MISSING",
+    ADMIN: process.env.SUPABASE_SERVICE_ROLE_KEY ? "CONFIGURED" : "MISSING",
+    TOTAL_ENV_KEYS: envKeys.length
   };
   
   console.log("📋 Configuration Status:", configStatus);
@@ -444,17 +459,25 @@ async function startServer() {
         const debug = {
           status: config.VITE_SUPABASE_URL ? 'CONFIGURED' : 'UNCONFIGURED',
           env: process.env.NODE_ENV,
-          keys: Object.keys(process.env).filter(k => k.includes('SUPABASE')),
+          detected_keys: Object.keys(process.env).filter(k => 
+            !k.includes('SESSION') && !k.includes('TOKEN') && !k.includes('PASS')
+          ),
+          resolved: {
+            gemini: !!process.env.GEMINI_API_KEY,
+            stripe: !!process.env.STRIPE_SECRET_KEY,
+            openai: !!process.env.OPENAI_API_KEY,
+            supabase: !!process.env.SUPABASE_URL
+          },
           url_preview: config.VITE_SUPABASE_URL ? `${config.VITE_SUPABASE_URL.substring(0, 15)}...` : null,
           host: req.headers.host,
           time: new Date().toISOString(),
-          version: '1.0.1'
+          version: '1.0.2'
         };
 
         const configScript = `
           <script id="supabase-config-injection">
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
-            console.log('🛡️ Supabase Inline Injection:', ${JSON.stringify(debug)});
+            console.log('🛡️ System Environment Audit:', ${JSON.stringify(debug)});
           </script>
         `;
         
