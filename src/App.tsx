@@ -308,16 +308,18 @@ function AppContent() {
   };
 
   const stats: UserStats = useMemo(() => {
-    const totalScans = history.length;
-    const totalMarketValue = history.reduce((acc, scan) => acc + (scan.analysis?.priceRange?.sweetSpot || 0), 0);
+    // Filter out any invalid scans just in case
+    const validHistory = (history || []).filter(s => s && s.analysis);
+    const totalScans = validHistory.length;
+    const totalMarketValue = validHistory.reduce((acc, scan) => acc + (scan?.analysis?.priceRange?.sweetSpot || 0), 0);
     const averageSweetSpot = totalScans > 0 ? totalMarketValue / totalScans : 0;
     
     const catMap: Record<string, { count: number; value: number }> = {};
-    history.forEach(scan => {
-      const cat = scan.analysis?.productDetails?.category || 'Other';
+    validHistory.forEach(scan => {
+      const cat = scan?.analysis?.productDetails?.category || 'Other';
       if (!catMap[cat]) catMap[cat] = { count: 0, value: 0 };
       catMap[cat].count++;
-      catMap[cat].value += (scan.analysis?.priceRange?.sweetSpot || 0);
+      catMap[cat].value += (scan?.analysis?.priceRange?.sweetSpot || 0);
     });
 
     const categories = Object.entries(catMap).map(([name, data]) => ({
@@ -327,7 +329,7 @@ function AppContent() {
 
     // Group scans by date for the trend chart
     const dateMap: Record<string, number> = {};
-    history.slice(0, 30).forEach(scan => {
+    validHistory.slice(0, 30).forEach(scan => {
       const date = new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
       dateMap[date] = (dateMap[date] || 0) + 1;
     });
@@ -488,7 +490,7 @@ function AppContent() {
     }
 
     saveProjects(updated);
-    setHistory(history.map(scan => scan.projectId === projectToDelete.id ? { ...scan, projectId: undefined } : scan));
+    setHistory((history || []).map(scan => (scan && scan.projectId === projectToDelete.id) ? { ...scan, projectId: undefined } : scan));
     setProjectToDelete(null);
     setView('home');
   };
@@ -498,11 +500,11 @@ function AppContent() {
   , [projects, activeProjectId]);
 
   const activeProjectScans = useMemo(() => 
-    history.filter(scan => scan.projectId === activeProjectId)
+    (history || []).filter(scan => scan && scan.projectId === activeProjectId)
   , [history, activeProjectId]);
 
   const handleUpdateScan = async (updatedScan: ScanResult) => {
-    const updatedHistory = history.map(h => h.id === updatedScan.id ? updatedScan : h);
+    const updatedHistory = (history || []).map(h => (h && h.id === updatedScan.id) ? updatedScan : h);
     setHistory(updatedHistory);
     localStorage.setItem('sellscan_history', JSON.stringify(updatedHistory));
     
