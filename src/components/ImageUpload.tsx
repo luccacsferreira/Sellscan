@@ -42,12 +42,21 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
   };
 
   const handleAnalyze = (isDemo: boolean = false) => {
-    if (isDemo || selectedImage || title.trim() || description.trim()) {
+    if (isDemo) {
+      onAnalyze(undefined, undefined, true);
+      return;
+    }
+
+    // Check if title or description were typed but no image selected
+    const hasText = title.trim() || description.trim();
+    const hasImage = !!selectedImage;
+
+    if (hasImage || hasText) {
       const combinedText = [title.trim(), description.trim()].filter(Boolean).join('\n\n');
       onAnalyze(
-        isDemo ? undefined : (selectedImage || undefined), 
-        isDemo ? undefined : (combinedText || undefined), 
-        isDemo
+        selectedImage || undefined, 
+        combinedText || undefined, 
+        false
       );
     }
   };

@@ -153,6 +153,8 @@ function AppContent() {
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('identifying');
   const [imageToAnalyze, setImageToAnalyze] = useState<string | null>(null);
   const [detectedName, setDetectedName] = useState<string | null>(null);
+  const [livePrice, setLivePrice] = useState<number | null>(null);
+  const [liveRating, setLiveRating] = useState<number | null>(null);
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
@@ -359,6 +361,8 @@ function AppContent() {
     setLoadingStage('identifying');
     setImageToAnalyze(image || null);
     setDetectedName(null);
+    setLivePrice(null);
+    setLiveRating(null);
     setActivePlatforms([]);
     
     const stageTimer = (stage: LoadingStage, delay: number) => 
@@ -378,6 +382,7 @@ function AppContent() {
         if (description) {
            const words = description.split(' ');
            if (words.length > 2) setDetectedName(words.slice(0, 3).join(' ') + '...');
+           else if (words.length > 0) setDetectedName(words.join(' '));
         } else {
            setDetectedName("Calculating product ID...");
         }
@@ -385,18 +390,32 @@ function AppContent() {
 
       await stageTimer('searching', isDemo ? 500 : 1500);
       
-      // Simulate platforms being pinged
-      const platforms = ['eBay', 'Vinted', 'Depop', 'StockX', 'Grailed'];
-      platforms.forEach((p, i) => {
-        setTimeout(() => setActivePlatforms(prev => [...prev, p]), 300 * (i + 1));
-      });
-
+      // We will update these once we have the actual analysis or better simulations
+      
       await stageTimer('analyzing_reviews', isDemo ? 500 : 2500);
+      
+      // If we are still waiting for AI, show some "Found" indicators
+      if (!isDemo) {
+        setLiveRating(4.5 + Math.random() * 0.4);
+      }
+
       await stageTimer('calculating', isDemo ? 500 : 2500);
+      
+      if (!isDemo) {
+        // Just a placeholder until actual data arrives
+        setLivePrice(20 + Math.floor(Math.random() * 100));
+      }
+
       await stageTimer('finishing', isDemo ? 500 : 1500);
 
       const analysis = await aiPromise;
       
+      // Now update the "Live" data with reality before we switch views
+      setDetectedName(analysis.productDetails.brand + ' ' + analysis.productDetails.type);
+      setActivePlatforms(analysis.platforms.slice(0, 5).map(p => p.name));
+      setLivePrice(analysis.priceRange.sweetSpot);
+      setLiveRating(analysis.buyerSentiment?.overallRating || 4.8);
+
       const newScan: ScanResult = {
         id: Math.random().toString(36).substring(7),
         timestamp: Date.now(),
@@ -708,7 +727,7 @@ function AppContent() {
                        <p className="text-brand-text-muted text-[10px] mt-2 font-medium tracking-wide uppercase opacity-60">Status: Real-time scan</p>
                     </div>
 
-                    <div className="space-y-5 flex-grow">
+                    <div className="space-y-4 flex-grow">
                       {[
                         { id: 'identifying', label: 'Extracting context' },
                         { id: 'searching', label: 'Searching market' },
@@ -722,17 +741,17 @@ function AppContent() {
                         const isActive = stage.id === loadingStage;
 
                         return (
-                          <div key={stage.id} className="relative pl-7">
+                          <div key={stage.id} className="relative pl-8 h-9 flex items-center">
                             {/* Connector Line */}
                             {idx < arr.length - 1 && (
                               <div className={cn(
-                                "absolute left-[9.5px] top-5 w-[1px] h-6 transition-colors duration-500",
+                                "absolute left-[9.5px] top-[26px] w-[1px] h-[22px] transition-colors duration-500",
                                 isCompleted ? "bg-brand-accent" : "bg-brand-border/20"
                               )} />
                             )}
                             
                             <div className={cn(
-                              "absolute left-0 top-1 w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500",
+                              "absolute left-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0",
                               isCompleted ? "bg-brand-accent border-brand-accent text-brand-bg shadow-[0_0_10px_rgba(85,205,209,0.3)]" : 
                               isActive ? "border-brand-accent bg-brand-accent/10" : "border-brand-border/30"
                             )}>
@@ -831,7 +850,7 @@ function AppContent() {
                     >
                       <h4 className="text-[10px] font-black uppercase text-brand-text-muted/60 tracking-[0.2em] mb-4">Platform Reach</h4>
                       <div className="flex flex-wrap gap-2">
-                         {activePlatforms.map((p, i) => (
+                         {activePlatforms.map((p) => (
                            <motion.span 
                              key={p} 
                              initial={{ scale: 0.8, opacity: 0 }}
@@ -841,8 +860,49 @@ function AppContent() {
                              {p}
                            </motion.span>
                          ))}
-                         {activePlatforms.length === 0 && <span className="text-[9px] text-brand-text-muted/20 italic">Awaiting connection...</span>}
+                         {activePlatforms.length === 0 && (
+                            <div className="space-y-2 w-full">
+                               {[1,2,3].map(i => (
+                                 <div key={i} className="h-4 bg-white/5 animate-pulse rounded w-full" />
+                               ))}
+                            </div>
+                         )}
                       </div>
+                    </motion.div>
+
+                    {/* Live Price / Rating Card */}
+                    <motion.div 
+                       initial={{ opacity: 0, y: 10 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: 0.4 }}
+                       className="sm:col-span-2 grid grid-cols-2 gap-4"
+                    >
+                       <div className="glass-card p-5 border-white/5 bg-brand-bg/40">
+                          <h4 className="text-[9px] font-black uppercase text-brand-text-muted/40 tracking-widest mb-2">Price Estimate</h4>
+                          <div className="flex items-baseline gap-1">
+                             <span className="text-2xl font-black text-brand-accent">
+                               {livePrice ? `${currency === 'GBP' ? '£' : '$'}${livePrice.toFixed(0)}` : '--'}
+                             </span>
+                             {livePrice && <span className="text-[10px] font-bold text-brand-text-muted">avg</span>}
+                          </div>
+                       </div>
+                       <div className="glass-card p-5 border-white/5 bg-brand-bg/40">
+                          <h4 className="text-[9px] font-black uppercase text-brand-text-muted/40 tracking-widest mb-2">Market Heat</h4>
+                          <div className="flex items-center gap-2">
+                             <div className="flex gap-0.5">
+                                {[1,2,3,4,5].map(i => (
+                                   <div 
+                                     key={i} 
+                                     className={cn(
+                                       "w-2 h-4 rounded-full transition-colors", 
+                                       liveRating && i <= Math.round(liveRating) ? "bg-brand-accent" : "bg-white/5"
+                                     )} 
+                                   />
+                                ))}
+                             </div>
+                             <span className="text-xs font-black text-white">{liveRating ? liveRating.toFixed(1) : '--'}</span>
+                          </div>
+                       </div>
                     </motion.div>
                  </div>
               </div>
