@@ -50,7 +50,33 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
 
   const currentProject = projects.find(p => p.id === scan.projectId);
-  const analysis = scan.analysis;
+  
+  // Ensure backward compatibility with old scans
+  const analysis = useMemo(() => ({
+    ...scan.analysis,
+    productDetails: scan.analysis.productDetails || { 
+      brand: 'Unknown', 
+      type: 'Product', 
+      condition: 'Unknown', 
+      category: 'Other' 
+    },
+    worthRange: scan.analysis.worthRange || scan.analysis.priceRange || { min: 0, max: 0, sweetSpot: 0 },
+    priceRange: scan.analysis.priceRange || { min: 0, max: 0, sweetSpot: 0, currency: 'USD' },
+    practicalTips: scan.analysis.practicalTips || [],
+    marketSentiment: scan.analysis.marketSentiment || { 
+      consensus: 'General retail items', 
+      goodThings: [], 
+      badThings: [] 
+    },
+    priceHistory: scan.analysis.priceHistory || [],
+    platforms: (scan.analysis.platforms || []).map(p => ({
+      ...p,
+      advantages: p.advantages || [],
+      sellingPrice: p.sellingPrice || scan.analysis.priceRange?.sweetSpot || 0,
+      listingPrices: p.listingPrices || [],
+      estimatedProfit: p.estimatedProfit || 0
+    }))
+  }), [scan.analysis]);
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim() || isSending) return;

@@ -45,7 +45,8 @@ export function PriceInsightBox({ worthRange, sellRange, currencySymbol }: Price
 }
 
 function PriceCard({ title, subtitle, range, currency, gradient, active, credits }: any) {
-  const percentage = ((range.sweetSpot - range.min) / (range.max - range.min)) * 100;
+  const denominator = range.max - range.min;
+  const percentage = denominator === 0 ? 50 : ((range.sweetSpot - range.min) / denominator) * 100;
 
   return (
     <div className={cn(
