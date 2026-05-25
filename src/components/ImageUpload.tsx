@@ -28,8 +28,8 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
     if (!file.type.startsWith('image/')) {
       setErrorModal({
         isOpen: true,
-        title: "Format Not Supported",
-        message: `Our scanning engine only accepts image files (JPG, PNG, WebP). You tried to upload a "${file.type || 'unknown'}" file.`
+        title: "Not supported file format",
+        message: `Our scanning engine only accepts image files (JPG, PNG, WebP).`
       });
       return;
     }
@@ -47,18 +47,21 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
       return;
     }
 
-    // Check if title or description were typed but no image selected
-    const hasText = title.trim() || description.trim();
-    const hasImage = !!selectedImage;
-
-    if (hasImage || hasText) {
-      const combinedText = [title.trim(), description.trim()].filter(Boolean).join('\n\n');
-      onAnalyze(
-        selectedImage || undefined, 
-        combinedText || undefined, 
-        false
-      );
+    if (!selectedImage && !title.trim() && !description.trim()) {
+      setErrorModal({
+        isOpen: true,
+        title: "Missing Input",
+        message: "Please upload a photo or provide a text description to start the scan."
+      });
+      return;
     }
+
+    const combinedText = [title.trim(), description.trim()].filter(Boolean).join('\n\n');
+    onAnalyze(
+      selectedImage || undefined, 
+      combinedText || undefined, 
+      false
+    );
   };
 
   return (

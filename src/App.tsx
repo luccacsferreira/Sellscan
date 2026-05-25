@@ -412,7 +412,7 @@ function AppContent() {
       const analysis = await aiPromise;
       
       // Now update the "Live" data with reality before we switch views
-      setDetectedName(analysis.productDetails.brand + ' ' + analysis.productDetails.type);
+      setDetectedName(analysis.productDetails.brand + ' ' + (analysis.productDetails.type || analysis.productDetails.category));
       setActivePlatforms(analysis.platforms.slice(0, 5).map(p => p.name));
       setLivePrice(analysis.priceRange.sweetSpot);
       setLiveRating(analysis.buyerSentiment?.overallRating || 4.8);
@@ -742,17 +742,17 @@ function AppContent() {
                         const isActive = stage.id === loadingStage;
 
                         return (
-                          <div key={stage.id} className="relative pl-8 h-9 flex items-center">
+                          <div key={stage.id} className="relative pl-8 h-10 flex items-center">
                             {/* Connector Line */}
                             {idx < arr.length - 1 && (
                               <div className={cn(
-                                "absolute left-[9.5px] top-[26px] w-[1px] h-[22px] transition-colors duration-500",
+                                "absolute left-[9.5px] top-[28px] w-[1px] h-[22px] transition-colors duration-500",
                                 isCompleted ? "bg-brand-accent" : "bg-brand-border/20"
                               )} />
                             )}
                             
                             <div className={cn(
-                              "absolute left-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0",
+                              "relative w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0 mr-3",
                               isCompleted ? "bg-brand-accent border-brand-accent text-brand-bg shadow-[0_0_10px_rgba(85,205,209,0.3)]" : 
                               isActive ? "border-brand-accent bg-brand-accent/10" : "border-brand-border/30"
                             )}>
@@ -818,26 +818,37 @@ function AppContent() {
                        </div>
                     </div>
 
-                    {/* Detected Name Card */}
+                    {/* Discovery Engine Card */}
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
-                      className="glass-card p-6 border-white/5 flex flex-col justify-center bg-brand-bg/40"
+                      className="glass-card p-6 border-white/5 flex flex-col justify-center bg-brand-bg/40 relative overflow-hidden group"
                     >
-                      <h4 className="text-[10px] font-black uppercase text-brand-accent tracking-[0.2em] mb-3">Model Identified</h4>
+                      <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
+                         <div className="w-12 h-12 rounded-full border border-brand-accent animate-[spin_10s_linear_infinite]" />
+                      </div>
+                      
+                      <h4 className="text-[9px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4">Discovery Engine</h4>
                       <AnimatePresence mode="wait">
                         {detectedName ? (
-                          <motion.p 
+                          <motion.div 
                             key="detected"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="text-lg font-bold text-white tracking-tight leading-snug"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-1"
                           >
-                            {detectedName}
-                          </motion.p>
+                            <p className="text-[10px] font-bold text-brand-text-muted/60 uppercase tracking-widest">Identified Asset</p>
+                            <h3 className="text-xl font-black text-white italic leading-tight uppercase">
+                              {detectedName}
+                            </h3>
+                          </motion.div>
                         ) : (
-                          <motion.p key="wait" className="text-sm text-brand-text-muted/40 italic">Sampling pixels...</motion.p>
+                          <motion.div key="wait" className="space-y-3">
+                             <div className="h-4 bg-white/5 animate-pulse rounded w-3/4" />
+                             <div className="h-6 bg-white/5 animate-pulse rounded w-1/2" />
+                             <p className="text-[9px] text-brand-text-muted/30 font-black uppercase tracking-widest animate-pulse italic">Scanning Database...</p>
+                          </motion.div>
                         )}
                       </AnimatePresence>
                     </motion.div>

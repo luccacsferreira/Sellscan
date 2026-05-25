@@ -226,7 +226,8 @@ async function startServer() {
     res.json({ received: true });
   });
 
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // Global middleware to add diagnostic header
   app.use((req, res, next) => {
@@ -317,50 +318,89 @@ async function startServer() {
     try {
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        console.error("❌ Gemini API request failed: GEMINI_API_KEY is missing.");
+        // Fallback to OpenAI if Gemini key is missing
+        if (process.env.OPENAI_API_KEY) {
+          console.warn("⚠️ Gemini Key missing, redirecting to OpenAI fallback...");
+          return res.redirect(307, "/api/ai/gpt");
+        }
         return res.status(500).json({ error: "GEMINI_API_KEY is not configured on the server." });
       }
+      
       const genAI = new GoogleGenAI(apiKey);
-      const { prompt, image, messages, analysis } = req.body;
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const { prompt: userPrompt, image, messages, analysis } = req.body;
+      
+      // Use Pro for analysis if possible, Flash for chat
+      const modelName = messages ? "gemini-1.5-flash" : "gemini-1.5-pro";
+      const model = genAI.getGenerativeModel({ model: modelName });
 
-      if (messages) {
-        // Chat mode
-        const chat = model.startChat({
-          history: messages.slice(0, -1).map((m: any) => ({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }]
-          })),
-          generationConfig: { maxOutputTokens: 2000 }
-        });
+      try {
+        if (messages) {
+          // Chat mode
+          const chat = model.startChat({
+            history: messages.slice(0, -1).map((m: any) => ({
+              role: m.role === 'user' ? 'user' : 'model',
+              parts: [{ text: m.content }]
+            })),
+            generationConfig: { maxOutputTokens: 2000 }
+          });
 
-        const systemCtxt = `You are Sellscan AI. Current analysis context: ${JSON.stringify(analysis)}. If requested to update, include "UPDATED_ANALYSIS:" followed by JSON.`;
-        const lastMsg = messages[messages.length - 1].content;
-        const result = await chat.sendMessage(`${systemCtxt}\n\nUser: ${lastMsg}`);
-        const text = result.response.text();
-        
-        let updatedAnalysis = null;
-        if (text.includes("UPDATED_ANALYSIS:")) {
-           const parts = text.split("UPDATED_ANALYSIS:");
-           try { updatedAnalysis = JSON.parse(parts[1].trim()); } catch(e) {}
+          const systemCtxt = `You are Sellscan AI. Current analysis context: ${JSON.stringify(analysis)}. If requested to update, include "UPDATED_ANALYSIS:" followed by JSON.`;
+          const lastMsg = messages[messages.length - 1].content;
+          const result = await chat.sendMessage(`${systemCtxt}\n\nUser: ${lastMsg}`);
+          const text = result.response.text();
+          
+          let updatedAnalysis = null;
+          if (text.includes("UPDATED_ANALYSIS:")) {
+             const parts = text.split("UPDATED_ANALYSIS:");
+             try { updatedAnalysis = JSON.parse(parts[1].trim()); } catch(e) {}
+          }
+
+          return res.json({ text, updatedAnalysis });
+        } else {
+          // Analysis mode
+          const parts: any[] = [{ text: userPrompt }];
+          if (image) {
+            const [meta, data] = image.split(',');
+            const mimeType = meta.split(':')[1].split(';')[0];
+            parts.push({ inlineData: { data, mimeType } });
+          }
+
+          const result = await model.generateContent(parts);
+          const response = await result.response;
+          return res.json(JSON.parse(response.text().replace(/```json|```/g, "")));
         }
+      } catch (geminiError: any) {
+        console.error("❌ Gemini Call Failed:", geminiError.message);
+        // Fallback to OpenAI if Gemini fails mid-request
+        if (process.env.OPENAI_API_KEY) {
+          console.warn("🔄 Gemini failed, attempting GPT-4o fallback...");
+          const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+          
+          let gptMessages = messages ? messages.map((m: any) => ({ role: m.role, content: m.content })) : [
+            { role: "user", content: [{ type: "text", text: userPrompt }] }
+          ];
+          
+          if (!messages && image) {
+            (gptMessages[0].content as any[]).push({ type: "image_url", image_url: { url: image } });
+          }
 
-        res.json({ text, updatedAnalysis });
-      } else {
-        // Analysis mode
-        const parts: any[] = [{ text: prompt }];
-        if (image) {
-          const [meta, data] = image.split(',');
-          const mimeType = meta.split(':')[1].split(';')[0];
-          parts.push({ inlineData: { data, mimeType } });
+          const gptResponse = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: gptMessages,
+            response_format: messages ? undefined : { type: "json_object" },
+          });
+
+          const content = gptResponse.choices[0].message.content || "";
+          if (messages) {
+            return res.json({ text: content });
+          } else {
+            return res.json(JSON.parse(content || "{}"));
+          }
         }
-
-        const result = await model.generateContent(parts);
-        const response = await result.response;
-        res.json(JSON.parse(response.text().replace(/```json|```/g, "")));
+        throw geminiError;
       }
     } catch (error: any) {
-      console.error("Gemini Error:", error);
+      console.error("Critical AI Route Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
