@@ -344,7 +344,15 @@ async function startServer() {
             generationConfig: { maxOutputTokens: 2000 }
           });
 
-          const systemCtxt = `You are Sellscan AI. Current analysis context: ${JSON.stringify(analysis)}. If requested to update, include "UPDATED_ANALYSIS:" followed by JSON.`;
+          const systemCtxt = `You are Sellscan AI, an expert reselling strategist. 
+          CURRENT SCAN ANALYSIS: ${JSON.stringify(analysis)}
+          
+          INSTRUCTIONS:
+          1. Reference specific numbers from the scan (e.g. "Your item is worth $X but I recommend listing at $Y because...").
+          2. If the user asks for a REFINEMENT or says something is wrong (e.g. "It's actually mint condition"), you MUST analyze and provide an updated JSON.
+          3. To trigger a UI update, your response MUST contain the tag "UPDATED_ANALYSIS:" followed by the full modified JSON object matching the original schema.
+          4. Be precise, helpful, and data-driven.`;
+          
           const lastMsg = messages[messages.length - 1].content;
           const result = await chat.sendMessage(`${systemCtxt}\n\nUser: ${lastMsg}`);
           const text = result.response.text();

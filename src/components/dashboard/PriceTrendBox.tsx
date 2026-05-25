@@ -24,10 +24,10 @@ export function PriceTrendBox({ history, currencySymbol }: PriceTrendBoxProps) {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-1">Historical Value Track</h3>
-          <p className="text-xs text-brand-text-muted font-medium">6-month price performance index</p>
+          <p className="text-xs text-brand-text-muted font-medium">30-day market index</p>
         </div>
         <div className="flex items-center gap-2 text-green-500 font-bold text-xs bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
-          <TrendingUp className="w-3 h-3" /> Market Stable
+          <TrendingUp className="w-3 h-3" /> Live Market
         </div>
       </div>
 
@@ -47,11 +47,13 @@ export function PriceTrendBox({ history, currencySymbol }: PriceTrendBoxProps) {
               tickLine={false} 
               tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
               dy={10}
+              minTickGap={30}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
               tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
+              domain={['auto', 'auto']}
               tickFormatter={(val) => `${currencySymbol}${val}`}
             />
             <Tooltip 

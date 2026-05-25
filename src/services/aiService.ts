@@ -25,19 +25,22 @@ export async function analyzeProduct(options: AnalysisOptions): Promise<ProductA
   
   EXECUTION PIPELINE:
   1. [IDENTITY AGENT (Gemini 1.5)]: Identify the exact brand, model, and edition. 
-     IMPORTANT: If the image is a screenshot, graphic, logo, animation, or abstract art, label as 'Creative Digital Asset'. Do NOT try to invent a physical brand if it is clearly digital.
-  2. [MARKET RESEARCH AGENT (Simulated Search)]: Deep-dive into real-time market data.
+     IMPORTANT: If the image is a screenshot, graphic, logo, animation, or abstract art, label as 'Creative Digital Asset'. 
+  2. [MARKET RESEARCH AGENT]: Deep-dive into real-time market data.
      - For physical: eBay, Vinted, StockX, Poshmark.
-     - For digital/creative: Upwork, Fiverr, Creative Market, or design agency rates.
-     - Look for 'Sold' listings/rates, not just active ones.
-  3. [SENTIMENT AGENT]: Extract owner/buyer consensus from Reddit, YouTube reviews, and community forums.
-  4. [MOCKUP AGENT]: Generate high-fidelity platform-specific listing parameters.
+     - For digital/creative: Upwork, Fiverr, Creative Market.
+     - Look for 'Sold' listings/rates.
+  3. [PRICING STRATEGIST]: 
+     - Calculate high-precision decimal prices (e.g., $179.87, $98.95). 
+     - Apply "Used Market Depreciation": For pre-owned items, the 'priceRange.sweetSpot' MUST be lower than 'worthRange' (intrinsic new/mint market value) to ensure attractiveness.
+     - Use "Charm Pricing" (ending in .95, .97, .88) for the list price.
+  4. [DATA VISUALIZER]: Generate a 30-point priceHistory array representing the last 30 days. 
+     - IMPORTANT: Include realistic micro-fluctuations (volatility) and "noise" in the values so the resulting graph looks like an active market index (highs and lows), even if the overall trend is stable.
   
   CRITICAL ACCURACY RULES:
-  - If the item is rare or a digital unique piece, reflect that in the 'Quick Verdict'.
   - 'marketSentiment' MUST reflect real human pros/cons.
-  - For digital items, 'platforms' should include Creative Market, Fiverr, or Upwork.
   - Return intrinsic market 'worthRange' and recommended listing 'priceRange'.
+  - Ensure 'priceHistory' values have 2-decimal precision.
   
   Output MUST be a valid JSON object matching this schema:
   {
@@ -50,10 +53,10 @@ export async function analyzeProduct(options: AnalysisOptions): Promise<ProductA
     "worthRange": {"min": number, "max": number, "sweetSpot": number},
     "productDetails": {"type": "string", "condition": "string", "brand": "string", "category": "string"},
     "marketSentiment": {"consensus": "string", "goodThings": ["string"], "badThings": ["string"]},
-    "priceHistory": [{"date": "MMM YYYY", "price": number}]
+    "priceHistory": [{"date": "MMM DD", "price": number}]
   }
   
-  Note: This system uses Gemini 1.5 Flash as the primary compute engine with fallbacks to internal search-grounding logic.`;
+  Note: This system uses Gemini 1.5 Pro (via server-side selection) as the primary compute engine.`;
 
   const response = await fetch(endpoint, {
     method: 'POST',
