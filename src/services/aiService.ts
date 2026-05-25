@@ -27,22 +27,30 @@ export async function analyzeProduct(options: AnalysisOptions): Promise<ProductA
   2. Research current similar sold listings and active competitors in the user's location if specified.
   3. Look for what real people are saying about this product online (YouTube reviews, Reddit, specialized forums, store ratings).
   4. Analyze pricing trends for this specific product across Vinted, StockX, GOAT, Depop, Grailed, and Vestiaire Collective, as well as local leaders like Poshmark (US) or Mercari (US/Japan) if applicable.
-  5. Recommend exactly what low-effort, high-impact physical improvements should be made to maximize value.
-  6. Suggest the top 3-4 selling platforms with scores and specific reasoning for this item.
-  7. Generate a human-written, non-robotic title and description optimized for the #1 recommended platform.
-  8. Set a competitive price range with a "sweet spot" for a 7-day sale. Use local currency.
+  5. Recommend exactly what low-effort, high-impact physical improvements (Practical Tips) should be made to maximize value.
+  6. Generate a representative 6-month price history for this specific item.
+  7. Suggest the top 10 potential selling platforms, scored and with specific advantages/pricing for each.
+  8. Track overall market sentiment (consensus, pros, cons mentioned by real owners).
   
   Output MUST be a valid JSON object matching this schema:
   {
     "quickVerdict": "string",
-    "improvements": ["string"],
-    "platforms": [{"name": "string", "matchScore": number, "reasoning": "string"}],
+    "practicalTips": [{"action": "string", "impact": "low|medium|high", "valueAdd": number, "description": "string"}],
+    "platforms": [{"name": "string", "matchScore": number, "reasoning": "string", "advantages": ["string"], "sellingPrice": number, "listingPrices": [number], "estimatedProfit": number}],
     "suggestedTitle": "string",
     "suggestedDescription": "string",
     "priceRange": {"min": number, "max": number, "sweetSpot": number, "currency": "string"},
+    "worthRange": {"min": number, "max": number, "sweetSpot": number},
     "productDetails": {"type": "string", "condition": "string", "brand": "string", "category": "string"},
-    "buyerSentiment": {"overallRating": number, "summary": "string", "pros": ["string"], "cons": ["string"]}
-  }`;
+    "marketSentiment": {"consensus": "string", "goodThings": ["string"], "badThings": ["string"]},
+    "priceHistory": [{"date": "MMM YYYY", "price": number}]
+  }
+  
+  Additional Instructions:
+  - 'worthRange' is the intrinsic market value.
+  - 'priceRange' is the recommended listing price range for a fast sale (the 'Sell Price').
+  - 'listingPrices' for platforms should be an array of 5 current active listing prices observed.
+  - Generate a realistic trend for 'priceHistory'.`;
 
   const response = await fetch(endpoint, {
     method: 'POST',
