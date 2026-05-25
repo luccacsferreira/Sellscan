@@ -157,7 +157,42 @@ function AppContent() {
   const [livePrice, setLivePrice] = useState<number | null>(null);
   const [liveRating, setLiveRating] = useState<number | null>(null);
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'system'>(() => {
+    return (localStorage.getItem('sellscan_theme_mode') as 'dark' | 'light' | 'system') || 'system';
+  });
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
+
+  // Logic to resolve theme based on mode
+  useEffect(() => {
+    if (themeMode === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+        setResolvedTheme(e.matches ? 'dark' : 'light');
+      };
+
+      handleChange(mediaQuery);
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    } else {
+      setResolvedTheme(themeMode);
+    }
+  }, [themeMode]);
+
+  // Sync theme with document element
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(resolvedTheme);
+    localStorage.setItem('sellscan_theme_mode', themeMode);
+  }, [resolvedTheme, themeMode]);
+
+  const toggleTheme = () => {
+    setThemeMode(prev => {
+      if (prev === 'system') return resolvedTheme === 'dark' ? 'light' : 'dark';
+      return prev === 'dark' ? 'light' : 'dark';
+    });
+  };
+
   const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
     return (localStorage.getItem('sellscan_model') as AIModel) || 'gemini';
   });
@@ -244,7 +279,7 @@ function AppContent() {
     }
   }, [location, view]);
 
-  // Load theme, history, and projects from localStorage
+  // Load projects from localStorage
   useEffect(() => {
     const savedProjects = localStorage.getItem('sellscan_projects');
     if (savedProjects) {
@@ -254,24 +289,7 @@ function AppContent() {
         console.error("Failed to load projects", e);
       }
     }
-
-    const savedTheme = localStorage.getItem('sellscan_theme') as 'dark' | 'light' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
   }, []);
-
-  // Sync theme with document element
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('sellscan_theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
 
   useEffect(() => {
     if (user) {
@@ -656,7 +674,7 @@ function AppContent() {
         onSignInClick={() => setShowAuthModal(true)}
         isLoggedIn={!!user}
         userEmail={user?.email}
-        theme={theme}
+        theme={resolvedTheme}
         onToggleTheme={toggleTheme}
       />
 
@@ -1070,7 +1088,9 @@ function AppContent() {
                    localStorage.setItem('sellscan_model', model);
                  }} 
                  isLoggedIn={!!user}
-                 userEmail={user?.email}
+                 userEmail={user?.email || undefined}
+                 themeMode={themeMode}
+                 setThemeMode={setThemeMode}
                />
              </motion.div>
           )}

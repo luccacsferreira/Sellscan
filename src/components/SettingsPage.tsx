@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap } from 'lucide-react';
+import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap, Sun, Moon } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 import { supabase } from '../lib/supabase';
@@ -15,12 +15,16 @@ export function SettingsPage({
   selectedModel, 
   setSelectedModel,
   isLoggedIn,
-  userEmail
+  userEmail,
+  themeMode,
+  setThemeMode
 }: { 
   selectedModel: AIModel, 
   setSelectedModel: (m: AIModel) => void,
   isLoggedIn: boolean,
-  userEmail?: string
+  userEmail?: string,
+  themeMode: 'dark' | 'light' | 'system',
+  setThemeMode: (m: 'dark' | 'light' | 'system') => void
 }) {
   const { location, setLocation, requestLocation, isLoading } = useLocation();
   const [secretsStatus, setSecretsStatus] = React.useState({ gemini: false, openai: false });
@@ -44,6 +48,45 @@ export function SettingsPage({
             <SettingsItem icon={<Shield className="text-green-500" />} label="Security" value="MFA Active" />
           </SettingsGroup>
         )}
+
+        <SettingsGroup title="Appearance">
+          <div className="p-6 bg-brand-bg/50">
+            <div className="flex items-center gap-3 mb-6">
+              <Sun className="w-5 h-5 text-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.5)]" />
+              <h3 className="font-bold">Theme Mode</h3>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3">
+               {[
+                 { id: 'light', name: 'Light', icon: <Sun className="w-4 h-4" /> },
+                 { id: 'dark', name: 'Dark', icon: <Moon className="w-4 h-4" /> },
+                 { id: 'system', name: 'Automatic', icon: <Zap className="w-4 h-4" /> }
+               ].map((m) => (
+                 <button
+                   key={m.id}
+                   onClick={() => setThemeMode(m.id as any)}
+                   className={cn(
+                     "flex flex-col items-center justify-center p-4 rounded-xl border transition-all text-center gap-2",
+                     themeMode === m.id 
+                       ? "bg-brand-accent/10 border-brand-accent shadow-[0_0_10px_rgba(85,205,209,0.2)]" 
+                       : "bg-brand-bg border-brand-border hover:border-brand-accent/40"
+                   )}
+                 >
+                   <div className={cn(
+                     "transition-colors",
+                     themeMode === m.id ? "text-brand-accent" : "text-brand-text-muted"
+                   )}>
+                     {m.icon}
+                   </div>
+                   <span className={cn(
+                     "text-[10px] font-bold uppercase tracking-widest",
+                     themeMode === m.id ? "text-brand-accent" : "text-brand-text-muted"
+                   )}>{m.name}</span>
+                 </button>
+               ))}
+            </div>
+          </div>
+        </SettingsGroup>
 
         <SettingsGroup title="Location">
           <div className="p-4 flex items-center justify-between hover:bg-brand-bg group cursor-pointer transition-all">
