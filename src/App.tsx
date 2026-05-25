@@ -29,6 +29,7 @@ import { UserLocation } from './types';
 import { AuthCallback } from './components/AuthCallback';
 import { DocsPage } from './components/DocsPage';
 import { AffiliatePage } from './components/AffiliatePage';
+import { NotificationModal } from './components/NotificationModal';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate';
 
@@ -166,6 +167,7 @@ function AppContent() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [scanError, setScanError] = useState<{ title: string; message: string } | null>(null);
   const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(null);
   const [pendingCheckout, setPendingCheckout] = useState<string | null>(null);
   const [manualCountry, setManualCountry] = useState('');
@@ -413,11 +415,15 @@ function AppContent() {
         (error.message === "API_KEY_MISSING" || error.message.includes("GEMINI_API_KEY is not configured"));
         
       if (isMissingKey) {
-        if (confirm("Gemini API Key is not set in project settings. Would you like to run in Demo Mode to check the layout? \n\nOtherwise, you can add your key in the Settings > Secrets panel.")) {
-          handleAnalyze(image, description, true);
-        }
+        setScanError({
+          title: "Setup Required",
+          message: "Gemini API Key is missing. You can add your own key in Settings > Secrets or continue this scan in Demo Mode to see the interface."
+        });
       } else {
-        alert("Something went wrong during analysis. Please try again.");
+        setScanError({
+          title: "Detection Failed",
+          message: "Our vision engine had trouble processing this image. This can happen with very low resolution photos or extremely blurry shots."
+        });
       }
     } finally {
       setIsLoading(false);
@@ -1300,6 +1306,22 @@ function AppContent() {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
         onSuccess={handleAuthSuccess} 
+      />
+
+      <NotificationModal 
+        isOpen={!!scanError}
+        onClose={() => setScanError(null)}
+        title={scanError?.title || ''}
+        message={scanError?.message || ''}
+        type="error"
+        actionLabel={scanError?.title === "Setup Required" ? "Try Demo Mode" : "Refresh & Try Again"}
+        onAction={() => {
+          if (scanError?.title === "Setup Required") {
+            handleAnalyze(imageToAnalyze || undefined, undefined, true);
+          } else {
+            window.location.reload();
+          }
+        }}
       />
     </div>
   );

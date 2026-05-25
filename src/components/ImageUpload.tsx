@@ -4,9 +4,10 @@
  */
 
 import React, { useState, useRef } from 'react';
-import { Upload, Camera, Type, X, Loader2, Image as ImageIcon, ArrowRight, Zap } from 'lucide-react';
+import { Upload, Camera, Type, X, Loader2, Image as ImageIcon, ArrowRight, Zap, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import { NotificationModal } from './NotificationModal';
 
 interface ImageUploadProps {
   onAnalyze: (image?: string, description?: string, isDemo?: boolean) => void;
@@ -18,18 +19,26 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [mode, setMode] = useState<'upload' | 'describe'>('upload');
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        setMode('upload');
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrorModal({
+        isOpen: true,
+        title: "Format Not Supported",
+        message: `Our scanning engine only accepts image files (JPG, PNG, WebP). You tried to upload a "${file.type || 'unknown'}" file.`
+      });
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAnalyze = (isDemo: boolean = false) => {
@@ -146,6 +155,16 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
           </button>
         )}
       </div>
+
+      <NotificationModal 
+        isOpen={!!errorModal?.isOpen}
+        onClose={() => setErrorModal(null)}
+        title={errorModal?.title || ''}
+        message={errorModal?.message || ''}
+        type="error"
+        actionLabel="Try Again"
+        onAction={() => fileInputRef.current?.click()}
+      />
     </div>
   );
 }
