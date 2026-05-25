@@ -440,9 +440,12 @@ function AppContent() {
           message: "Gemini API Key is missing. You can add your own key in Settings > Secrets or continue this scan in Demo Mode to see the interface."
         });
       } else {
+        const isAnalysisError = error instanceof Error && error.message.includes("Analysis failed");
         setScanError({
-          title: "Detection Failed",
-          message: "Our vision engine had trouble processing this image. This can happen with very low resolution photos or extremely blurry shots."
+          title: isAnalysisError ? "Refining Analysis" : "Detection Failed",
+          message: isAnalysisError 
+            ? "Our engine had trouble identifying this specific image. Please try a clearer photo or provide a text description above."
+            : "Vision processing interrupted. This can happen with extremely high-resolution images (>20MB) or slow networks. Try a smaller file."
         });
       }
     } finally {
@@ -714,27 +717,27 @@ function AppContent() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-brand-bg/20 backdrop-blur-[12px] overflow-y-auto"
             >
-              <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 gap-4 animate-in zoom-in-95 duration-500 items-stretch">
+              <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 gap-4 animate-in zoom-in-95 duration-500 items-stretch h-fit">
                  
                  {/* Left Column: Progress Checklist (Bloom.ai style) */}
-                 <div className="md:col-span-4 glass-card p-8 border-white/5 bg-brand-bg/60 backdrop-blur-xl flex flex-col shadow-2xl">
-                    <div className="mb-8">
-                       <div className="w-10 h-10 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mb-5">
+                 <div className="md:col-span-4 glass-card p-6 md:p-8 border-white/5 bg-brand-bg/60 backdrop-blur-xl flex flex-col shadow-2xl">
+                    <div className="mb-6 md:mb-8">
+                       <div className="w-10 h-10 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mb-4 md:mb-5">
                           <Sparkles className="w-5 h-5 text-brand-accent" />
                        </div>
-                       <h2 className="text-xl font-black tracking-tight text-white leading-tight">
-                         Extracting product identity
+                       <h2 className="text-lg md:text-xl font-black tracking-tight text-white leading-tight">
+                         Scanning environment
                        </h2>
-                       <p className="text-brand-text-muted text-[10px] mt-2 font-medium tracking-wide uppercase opacity-60">Status: Real-time scan</p>
+                       <p className="text-brand-text-muted text-[10px] mt-2 font-medium tracking-wide uppercase opacity-60">Status: Real-time analysis</p>
                     </div>
 
-                    <div className="space-y-4 flex-grow">
+                    <div className="space-y-2 md:space-y-4 flex-grow">
                       {[
                         { id: 'identifying', label: 'Extracting context' },
                         { id: 'searching', label: 'Searching market' },
-                        { id: 'analyzing_reviews', label: 'Analyzing sentiment' },
-                        { id: 'calculating', label: 'Calculating pricing' },
-                        { id: 'finishing', label: 'Polishing report' }
+                        { id: 'analyzing_reviews', label: 'Social sentiment' },
+                        { id: 'calculating', label: 'Pricing parity' },
+                        { id: 'finishing', label: 'Polishing data' }
                       ].map((stage, idx, arr) => {
                         const stages = arr.map(s => s.id);
                         const currentIdx = stages.indexOf(loadingStage);
@@ -742,17 +745,17 @@ function AppContent() {
                         const isActive = stage.id === loadingStage;
 
                         return (
-                          <div key={stage.id} className="relative pl-8 h-10 flex items-center">
+                          <div key={stage.id} className="relative pl-8 h-9 md:h-10 flex items-center">
                             {/* Connector Line */}
                             {idx < arr.length - 1 && (
                               <div className={cn(
-                                "absolute left-[9.5px] top-[28px] w-[1px] h-[22px] transition-colors duration-500",
+                                "absolute left-[9.5px] top-[26px] md:top-[28px] w-[1px] h-[18px] md:h-[22px] transition-colors duration-500",
                                 isCompleted ? "bg-brand-accent" : "bg-brand-border/20"
                               )} />
                             )}
                             
                             <div className={cn(
-                              "relative w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0 mr-3",
+                              "absolute left-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0",
                               isCompleted ? "bg-brand-accent border-brand-accent text-brand-bg shadow-[0_0_10px_rgba(85,205,209,0.3)]" : 
                               isActive ? "border-brand-accent bg-brand-accent/10" : "border-brand-border/30"
                             )}>
@@ -764,7 +767,7 @@ function AppContent() {
                             
                             <div className="flex flex-col">
                               <span className={cn(
-                                "text-[12px] font-bold tracking-tight transition-colors",
+                                "text-[11px] md:text-[12px] font-bold tracking-tight transition-colors",
                                 isCompleted || isActive ? "text-white" : "text-brand-text-muted/30"
                               )}>
                                 {stage.label}
@@ -775,10 +778,10 @@ function AppContent() {
                       })}
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-white/5">
+                    <div className="mt-6 md:mt-8 pt-6 border-t border-white/5">
                       <div className="flex items-center gap-3 text-brand-text-muted text-[10px] font-black uppercase tracking-widest opacity-40">
                          <Loader2 className="w-3 h-3 animate-spin text-brand-accent" />
-                         Processing request
+                         Engine Active
                       </div>
                     </div>
                  </div>
@@ -823,13 +826,13 @@ function AppContent() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
-                      className="glass-card p-6 border-white/5 flex flex-col justify-center bg-brand-bg/40 relative overflow-hidden group"
+                      className="glass-card p-4 md:p-6 border-white/5 flex flex-col justify-center bg-brand-bg/40 relative overflow-hidden group"
                     >
                       <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
-                         <div className="w-12 h-12 rounded-full border border-brand-accent animate-[spin_10s_linear_infinite]" />
+                         <div className="w-10 md:w-12 h-10 md:h-12 rounded-full border border-brand-accent animate-[spin_10s_linear_infinite]" />
                       </div>
                       
-                      <h4 className="text-[9px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4">Discovery Engine</h4>
+                      <h4 className="text-[9px] font-black uppercase text-brand-accent tracking-[0.3em] mb-3 md:mb-4">Discovery Engine</h4>
                       <AnimatePresence mode="wait">
                         {detectedName ? (
                           <motion.div 
@@ -838,16 +841,16 @@ function AppContent() {
                             animate={{ opacity: 1, y: 0 }}
                             className="space-y-1"
                           >
-                            <p className="text-[10px] font-bold text-brand-text-muted/60 uppercase tracking-widest">Identified Asset</p>
-                            <h3 className="text-xl font-black text-white italic leading-tight uppercase">
+                            <p className="text-[9px] md:text-[10px] font-bold text-brand-text-muted/60 uppercase tracking-widest">Identified Asset</p>
+                            <h3 className="text-sm md:text-xl font-black text-white italic leading-tight uppercase">
                               {detectedName}
                             </h3>
                           </motion.div>
                         ) : (
-                          <motion.div key="wait" className="space-y-3">
+                          <motion.div key="wait" className="space-y-2 md:space-y-3">
                              <div className="h-4 bg-white/5 animate-pulse rounded w-3/4" />
                              <div className="h-6 bg-white/5 animate-pulse rounded w-1/2" />
-                             <p className="text-[9px] text-brand-text-muted/30 font-black uppercase tracking-widest animate-pulse italic">Scanning Database...</p>
+                             <p className="text-[9px] text-brand-text-muted/30 font-black uppercase tracking-widest animate-pulse italic">Connecting...</p>
                           </motion.div>
                         )}
                       </AnimatePresence>

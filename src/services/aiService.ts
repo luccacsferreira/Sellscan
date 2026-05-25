@@ -24,17 +24,20 @@ export async function analyzeProduct(options: AnalysisOptions): Promise<ProductA
   ${locationContext}
   
   EXECUTION PIPELINE:
-  1. [IDENTITY AGENT (Gemini 1.5)]: Identify the exact brand, model, and edition. If digital/creative (logo/art), label as 'Creative Asset'.
-  2. [MARKET RESEARCH AGENT (Simulated Search)]: Deep-dive into real-time market data across eBay, Vinted, StockX, Poshmark, and specialized freelance job boards (Upwork/Fiverr) for creative assets. 
-     - You MUST provide realistic Price History that reflects actual volatility.
-     - Look for 'Sold' listings, not just active ones.
+  1. [IDENTITY AGENT (Gemini 1.5)]: Identify the exact brand, model, and edition. 
+     IMPORTANT: If the image is a screenshot, graphic, logo, animation, or abstract art, label as 'Creative Digital Asset'. Do NOT try to invent a physical brand if it is clearly digital.
+  2. [MARKET RESEARCH AGENT (Simulated Search)]: Deep-dive into real-time market data.
+     - For physical: eBay, Vinted, StockX, Poshmark.
+     - For digital/creative: Upwork, Fiverr, Creative Market, or design agency rates.
+     - Look for 'Sold' listings/rates, not just active ones.
   3. [SENTIMENT AGENT]: Extract owner/buyer consensus from Reddit, YouTube reviews, and community forums.
   4. [MOCKUP AGENT]: Generate high-fidelity platform-specific listing parameters.
   
   CRITICAL ACCURACY RULES:
-  - If the item is rare, reflect that in the 'Quick Verdict'.
-  - 'marketSentiment' MUST reflect real human pros/cons (e.g., 'Sizing runs small', 'Materials are fragile').
+  - If the item is rare or a digital unique piece, reflect that in the 'Quick Verdict'.
+  - 'marketSentiment' MUST reflect real human pros/cons.
   - For digital items, 'platforms' should include Creative Market, Fiverr, or Upwork.
+  - Return intrinsic market 'worthRange' and recommended listing 'priceRange'.
   
   Output MUST be a valid JSON object matching this schema:
   {

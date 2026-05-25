@@ -25,11 +25,27 @@ export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
   const handleFile = (file: File) => {
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    // Check file size (20MB limit)
+    const MAX_SIZE = 20 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      setErrorModal({
+        isOpen: true,
+        title: "File too large",
+        message: "Please upload an image smaller than 20MB for optimal processing speeds."
+      });
+      return;
+    }
+
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+    const fileName = file.name.toLowerCase();
+    const isImageByExtension = validExtensions.some(ext => fileName.endsWith(ext));
+    const isImageByType = file.type.startsWith('image/');
+
+    if (!isImageByType && !isImageByExtension) {
       setErrorModal({
         isOpen: true,
         title: "Not supported file format",
-        message: `Our scanning engine only accepts image files (JPG, PNG, WebP).`
+        message: "Our scanning engine currently supports JPG, PNG, and WebP. Please ensure your file is a common image format."
       });
       return;
     }

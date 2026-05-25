@@ -367,7 +367,17 @@ async function startServer() {
 
           const result = await model.generateContent(parts);
           const response = await result.response;
-          return res.json(JSON.parse(response.text().replace(/```json|```/g, "")));
+          const text = response.text();
+          
+          try {
+            // Robust JSON extraction for cases where AI adds markdown or conversational fluff
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("No JSON found in AI response");
+            return res.json(JSON.parse(jsonMatch[0]));
+          } catch (parseError) {
+            console.error("JSON Parse Error. Raw Text:", text);
+            throw new Error("Analysis failed. The image might be too complex or unclear for current detection agents.");
+          }
         }
       } catch (geminiError: any) {
         console.error("❌ Gemini Call Failed:", geminiError.message);
