@@ -1,4 +1,5 @@
 /**
+ * @version 1.0.4 - Manual Build Refresh
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
