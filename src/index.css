@@ -9,14 +9,16 @@
   --border: #2B2B2B;
   --text: #ffffff;
   --text-muted: #A1A1AA;
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
 }
 
 :root.light {
-  --bg: #ffffff;
-  --card: #F9FAFB;
-  --border: #E5E7EB;
-  --text: #171717;
-  --text-muted: #666666;
+  --bg: #F3F4F6;
+  --card: #ffffff;
+  --border: #D1D5DB;
+  --text: #111827;
+  --text-muted: #4B5563;
+  --card-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 @theme {
@@ -42,7 +44,8 @@
 }
 
 .glass-card {
-  @apply bg-brand-card border border-brand-border rounded-2xl overflow-hidden shadow-sm;
+  @apply bg-brand-card border border-brand-border rounded-2xl overflow-hidden;
+  box-shadow: var(--card-shadow);
 }
 
 .custom-scrollbar::-webkit-scrollbar {

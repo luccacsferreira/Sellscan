@@ -27,7 +27,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
   const dbInfo = getSupabaseDebugInfo();
 
-  const handleLogoClick = () => {
+  const handleDiagnosticClick = () => {
     setDiagnosticClicks(prev => prev + 1);
   };
 
@@ -153,49 +153,19 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-            className="relative w-full max-w-md glass-card bg-brand-card/90 overflow-hidden border-brand-accent/20"
+            className="relative w-full max-w-md glass-card bg-brand-card/90 overflow-hidden border-brand-accent/20 dark:border-brand-accent/20"
           >
-            {/* Header Tabs */}
-            <div className="flex border-b border-white/5">
-              {(['login', 'signup', 'magic-link'] as AuthMode[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => {
-                    setMode(m);
-                    setError(null);
-                  }}
-                  className={cn(
-                    "flex-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative",
-                    mode === m ? "text-brand-accent bg-white/5" : "text-brand-text-muted hover:text-brand-text"
-                  )}
-                >
-                  {m.replace('-', ' ')}
-                  {mode === m && (
-                    <motion.div 
-                      layoutId="activeAuthTab"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand-accent shadow-[0_0_10px_rgba(85,205,209,0.5)]" 
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
 
-            <div className="p-8">
+
+            <div className="relative p-8">
               <button 
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 text-brand-text-muted hover:text-brand-text transition-colors z-10"
+                className="absolute top-4 right-4 p-2 text-brand-text-muted hover:text-brand-text transition-colors z-[60]"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="text-center mb-8">
-                <img 
-                  src={sellscanLogo} 
-                  alt="Sellscan" 
-                  className="h-4 mx-auto mb-6 opacity-60 cursor-help" 
-                  onClick={handleLogoClick}
-                />
-                
+              <div className="text-center mb-8 pt-4">
                 {diagnosticClicks >= 3 && (
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
@@ -222,7 +192,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                           <span>Origin:</span> <span className="text-white">{dbInfo.origin}</span>
                         </div>
                         
-                        {/* Status Tools UI moved here for cohesion */}
                         <div className="mt-4 pt-4 border-t border-white/5 space-y-4">
                           <div className="flex items-center justify-between">
                             <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Advanced Infrastructure</p>
@@ -286,26 +255,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   </motion.div>
                 )}
 
-                {(!isSupabaseConfigured || (window.location.hostname !== 'localhost' && !window.location.hostname.includes('run.app'))) && (
-                  <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl space-y-3">
-                    <p className="text-[9px] font-bold text-orange-400 uppercase leading-snug flex items-center">
-                      <AlertCircle className="w-3 h-3 mr-1.5" />
-                      Production Sync Troubleshooting
-                    </p>
-                    <div className="text-[10px] text-orange-300 text-left space-y-2">
-                       <p className="font-bold">Detected Host: <span className="text-white">{window.location.hostname}</span></p>
-                       <p className="opacity-70 leading-relaxed font-medium">If your API keys work in the preview but NOT on this domain, you must set them in your **Google Cloud Console** under your Cloud Run service settings.</p>
-                       <div className="bg-black/20 p-3 rounded-lg font-mono text-[8.5px] space-y-1.5 border border-white/5">
-                          <p>1. Open Google Cloud Console &rarr; Cloud Run</p>
-                          <p>2. Select your Sellscan service</p>
-                          <p>3. Edit & Deploy New Revision</p>
-                          <p>4. Add Variables: GEMINI_API_KEY, STRIPE_SECRET_KEY, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY</p>
-                       </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="inline-flex w-14 h-14 items-center justify-center rounded-2xl bg-brand-accent/20 text-brand-accent mb-4 shadow-[0_0_20px_rgba(85,205,209,0.2)]">
+                <div 
+                  onClick={handleDiagnosticClick}
+                  className="inline-flex w-14 h-14 items-center justify-center rounded-2xl bg-brand-accent/20 text-brand-accent mb-4 shadow-[0_0_20px_rgba(85,205,209,0.2)] cursor-help"
+                >
                   {mode === 'magic-link' ? <Wand2 className="w-7 h-7" /> : <Sparkles className="w-7 h-7" />}
                 </div>
                 <h2 className="text-2xl font-black tracking-tight mb-2">
@@ -337,7 +290,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               )}
 
               <form onSubmit={mode === 'magic-link' ? handleMagicLink : handleSubmit} className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                   <label className="text-[10px] font-black uppercase text-brand-text-muted tracking-widest px-1">Email Address</label>
                   <div className="relative group">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted group-focus-within:text-brand-accent transition-colors" />
@@ -346,14 +299,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-all font-medium"
+                      className="w-full bg-white/5 border border-white/10 dark:border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-all font-medium text-brand-text placeholder:text-brand-text-muted/50"
                       placeholder="name@example.com"
                     />
                   </div>
                 </div>
 
                 {mode !== 'magic-link' && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 text-left">
                     <div className="flex justify-between items-center px-1">
                       <label className="text-[10px] font-black uppercase text-brand-text-muted tracking-widest">Password</label>
                     </div>
@@ -364,7 +317,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-all font-medium"
+                        className="w-full bg-white/5 border border-white/10 dark:border-white/10 rounded-xl py-3.5 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 focus:bg-white/10 transition-all font-medium text-brand-text placeholder:text-brand-text-muted/50"
                         placeholder="••••••••"
                         minLength={6}
                       />
@@ -393,6 +346,55 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   )}
                 </button>
               </form>
+
+              <div className="mt-4 flex bg-white/5 rounded-xl overflow-hidden border border-white/10 group/buttons">
+                {mode === 'login' ? (
+                  <>
+                    <button 
+                      onClick={() => setMode('signup')}
+                      className="flex-1 py-3.5 text-[9px] font-bold uppercase tracking-widest text-brand-text-muted hover:text-brand-accent hover:bg-brand-accent/5 transition-all text-center border-r border-white/5"
+                    >
+                      Sign Up
+                    </button>
+                    <button 
+                      onClick={() => setMode('magic-link')}
+                      className="flex-1 py-3.5 text-[9px] font-bold uppercase tracking-widest text-brand-text-muted hover:text-brand-accent hover:bg-brand-accent/5 transition-all text-center"
+                    >
+                      Magic Link
+                    </button>
+                  </>
+                ) : mode === 'signup' ? (
+                  <>
+                    <button 
+                      onClick={() => setMode('login')}
+                      className="flex-1 py-3.5 text-[9px] font-bold uppercase tracking-widest text-brand-text-muted hover:text-brand-accent hover:bg-brand-accent/5 transition-all text-center border-r border-white/5"
+                    >
+                      Log In
+                    </button>
+                    <button 
+                      onClick={() => setMode('magic-link')}
+                      className="flex-1 py-3.5 text-[9px] font-bold uppercase tracking-widest text-brand-text-muted hover:text-brand-accent hover:bg-brand-accent/5 transition-all text-center"
+                    >
+                      Magic Link
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => setMode('login')}
+                      className="flex-1 py-3.5 text-[9px] font-bold uppercase tracking-widest text-brand-text-muted hover:text-brand-accent hover:bg-brand-accent/5 transition-all text-center border-r border-white/5"
+                    >
+                      Log In
+                    </button>
+                    <button 
+                      onClick={() => setMode('signup')}
+                      className="flex-1 py-3.5 text-[9px] font-bold uppercase tracking-widest text-brand-text-muted hover:text-brand-accent hover:bg-brand-accent/5 transition-all text-center"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
 
               <div className="mt-8 flex flex-col items-center gap-6">
                 <div className="w-full flex items-center gap-4">

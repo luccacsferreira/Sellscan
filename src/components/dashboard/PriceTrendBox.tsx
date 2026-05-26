@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 interface PricePoint {
   date: string;
