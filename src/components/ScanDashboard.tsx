@@ -6,9 +6,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, FolderRoot, ChevronDown, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ProductAnalysis, ChatMessage, ScanResult, Project } from '../types';
+import { ProductAnalysis, ChatMessage, ScanResult, Project, AIPipelineConfig } from '../types';
 import { cn } from '../lib/utils';
-import { chatAboutProduct, AIModel } from '../services/aiService';
+import { chatAboutProduct } from '../services/aiService';
 import { useLocation } from '../lib/LocationContext';
 
 // Sub Components
@@ -35,10 +35,10 @@ interface ScanDashboardProps {
   onUpdateScan: (scan: ScanResult) => void;
   projects: Project[];
   onBack: () => void;
-  selectedModel: AIModel;
+  pipeline: AIPipelineConfig;
 }
 
-export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, onBack, selectedModel }: ScanDashboardProps) {
+export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, onBack, pipeline }: ScanDashboardProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
     setIsSending(true);
 
     try {
-      const response = await chatAboutProduct([...chatMessages, userMessage], analysis, selectedModel);
+      const response = await chatAboutProduct([...chatMessages, userMessage], analysis, pipeline);
       
       const assistantMessage: ChatMessage = { role: 'assistant', content: response.chatResponse };
       setChatMessages(prev => [...prev, assistantMessage]);

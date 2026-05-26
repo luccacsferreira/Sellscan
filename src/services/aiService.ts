@@ -1,19 +1,22 @@
-import { ProductAnalysis, UserLocation } from "../types";
-
-export type AIModel = 'gemini' | 'gpt4';
+import { ProductAnalysis, UserLocation, AIPipelineConfig } from "../types";
 
 export interface AnalysisOptions {
   image?: string;
   description?: string;
   location?: UserLocation;
   isDemo?: boolean;
-  model?: AIModel;
+  pipeline?: AIPipelineConfig;
 }
 
 export async function analyzeProduct(options: AnalysisOptions): Promise<ProductAnalysis> {
-  const { model = 'gemini', ...params } = options;
+  const { pipeline, ...params } = options;
 
-  const endpoint = model === 'gpt4' ? '/api/ai/gpt' : '/api/ai/gemini';
+  let modelToUse = 'gemini';
+  if (pipeline?.researchModel.startsWith('gpt')) {
+    modelToUse = 'gpt4';
+  }
+
+  const endpoint = modelToUse === 'gpt4' ? '/api/ai/gpt' : '/api/ai/gemini';
   
   // Construct the prompt
   const locationContext = params.location 
@@ -126,9 +129,13 @@ Note: This system uses Gemini 1.5 Pro (via server-side selection) as the primary
 export async function chatAboutProduct(
   messages: any[], 
   currentAnalysis: ProductAnalysis,
-  model: AIModel = 'gemini'
+  pipeline?: AIPipelineConfig
 ): Promise<{ analysis?: ProductAnalysis; chatResponse: string }> {
-  const endpoint = model === 'gpt4' ? '/api/ai/gpt' : '/api/ai/gemini';
+  let modelToUse = 'gemini';
+  if (pipeline?.strategyModel.startsWith('gpt')) {
+    modelToUse = 'gpt4';
+  }
+  const endpoint = modelToUse === 'gpt4' ? '/api/ai/gpt' : '/api/ai/gemini';
   
   const systemPrompt = model === 'gemini' ? "" : `You are Sellscan AI, a expert reseller consultant.
   You have just analyzed a product and provided a report: ${JSON.stringify(currentAnalysis)}.

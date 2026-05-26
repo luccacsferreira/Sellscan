@@ -18,6 +18,36 @@ export interface PracticalTip {
   description: string;
 }
 
+export type AIPlan = 'free' | 'basic' | 'premium';
+
+export type AIModelId = 
+  | 'gemini-1.5-flash' 
+  | 'gemini-1.5-pro' 
+  | 'gpt-4o-mini' 
+  | 'gpt-4o' 
+  | 'gpt-5-preview'
+  | 'claude-3.5-sonnet'
+  | 'claude-3.5-opus';
+
+export interface AIModelInfo {
+  id: AIModelId;
+  name: string;
+  provider: 'google' | 'openai' | 'anthropic';
+  costPerScan: number;
+  minPlan: AIPlan;
+}
+
+export interface AIPipelineConfig {
+  detectionModel: AIModelId;
+  researchModel: AIModelId;
+  strategyModel: AIModelId;
+}
+
+export interface UserAIPreference {
+  plan: AIPlan;
+  pipeline: AIPipelineConfig;
+}
+
 export interface ProductAnalysis {
   quickVerdict: string;
   practicalTips: PracticalTip[];

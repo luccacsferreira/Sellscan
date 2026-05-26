@@ -4,23 +4,27 @@
  */
 
 import React from 'react';
-import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap, Sun, Moon } from 'lucide-react';
+import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap, Sun, Moon, X, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 import { supabase } from '../lib/supabase';
 
-import { AIModel } from '../services/aiService';
+import { AIModel, AIModelId, AIPipelineConfig, AIPlan } from '../types';
+import { AI_MODELS, calculateScanCost, DEFAULT_PIPELINES } from '../lib/ai-config';
 
 export function SettingsPage({ 
-  selectedModel, 
-  setSelectedModel,
+  pipeline,
+  setPipeline,
+  plan = 'free',
   isLoggedIn,
   userEmail,
   themeMode,
   setThemeMode
 }: { 
-  selectedModel: AIModel, 
-  setSelectedModel: (m: AIModel) => void,
+  pipeline: AIPipelineConfig,
+  setPipeline: (p: AIPipelineConfig) => void,
+  plan?: AIPlan,
   isLoggedIn: boolean,
   userEmail?: string,
   themeMode: 'dark' | 'light' | 'system',
@@ -28,6 +32,9 @@ export function SettingsPage({
 }) {
   const { location, setLocation, requestLocation, isLoading } = useLocation();
   const [secretsStatus, setSecretsStatus] = React.useState({ gemini: false, openai: false });
+  const [isAICoreOpen, setIsAICoreOpen] = React.useState(false);
+
+  const costPerScan = calculateScanCost(pipeline);
 
   React.useEffect(() => {
     fetch('/api/health/secrets')
@@ -153,64 +160,72 @@ export function SettingsPage({
           </div>
         </SettingsGroup>
 
-        <SettingsGroup title="AI Analysis Engine">
+        <SettingsGroup title="Intelligence Core">
           <div className="p-6 bg-brand-bg/50">
-            <div className="flex items-center gap-3 mb-6">
-              <Zap className="w-5 h-5 text-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.5)]" />
-              <h3 className="font-bold">Select AI Model</h3>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Zap className="w-5 h-5 text-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.5)]" />
+                <h3 className="font-bold">AI Pipeline Customization</h3>
+              </div>
+              <button 
+                onClick={() => setIsAICoreOpen(true)}
+                className="px-4 py-2 rounded-xl bg-brand-accent text-brand-bg text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(85,205,209,0.3)]"
+              >
+                Configure Core
+              </button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-               {[
-                 { id: 'gemini', name: 'Gemini 3 Flash', desc: 'Fast & Multimodal', color: 'text-blue-400' },
-                 { id: 'gpt4', name: 'GPT-4o', desc: 'High Accuracy', color: 'text-green-400' }
-               ].map((m) => (
-                 <button
-                   key={m.id}
-                   onClick={() => setSelectedModel(m.id as AIModel)}
-                   className={cn(
-                     "flex flex-col p-4 rounded-xl border transition-all text-left group",
-                     selectedModel === m.id 
-                       ? "bg-brand-accent/10 border-brand-accent shadow-[0_0_10px_rgba(85,205,209,0.2)]" 
-                       : "bg-brand-bg border-brand-border hover:border-brand-accent/40"
-                   )}
-                 >
-                   <div className="flex items-center justify-between mb-2">
-                      <span className={cn("text-xs font-black uppercase tracking-tight", m.color)}>{m.name}</span>
-                      <div className={cn(
-                        "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all",
-                        selectedModel === m.id ? "border-brand-accent bg-brand-accent" : "border-brand-border"
-                      )}>
-                        {selectedModel === m.id && <div className="w-1.5 h-1.5 rounded-full bg-brand-bg" />}
-                      </div>
-                   </div>
-                   <span className="text-[10px] text-brand-text-muted font-medium">{m.desc}</span>
-                 </button>
-               ))}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+               <ConfigSummaryItem label="Detection" modelId={pipeline.detectionModel} />
+               <ConfigSummaryItem label="Market Research" modelId={pipeline.researchModel} />
+               <ConfigSummaryItem label="Sales Strategy" modelId={pipeline.strategyModel} />
             </div>
-            
-            <div className="mt-6 p-4 rounded-xl border border-brand-border/20 bg-brand-bg/40">
-               <div className="flex items-center justify-between mb-2">
-                 <span className="text-[10px] font-bold uppercase text-brand-text-muted tracking-widest">Active Secrets Status</span>
+
+            <div className="mt-8 flex items-center justify-between p-4 rounded-xl border border-brand-border/20 bg-brand-bg/40">
+               <div>
+                  <span className="text-[10px] font-bold uppercase text-brand-text-muted tracking-widest block mb-1">Estimated Cost</span>
+                  <span className="text-xl font-black text-white">{costPerScan.toFixed(1)} <span className="text-brand-text-muted text-xs font-medium">Credits / Scan</span></span>
                </div>
                <div className="flex flex-wrap gap-4">
-                  <StatusBadge label="Gemini" active={secretsStatus.gemini} />
-                  <StatusBadge label="GPT-4" active={secretsStatus.openai} />
+                  <StatusBadge label="Google" active={secretsStatus.gemini} />
+                  <StatusBadge label="OpenAI" active={secretsStatus.openai} />
                </div>
-               <p className="text-[9px] text-brand-text-muted italic mt-3 opacity-60">
-                 * Ensure your API keys are configured in the AI Studio Secrets panel.
-               </p>
             </div>
           </div>
         </SettingsGroup>
 
         <SettingsGroup title="Subscription">
-          <SettingsItem 
-            icon={<CreditCard className="text-brand-accent" />} 
-            label="Current Plan" 
-            value="Free Tier" 
-            action={<span className="text-brand-accent font-bold">Upgrade</span>}
-          />
+          <div className="p-4 flex items-center justify-between hover:bg-brand-bg group cursor-pointer transition-all">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center">
+                <CreditCard className="text-brand-accent" />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Current Plan</p>
+                <div className="flex gap-2 mt-1">
+                  {(['free', 'basic', 'premium'] as AIPlan[]).map(p => (
+                    <button 
+                      key={p}
+                      onClick={() => {
+                        const savedPlan = localStorage.getItem('sellscan_plan');
+                        if (savedPlan !== p) {
+                          localStorage.setItem('sellscan_plan', p);
+                          window.location.reload(); // Simple way to sync for now
+                        }
+                      }}
+                      className={cn(
+                        "text-[9px] px-2 py-0.5 rounded border font-black uppercase tracking-tighter",
+                        plan === p ? "bg-brand-accent text-brand-bg border-brand-accent" : "bg-white/5 border-white/10 text-brand-text-muted"
+                      )}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <span className="text-brand-accent font-bold text-sm">Active</span>
+          </div>
         </SettingsGroup>
 
         {isLoggedIn && (
@@ -225,6 +240,97 @@ export function SettingsPage({
           </button>
         )}
       </div>
+
+      {/* FULL SCREEN AI CORE PANEL */}
+      <AnimatePresence>
+        {isAICoreOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-brand-bg flex flex-col p-6 md:p-12 overflow-y-auto"
+          >
+            <div className="max-w-4xl mx-auto w-full flex-grow flex flex-col">
+              <div className="flex items-center justify-between mb-12">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-accent/20 flex items-center justify-center shadow-[0_0_20px_rgba(85,205,209,0.3)]">
+                    <Zap className="text-brand-accent w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-4xl font-black tracking-tight">AI Core Customization</h2>
+                    <p className="text-brand-text-muted font-medium">Fine-tune your resale intelligence engine</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsAICoreOpen(false)}
+                  className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group"
+                >
+                  <X className="text-white group-hover:scale-110 transition-transform" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 flex-grow">
+                <div className="space-y-8 flex flex-col">
+                  <PipelineStep 
+                    title="Detection Core" 
+                    description="Optical recognition & identity validation"
+                    currentId={pipeline.detectionModel}
+                    onSelect={(id) => setPipeline({ ...pipeline, detectionModel: id })}
+                    plan={plan}
+                  />
+                  <PipelineStep 
+                    title="Deep Research" 
+                    description="Market index scraping & price history analysis"
+                    currentId={pipeline.researchModel}
+                    onSelect={(id) => setPipeline({ ...pipeline, researchModel: id })}
+                    plan={plan}
+                  />
+                  <PipelineStep 
+                    title="Strategy Engine" 
+                    description="Pricing parity & channel optimization"
+                    currentId={pipeline.strategyModel}
+                    onSelect={(id) => setPipeline({ ...pipeline, strategyModel: id })}
+                    plan={plan}
+                  />
+                </div>
+
+                <div className="space-y-8 flex flex-col">
+                  <div className="glass-card p-8 bg-brand-bg/50 border-brand-border/10 relative overflow-hidden group flex-grow">
+                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Sparkles className="w-32 h-32" />
+                     </div>
+                     <h3 className="text-xl font-black mb-6">Pipeline Preview</h3>
+                     <div className="space-y-4">
+                        <PreviewRow label="Identity Ground-Truth" modelId={pipeline.detectionModel} />
+                        <PreviewRow label="Omni-Channel Scraping" modelId={pipeline.researchModel} />
+                        <PreviewRow label="Rescale Valuation" modelId={pipeline.strategyModel} />
+                     </div>
+
+                     <div className="mt-auto pt-12">
+                        <div className="mt-auto pt-8 border-t border-white/5">
+                           <div className="flex items-center justify-between mb-4">
+                             <span className="text-xs font-bold text-brand-text-muted uppercase tracking-widest">Pricing Efficiency</span>
+                             <span className="text-xs font-black text-brand-accent">REAL-TIME CALC</span>
+                           </div>
+                           <div className="text-6xl font-black text-white tracking-tighter mb-2">
+                              {costPerScan.toFixed(1)}
+                           </div>
+                           <p className="text-brand-text-muted font-bold text-sm tracking-widest uppercase">Credits Per Scan</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="p-8 rounded-3xl bg-brand-accent/5 border border-brand-accent/10">
+                     <p className="text-xs leading-relaxed text-brand-text-muted italic">
+                       * Some models are restricted based on your current plan level. Upgrade your plan to unlock state-of-the-art models like GPT-5 and Claude 3.5 Opus for maximum reselling edge.
+                     </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -262,6 +368,80 @@ function StatusBadge({ label, active }: { label: string, active: boolean }) {
     <div className="flex items-center gap-2">
        <div className={cn("w-2 h-2 rounded-full", active ? "bg-green-500 animate-pulse" : "bg-red-500")} />
        <span className="text-[10px] font-black uppercase text-white opacity-70">{label}</span>
+    </div>
+  );
+}
+
+function PipelineStep({ title, description, currentId, onSelect, plan }: { 
+  title: string, 
+  description: string, 
+  currentId: AIModelId, 
+  onSelect: (id: AIModelId) => void,
+  plan: AIPlan
+}) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-lg font-black tracking-tight">{title}</h3>
+        <p className="text-xs text-brand-text-muted font-medium">{description}</p>
+      </div>
+      <div className="grid grid-cols-1 gap-2">
+        {AI_MODELS.map(m => {
+          const isLocked = (plan === 'free' && m.minPlan !== 'free') || 
+                          (plan === 'basic' && m.minPlan === 'premium');
+          return (
+            <button
+              key={m.id}
+              onClick={() => !isLocked && onSelect(m.id)}
+              disabled={isLocked}
+              className={cn(
+                "p-4 rounded-2xl border transition-all flex items-center justify-between group text-left",
+                currentId === m.id 
+                  ? "bg-brand-accent/10 border-brand-accent shadow-[0_0_15px_rgba(85,205,209,0.1)]" 
+                  : "bg-white/5 border-white/5 hover:border-white/20",
+                isLocked && "opacity-40 cursor-not-allowed grayscale"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                 <div className={cn(
+                   "w-2 h-2 rounded-full",
+                   currentId === m.id ? "bg-brand-accent shadow-[0_0_8px_rgba(85,205,209,0.8)]" : "bg-white/20"
+                 )} />
+                 <div>
+                   <span className="text-sm font-bold block">{m.name}</span>
+                   <span className="text-[10px] text-brand-text-muted uppercase font-black">{m.provider}</span>
+                 </div>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-black block">{m.costPerScan.toFixed(1)} Credits</span>
+                {isLocked && <span className="text-[8px] font-black uppercase text-brand-accent tracking-tighter">Locked</span>}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ConfigSummaryItem({ label, modelId }: { label: string, modelId: AIModelId }) {
+  const model = AI_MODELS.find(m => m.id === modelId);
+  return (
+    <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+      <span className="text-[9px] font-bold uppercase text-brand-text-muted tracking-widest block mb-1">{label}</span>
+      <span className="text-xs font-black truncate block">{model?.name || 'Unknown'}</span>
+    </div>
+  );
+}
+
+function PreviewRow({ label, modelId }: { label: string, modelId: AIModelId }) {
+  const model = AI_MODELS.find(m => m.id === modelId);
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-brand-text-muted font-medium">{label}</span>
+      <div className="flex items-center gap-2">
+         <span className="text-[10px] font-black uppercase bg-white/5 px-2 py-0.5 rounded border border-white/10">{model?.name}</span>
+      </div>
     </div>
   );
 }

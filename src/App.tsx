@@ -18,8 +18,9 @@ import { ProjectDetail } from './components/ProjectDetail';
 import { AnalyticsPage } from './components/AnalyticsPage';
 import { BottomNav } from './components/BottomNav';
 import { AuthModal } from './components/AuthModal';
-import { ScanResult, Project, UserStats, ProductAnalysis } from './types';
-import { analyzeProduct, AIModel } from './services/aiService';
+import { analyzeProduct } from './services/aiService';
+import { DEFAULT_PIPELINES } from './lib/ai-config';
+import { ScanResult, Project, UserStats, ProductAnalysis, AIPipelineConfig, AIPlan } from './types';
 import { cn } from './lib/utils';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { dbService } from './services/dbService';
@@ -193,9 +194,30 @@ function AppContent() {
     });
   };
 
-  const [selectedModel, setSelectedModel] = useState<AIModel>(() => {
-    return (localStorage.getItem('sellscan_model') as AIModel) || 'gemini';
+  const [plan, setPlan] = useState<AIPlan>(() => {
+    return (localStorage.getItem('sellscan_plan') as AIPlan) || 'free';
   });
+
+  const [pipeline, setPipeline] = useState<AIPipelineConfig>(() => {
+    const saved = localStorage.getItem('sellscan_pipeline');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to load pipeline", e);
+      }
+    }
+    return DEFAULT_PIPELINES[plan];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sellscan_plan', plan);
+  }, [plan]);
+
+  useEffect(() => {
+    localStorage.setItem('sellscan_pipeline', JSON.stringify(pipeline));
+  }, [pipeline]);
+
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
@@ -393,7 +415,7 @@ function AppContent() {
         description, 
         location: location || undefined, 
         isDemo,
-        model: selectedModel
+        pipeline: pipeline
       });
       
       // Simulate detection name appearing after a bit
@@ -1052,7 +1074,7 @@ function AppContent() {
                 onUpdateScan={handleUpdateScan}
                 projects={projects}
                 onBack={() => setView('home')}
-                selectedModel={selectedModel}
+                pipeline={pipeline}
               />
             </motion.div>
           )}
@@ -1082,11 +1104,9 @@ function AppContent() {
                exit={{ opacity: 0 }}
              >
                <SettingsPage 
-                 selectedModel={selectedModel} 
-                 setSelectedModel={(model) => {
-                   setSelectedModel(model);
-                   localStorage.setItem('sellscan_model', model);
-                 }} 
+                 pipeline={pipeline}
+                 setPipeline={setPipeline}
+                 plan={plan}
                  isLoggedIn={!!user}
                  userEmail={user?.email || undefined}
                  themeMode={themeMode}
