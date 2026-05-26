@@ -55,26 +55,34 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
   const analysis = useMemo(() => ({
     ...scan.analysis,
     productDetails: scan.analysis.productDetails || { 
+      name: 'Unknown Item',
       brand: 'Unknown', 
       type: 'Product', 
       condition: 'Unknown', 
-      category: 'Other' 
+      category: 'Other',
+      characteristics: []
     },
     worthRange: scan.analysis.worthRange || scan.analysis.priceRange || { min: 0, max: 0, sweetSpot: 0 },
-    priceRange: scan.analysis.priceRange || { min: 0, max: 0, sweetSpot: 0, currency: 'USD' },
+    priceRange: scan.analysis.priceRange || { min: 0, max: 0, sweetSpot: 0, platformAverage: 0, currency: 'USD' },
     practicalTips: scan.analysis.practicalTips || [],
     marketSentiment: scan.analysis.marketSentiment || { 
       consensus: 'General retail items', 
       goodThings: [], 
       badThings: [] 
     },
-    priceHistory: scan.analysis.priceHistory || [],
+    priceHistory: scan.analysis.priceHistory && 'data' in scan.analysis.priceHistory 
+      ? scan.analysis.priceHistory 
+      : { 
+          data: Array.isArray(scan.analysis.priceHistory) ? scan.analysis.priceHistory : [], 
+          isLive: true, 
+          limitedHistory: false 
+        },
     platforms: (scan.analysis.platforms || []).map(p => ({
       ...p,
-      advantages: p.advantages || [],
-      sellingPrice: p.sellingPrice || scan.analysis.priceRange?.sweetSpot || 0,
-      listingPrices: p.listingPrices || [],
-      estimatedProfit: p.estimatedProfit || 0
+      edge: p.edge || '',
+      listPrice: p.listPrice || p.sellingPrice || 0,
+      avgPrice: p.avgPrice || 0,
+      profit: p.profit || p.estimatedProfit || 0
     }))
   }), [scan.analysis]);
 
@@ -209,6 +217,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
         {/* BOX 2: PRODUCT IDENTITY */}
         <IdentityBox 
           imageUrl={scan.imageUrl}
+          name={analysis.productDetails.name}
           brand={analysis.productDetails.brand}
           type={analysis.productDetails.type}
           condition={analysis.productDetails.condition}

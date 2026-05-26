@@ -4,13 +4,14 @@ import { cn } from '../../lib/utils';
 
 interface IdentityBoxProps {
   imageUrl?: string;
+  name?: string;
   brand: string;
   type: string;
   condition: string;
   category: string;
 }
 
-export function IdentityBox({ imageUrl, brand, type, condition, category }: IdentityBoxProps) {
+export function IdentityBox({ imageUrl, name, brand, type, condition, category }: IdentityBoxProps) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -30,17 +31,17 @@ export function IdentityBox({ imageUrl, brand, type, condition, category }: Iden
       )}
       <div className="p-8 flex-grow flex flex-col justify-center">
         <div className="mb-6">
-          <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-[0.2em] block mb-3 opacity-60">Identified Item (0.5 Credits)</span>
+          <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-[0.2em] block mb-3 opacity-60">Identified Item (AI Groud-Truth Verifier)</span>
           <h3 className="text-3xl font-black tracking-tight text-white/95 leading-tight mb-2">
-            {brand || 'Unknown'} <span className="text-brand-accent">{type || 'Product'}</span>
+            {name || `${brand || 'Unknown'} ${type || 'Product'}`}
           </h3>
-          <p className="text-brand-text-muted text-sm max-w-xl">This item has been cross-referenced across major reselling databases for accurate valuation.</p>
+          <p className="text-brand-text-muted text-sm max-w-xl">Optimized for search velocity. High specificity identification ensures your listing matches buyer search intent.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
           <DetailItem label="Condition" value={condition || 'Unknown'} />
           <DetailItem label="Category" value={category || 'Other'} />
           <DetailItem label="Brand" value={brand || 'Generic'} />
-          <DetailItem label="Scan Method" value="AI Optical Refinement" />
+          <DetailItem label="Scan Method" value="Optical Identity Agent" />
         </div>
       </div>
     </motion.div>

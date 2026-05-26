@@ -5,12 +5,10 @@
 
 export interface PlatformInsight {
   name: string;
-  matchScore: number;
-  reasoning: string;
-  advantages: string[];
-  sellingPrice: number;
-  listingPrices: number[];
-  estimatedProfit: number;
+  edge: string;
+  listPrice: number;
+  avgPrice: number;
+  profit: number;
 }
 
 export interface PracticalTip {
@@ -22,15 +20,15 @@ export interface PracticalTip {
 
 export interface ProductAnalysis {
   quickVerdict: string;
-  improvements: string[];
   practicalTips: PracticalTip[];
   platforms: PlatformInsight[];
-  suggestedTitle: string;
-  suggestedDescription: string;
+  suggestedTitle?: string;
+  suggestedDescription?: string;
   priceRange: {
     min: number;
     max: number;
     sweetSpot: number;
+    platformAverage: number;
     currency: string;
   };
   worthRange: {
@@ -39,23 +37,24 @@ export interface ProductAnalysis {
     sweetSpot: number;
   };
   productDetails: {
+    name: string;
     type: string;
     condition: string;
     brand: string;
     category: string;
-  };
-  buyerSentiment?: {
-    overallRating: number;
-    summary: string;
-    pros: string[];
-    cons: string[];
+    characteristics: string[];
+    lowConfidence?: boolean;
   };
   marketSentiment: {
     consensus: string;
     goodThings: string[];
     badThings: string[];
   };
-  priceHistory: { date: string; price: number }[];
+  priceHistory: {
+    data: { date: string; price: number }[];
+    isLive: boolean;
+    limitedHistory: boolean;
+  };
 }
 
 export interface ChatMessage {

@@ -27,9 +27,9 @@ export function PlatformStrategyBox({ platforms, currencySymbol }: PlatformStrat
         </div>
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-end">
-             <span className="text-[9px] font-bold text-brand-text-muted uppercase">Avg. Listing Price</span>
+             <span className="text-[9px] font-bold text-brand-text-muted uppercase">Global Market Avg.</span>
              <span className="text-sm font-bold text-white">
-                {currencySymbol}{(platforms.reduce((acc, p) => acc + (p.listingPrices?.[0] || 0), 0) / (platforms.length || 1)).toFixed(2)}
+                {currencySymbol}{(platforms.reduce((acc, p) => acc + (p.avgPrice || 0), 0) / (platforms.length || 1)).toFixed(2)}
              </span>
            </div>
         </div>
@@ -57,26 +57,22 @@ export function PlatformStrategyBox({ platforms, currencySymbol }: PlatformStrat
             </div>
             
             <div className="md:col-span-3">
-              <div className="flex flex-wrap gap-1">
-                {p.advantages.map((adv, ai) => (
-                  <span key={ai} className="text-[9px] px-1.5 py-0.5 rounded bg-brand-accent/5 text-brand-accent/80 border border-brand-accent/10 whitespace-nowrap">
-                    {adv}
-                  </span>
-                ))}
-              </div>
+              <span className="text-[11px] font-medium text-brand-text-muted leading-relaxed italic">
+                "{p.edge}"
+              </span>
             </div>
 
             <div className="md:col-span-2">
-              <span className="text-sm font-black text-brand-accent">{currencySymbol}{p.sellingPrice.toFixed(2)}</span>
+              <span className="text-sm font-black text-brand-accent">{currencySymbol}{p.listPrice.toFixed(2)}</span>
             </div>
 
             <div className="md:col-span-2">
-              <span className="text-xs font-medium text-brand-text-muted">{currencySymbol}{(p.listingPrices?.reduce((a,b)=>a+b,0)/(p.listingPrices?.length||1)).toFixed(2)}</span>
+              <span className="text-xs font-medium text-brand-text-muted">{currencySymbol}{p.avgPrice.toFixed(2)}</span>
             </div>
 
             <div className="md:col-span-2 text-right">
               <div className="flex flex-col items-end">
-                <span className="text-sm font-black text-white">{currencySymbol}{p.estimatedProfit.toFixed(2)}</span>
+                <span className="text-sm font-black text-white">{currencySymbol}{p.profit.toFixed(2)}</span>
                 <span className="text-[9px] text-green-500 font-bold uppercase tracking-wider">After Fees</span>
               </div>
             </div>
