@@ -227,16 +227,20 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
 
               <div className="space-y-10">
                 <PolicySection 
-                  title="Data Usage & AI Training" 
-                  content="Any data provided to Sellscan—including uploaded images, text descriptions, manual location settings, and preferred currencies—is processed by our AI infrastructure (Gemini, OpenAI, Claude). This specialized data is used to provide accurate market analysis and personalized recommendations. Some metadata may be used to refine our internal search algorithms to ensure local market accuracy. We maintain a zero-fabrication policy and do not share biometric or identifiable user data with external training sets."
+                  title="Data Usage" 
+                  content="Any images uploaded to Sellscan are processed by our AI models (Gemini/OpenAI) to generate analysis. Images are stored securely and are only accessible by you. We do not sell your data to third parties."
                 />
                 <PolicySection 
-                  title="Location & Currency Privacy" 
-                  content="Your location data (country/region) and currency preferences are stored to localize market trends and suggest nearby marketplace platforms. While AI may suggest currencies based on neighbor countries or global standards (USD/EUR), this data is linked only to your account profile for consistent cross-session UI localization."
+                  title="Fair Use" 
+                  content="Credits are provided based on your subscription tier. Automated scraping or use of the application through bots is strictly prohibited and will result in account suspension."
                 />
                 <PolicySection 
-                  title="Security & Storage" 
-                  content="All visual assets are stored using encrypted cloud storage buckets. Authenticated data is managed via secure infrastructure layers, ensuring that your scan history is private and accessible only via your verified login. We adhere to industry-standard data protection protocols for all AI interactions."
+                  title="Refunds" 
+                  content="As our product provides immediate intangible value through AI processing, refunds are generally not provided for credits already consumed. You can cancel your subscription at any time to avoid future charges."
+                />
+                <PolicySection 
+                  title="AI Accuracy" 
+                  content="While our AI provides highly accurate market insights, all price estimates and authenticity checks are for information purposes only. Final selling decisions are the responsibility of the user."
                 />
               </div>
             </div>

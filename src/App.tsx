@@ -137,10 +137,11 @@ function AppContent() {
           brand: "Authentic Vintage",
           category: "Jackets"
         },
-        marketSentiment: {
-          consensus: "Buyers love this specific era for its durability and timeless style.",
-          goodThings: ["High-quality full-grain leather", "Classic fit", "Increasing value year-over-year"],
-          badThings: ["Sizing can be smaller than modern standards", "Slight vintage scent expected"]
+        buyerSentiment: {
+          overallRating: 4.8,
+          summary: "Buyers love this specific era for its durability and timeless style.",
+          pros: ["High-quality full-grain leather", "Classic fit", "Increasing value year-over-year"],
+          cons: ["Sizing can be smaller than modern standards", "Slight vintage scent expected"]
         }
       }
     }];
@@ -432,7 +433,7 @@ function AppContent() {
       setDetectedName(analysis.productDetails.brand + ' ' + (analysis.productDetails.type || analysis.productDetails.category));
       setActivePlatforms(analysis.platforms.slice(0, 5).map(p => p.name));
       setLivePrice(analysis.priceRange.sweetSpot);
-      setLiveRating(4.8);
+      setLiveRating(analysis.buyerSentiment?.overallRating || 4.8);
 
       const newScan: ScanResult = {
         id: Math.random().toString(36).substring(7),
@@ -700,7 +701,26 @@ function AppContent() {
         </div>
       )}
 
-
+      {/* Critical Configuration Warning Banner */}
+      {!isSupabaseConfigured && view !== 'landing' && (
+        <div className="fixed top-16 left-0 right-0 z-[100] bg-red-500/10 backdrop-blur-md border-y border-red-500/20 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-red-400">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <p className="text-[10px] font-black uppercase tracking-widest leading-tight">
+                Database Not Configured: trysellscan.com may be pointing to a static host (like GitHub Pages).
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowAuthModal(true)}
+              className="flex items-center gap-2 bg-red-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full hover:brightness-110 transition-all whitespace-nowrap"
+            >
+              <Settings2 className="w-3 h-3" />
+              Open Troubleshooter
+            </button>
+          </div>
+        </div>
+      )}
       
       <main className={cn(
         "min-h-[calc(100vh-64px)] overflow-x-hidden pt-16 transition-all duration-300",
@@ -713,7 +733,7 @@ function AppContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-brand-bg/20 backdrop-blur-[12px] overflow-y-auto"
+              className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-brand-bg backdrop-blur-[8px] overflow-y-auto"
             >
               <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 gap-4 animate-in zoom-in-95 duration-500 items-stretch h-fit">
                  

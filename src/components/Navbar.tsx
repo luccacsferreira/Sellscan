@@ -54,15 +54,9 @@ export function Navbar({
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 h-16 px-4 md:px-8 transition-all duration-300">
-        {/* Background with Opaque-to-Transparent Gradient */}
+        {/* Background with Blur */}
         <div 
-          className="absolute inset-0 z-0 backdrop-blur-md pointer-events-none transition-[background] duration-300"
-          style={{
-            background: `linear-gradient(to right, 
-              var(--bg) 0%, 
-              var(--bg) 180px, 
-              color-mix(in srgb, var(--bg), transparent 20%) 600px)`
-          }}
+          className="absolute inset-0 z-0 backdrop-blur-md bg-brand-bg/80 pointer-events-none"
         />
         
         {/* Bottom Border Line - Layered in front of logo */}
