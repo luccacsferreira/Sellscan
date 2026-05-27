@@ -153,7 +153,7 @@ export function ImageUpload({
               placeholder="ADD A TITLE"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-transparent text-sm font-bold uppercase tracking-widest text-white placeholder-brand-text-muted/40 focus:outline-none"
+              className="w-full bg-transparent text-sm font-bold uppercase tracking-widest text-brand-text placeholder-brand-text-muted/40 focus:outline-none"
             />
           </div>
 
@@ -161,7 +161,7 @@ export function ImageUpload({
             placeholder="Add details like size, rare editions, or flaws that might not be visible in the photo..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="flex-grow w-full bg-transparent text-white placeholder-brand-text-muted/50 resize-none focus:outline-none text-base leading-relaxed p-0 min-h-[120px]"
+            className="flex-grow w-full bg-transparent text-brand-text placeholder-brand-text-muted/50 resize-none focus:outline-none text-base leading-relaxed p-0 min-h-[120px]"
           />
           <div className="mt-4 pt-4 border-t border-brand-border/50 text-[10px] text-brand-text-muted">
              <Zap className="w-3 h-3 inline mr-1 text-brand-accent" /> Combine photo & text for 40% more accurate pricing.

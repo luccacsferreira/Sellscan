@@ -777,7 +777,7 @@ function AppContent() {
                        <div className="w-10 h-10 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mb-4 md:mb-5">
                           <Sparkles className="w-5 h-5 text-brand-accent" />
                        </div>
-                       <h2 className="text-lg md:text-xl font-black tracking-tight text-white leading-tight">
+                       <h2 className="text-lg md:text-xl font-black tracking-tight text-brand-text leading-tight">
                          Scanning environment
                        </h2>
                        <p className="text-brand-text-muted text-[10px] mt-2 font-medium tracking-wide uppercase opacity-60">Status: Real-time analysis</p>
@@ -820,7 +820,7 @@ function AppContent() {
                             <div className="flex flex-col">
                               <span className={cn(
                                 "text-[11px] md:text-[12px] font-bold tracking-tight transition-colors",
-                                isCompleted || isActive ? "text-white" : "text-brand-text-muted/30"
+                                isCompleted || isActive ? "text-brand-text" : "text-brand-text-muted/50"
                               )}>
                                 {stage.label}
                               </span>
@@ -869,7 +869,7 @@ function AppContent() {
 
                        <div className="absolute bottom-4 left-4 p-2 px-4 rounded-full bg-brand-bg/80 border border-white/5 backdrop-blur-md flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
-                          <span className="text-[10px] font-black text-white uppercase tracking-widest">{LOADING_STAGE_TEXT[loadingStage]}</span>
+                          <span className="text-[10px] font-black text-brand-text uppercase tracking-widest">{LOADING_STAGE_TEXT[loadingStage]}</span>
                        </div>
                     </div>
 
@@ -894,14 +894,14 @@ function AppContent() {
                             className="space-y-1"
                           >
                             <p className="text-[9px] md:text-[10px] font-bold text-brand-text-muted/60 uppercase tracking-widest">Identified Asset</p>
-                            <h3 className="text-sm md:text-xl font-black text-white italic leading-tight uppercase">
+                            <h3 className="text-sm md:text-xl font-black text-brand-text italic leading-tight uppercase">
                               {detectedName}
                             </h3>
                           </motion.div>
                         ) : (
                           <motion.div key="wait" className="space-y-2 md:space-y-3">
-                             <div className="h-4 bg-white/5 animate-pulse rounded w-3/4" />
-                             <div className="h-6 bg-white/5 animate-pulse rounded w-1/2" />
+                             <div className="h-4 bg-brand-text/5 animate-pulse rounded w-3/4" />
+                             <div className="h-6 bg-brand-text/5 animate-pulse rounded w-1/2" />
                              <p className="text-[9px] text-brand-text-muted/30 font-black uppercase tracking-widest animate-pulse italic">Connecting...</p>
                           </motion.div>
                         )}
@@ -930,7 +930,7 @@ function AppContent() {
                          {activePlatforms.length === 0 && (
                             <div className="space-y-2 w-full">
                                {[1,2,3].map(i => (
-                                 <div key={i} className="h-4 bg-white/5 animate-pulse rounded w-full" />
+                                 <div key={i} className="h-4 bg-brand-text/5 animate-pulse rounded w-full" />
                                ))}
                             </div>
                          )}
@@ -962,12 +962,12 @@ function AppContent() {
                                      key={i} 
                                      className={cn(
                                        "w-2 h-4 rounded-full transition-colors", 
-                                       liveRating && i <= Math.round(liveRating) ? "bg-brand-accent" : "bg-white/5"
+                                       liveRating && i <= Math.round(liveRating) ? "bg-brand-accent" : "bg-brand-border"
                                      )} 
                                    />
                                 ))}
                              </div>
-                             <span className="text-xs font-black text-white">{liveRating ? liveRating.toFixed(1) : '--'}</span>
+                             <span className="text-xs font-black text-brand-text">{liveRating ? liveRating.toFixed(1) : '--'}</span>
                           </div>
                        </div>
                     </motion.div>
