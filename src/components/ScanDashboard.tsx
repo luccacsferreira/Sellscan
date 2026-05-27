@@ -80,9 +80,9 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
     platforms: (scan.analysis.platforms || []).map(p => ({
       ...p,
       edge: p.edge || '',
-      listPrice: p.listPrice || p.sellingPrice || 0,
+      listPrice: p.listPrice || (p as any).sellingPrice || 0,
       avgPrice: p.avgPrice || 0,
-      profit: p.profit || p.estimatedProfit || 0
+      profit: p.profit || (p as any).estimatedProfit || 0
     }))
   }), [scan.analysis]);
 

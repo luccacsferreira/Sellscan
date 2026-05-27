@@ -12,13 +12,31 @@ import { NotificationModal } from './NotificationModal';
 interface ImageUploadProps {
   onAnalyze: (image?: string, description?: string, isDemo?: boolean) => void;
   isLoading: boolean;
+  persistedImage: string | null;
+  setPersistedImage: (img: string | null) => void;
+  persistedTitle: string;
+  setPersistedTitle: (title: string) => void;
+  persistedDescription: string;
+  setPersistedDescription: (desc: string) => void;
 }
 
-export function ImageUpload({ onAnalyze, isLoading }: ImageUploadProps) {
+export function ImageUpload({ 
+  onAnalyze, 
+  isLoading,
+  persistedImage,
+  setPersistedImage,
+  persistedTitle,
+  setPersistedTitle,
+  persistedDescription,
+  setPersistedDescription
+}: ImageUploadProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const selectedImage = persistedImage;
+  const setSelectedImage = setPersistedImage;
+  const title = persistedTitle;
+  const setTitle = setPersistedTitle;
+  const description = persistedDescription;
+  const setDescription = setPersistedDescription;
   const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

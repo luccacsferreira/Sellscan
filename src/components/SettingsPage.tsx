@@ -10,7 +10,7 @@ import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 import { supabase } from '../lib/supabase';
 
-import { AIModel, AIModelId, AIPipelineConfig, AIPlan } from '../types';
+import { AIModelId, AIPipelineConfig, AIPlan } from '../types';
 import { AI_MODELS, calculateScanCost, DEFAULT_PIPELINES } from '../lib/ai-config';
 
 export function SettingsPage({ 

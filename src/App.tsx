@@ -232,6 +232,11 @@ function AppContent() {
   const [pendingCheckout, setPendingCheckout] = useState<string | null>(null);
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
+  
+  // Persisted inputs for the ImageUpload scan page
+  const [unsavedImage, setUnsavedImage] = useState<string | null>(null);
+  const [unsavedTitle, setUnsavedTitle] = useState<string>('');
+  const [unsavedDescription, setUnsavedDescription] = useState<string>('');
 
   const handleAuthSuccess = (authenticatedUser: User) => {
     setShowAuthModal(false);
@@ -455,7 +460,7 @@ function AppContent() {
       setDetectedName(analysis.productDetails.brand + ' ' + (analysis.productDetails.type || analysis.productDetails.category));
       setActivePlatforms(analysis.platforms.slice(0, 5).map(p => p.name));
       setLivePrice(analysis.priceRange.sweetSpot);
-      setLiveRating(analysis.buyerSentiment?.overallRating || 4.8);
+      setLiveRating((analysis as any).buyerSentiment?.overallRating || 4.8);
 
       const newScan: ScanResult = {
         id: Math.random().toString(36).substring(7),
@@ -468,6 +473,12 @@ function AppContent() {
       
       setCurrentScan(newScan);
       saveToHistory(newScan);
+      
+      // Clear persistence states for ImageUpload
+      setUnsavedImage(null);
+      setUnsavedTitle('');
+      setUnsavedDescription('');
+
       setView('dashboard');
     } catch (error) {
       console.error("Analysis failed:", error);
@@ -694,6 +705,7 @@ function AppContent() {
         onViewDocs={() => setView('docs')}
         onViewAffiliate={() => setView('affiliate')}
         onSignInClick={() => setShowAuthModal(true)}
+        onGetStartedClick={() => setView('upload')}
         isLoggedIn={!!user}
         userEmail={user?.email}
         theme={resolvedTheme}
@@ -974,7 +986,7 @@ function AppContent() {
               transition={{ duration: 0.3 }}
             >
               <LandingPage 
-                onStart={() => user ? setView('home') : setShowAuthModal(true)} 
+                onStart={() => setView('upload')} 
                 onSignIn={(tier) => {
                   if (tier) setPendingCheckout(tier);
                   setShowAuthModal(true);
@@ -1019,7 +1031,16 @@ function AppContent() {
                     {activeProject ? `Adding to project: ${activeProject.name}` : "Upload a photo for the best analysis, or describe it in details."}
                   </p>
                 </div>
-                <ImageUpload onAnalyze={handleAnalyze} isLoading={isLoading} />
+                <ImageUpload 
+                  onAnalyze={handleAnalyze} 
+                  isLoading={isLoading} 
+                  persistedImage={unsavedImage}
+                  setPersistedImage={setUnsavedImage}
+                  persistedTitle={unsavedTitle}
+                  setPersistedTitle={setUnsavedTitle}
+                  persistedDescription={unsavedDescription}
+                  setPersistedDescription={setUnsavedDescription}
+                />
               </div>
             </motion.div>
           )}

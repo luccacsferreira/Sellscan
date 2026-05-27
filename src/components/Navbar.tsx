@@ -20,6 +20,7 @@ interface NavbarProps {
   onViewDocs?: () => void;
   onViewAffiliate?: () => void;
   onSignInClick?: () => void;
+  onGetStartedClick?: () => void;
   isLoggedIn?: boolean;
   userEmail?: string;
   theme: 'dark' | 'light';
@@ -35,6 +36,7 @@ export function Navbar({
   onViewDocs,
   onViewAffiliate,
   onSignInClick,
+  onGetStartedClick,
   isLoggedIn = false, 
   userEmail,
   theme, 
@@ -150,7 +152,7 @@ export function Navbar({
               ) : (
                 <div className="flex items-center gap-4">
                   <button onClick={onSignInClick} className="text-brand-text hover:text-brand-accent transition-colors text-sm font-medium">Sign in</button>
-                  <button onClick={onSignInClick} className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2">
+                  <button onClick={onGetStartedClick || onSignInClick} className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2">
                     Get Started <LogIn className="w-4 h-4" />
                   </button>
                 </div>
@@ -246,7 +248,7 @@ export function Navbar({
                     <button onClick={() => { setIsMobileMenuOpen(false); onViewDocs?.(); }} className="text-left text-lg font-bold text-brand-text">Documentation</button>
                     <div className="h-px bg-brand-border my-2" />
                     <button onClick={() => { setIsMobileMenuOpen(false); onSignInClick?.(); }} className="text-left text-lg font-bold text-brand-text">Sign in</button>
-                    <button onClick={() => { setIsMobileMenuOpen(false); onSignInClick?.(); }} className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                    <button onClick={() => { setIsMobileMenuOpen(false); (onGetStartedClick || onSignInClick)?.(); }} className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
                       Get Started <LogIn className="w-5 h-5" />
                     </button>
                   </>

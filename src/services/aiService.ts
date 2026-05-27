@@ -113,7 +113,7 @@ Note: This system uses Gemini 1.5 Pro (via server-side selection) as the primary
   });
 
   if (!response.ok) {
-    let errorMessage = "Failed to analyze with " + model;
+    let errorMessage = "Failed to analyze with " + modelToUse;
     try {
       const err = await response.json();
       errorMessage = err.error || errorMessage;
@@ -137,7 +137,7 @@ export async function chatAboutProduct(
   }
   const endpoint = modelToUse === 'gpt4' ? '/api/ai/gpt' : '/api/ai/gemini';
   
-  const systemPrompt = model === 'gemini' ? "" : `You are Sellscan AI, a expert reseller consultant.
+  const systemPrompt = modelToUse === 'gemini' ? "" : `You are Sellscan AI, a expert reseller consultant.
   You have just analyzed a product and provided a report: ${JSON.stringify(currentAnalysis)}.
   
   The user will ask follow-up questions or requests to change parts of the report.
@@ -160,7 +160,7 @@ export async function chatAboutProduct(
   });
 
   if (!response.ok) {
-    let errorMessage = "Failed to chat with " + model;
+    let errorMessage = "Failed to chat with " + modelToUse;
     try {
       const err = await response.json();
       errorMessage = err.error || errorMessage;
@@ -172,7 +172,7 @@ export async function chatAboutProduct(
 
   const data = await response.json();
   
-  if (model === 'gemini') {
+  if (modelToUse === 'gemini') {
     return {
       analysis: data.updatedAnalysis,
       chatResponse: data.text
