@@ -187,6 +187,33 @@ async function startServer() {
       const userEmail = session.customer_email;
       
       console.log(`✅ Payment successful for user ${userId} (${userEmail})`);
+
+      let promoCode = '';
+      let couponId = '';
+      const discountAmount = session.total_details?.amount_discount || 0;
+
+      try {
+        const expandedSession = await stripe.checkout.sessions.retrieve(
+          session.id,
+          {
+            expand: ['discounts', 'discounts.promotion_code'],
+          }
+        );
+        const discounts = expandedSession.discounts;
+        if (discounts && discounts.length > 0) {
+          const discount = discounts[0];
+          if (discount && typeof discount !== 'string') {
+            if (discount.promotion_code && typeof discount.promotion_code !== 'string') {
+              promoCode = discount.promotion_code.code;
+            }
+            if (discount.coupon) {
+              couponId = typeof discount.coupon === 'string' ? discount.coupon : discount.coupon.id;
+            }
+          }
+        }
+      } catch (err: any) {
+        console.error("⚠️ Failed to retrieve expanded session discounts:", err.message);
+      }
       
       if (supabaseAdmin && userId) {
         // Determine credits based on price (You can map Price IDs here)
@@ -220,6 +247,53 @@ async function startServer() {
 
         if (error) console.error("❌ Error fulfilling order in Supabase:", error);
         else console.log(`🎉 Granted ${creditsToGrant} credits to user ${userId}`);
+
+        // If a promotion code was used, log it to the user's promo code logs table
+        if (promoCode) {
+          console.log(`🎁 Promo code "${promoCode}" applied to purchase for user ${userId}. Attempting to record in database logs...`);
+          const logPayload = {
+            user_id: userId,
+            email: userEmail,
+            promo_code: promoCode,
+            coupon_id: couponId,
+            amount_discount: discountAmount / 100,
+            checkout_session_id: session.id,
+            created_at: new Date()
+          };
+          
+          try {
+            // Attempt standard variations of logging table name
+            const { error: logErr1 } = await supabaseAdmin
+              .from('promo_code_logs')
+              .insert(logPayload);
+              
+            if (logErr1) {
+              console.warn("⚠️ 'promo_code_logs' table failed, trying 'promo_codes_log':", logErr1.message);
+              const { error: logErr2 } = await supabaseAdmin
+                .from('promo_codes_log')
+                .insert(logPayload);
+                
+              if (logErr2) {
+                console.warn("⚠️ 'promo_codes_log' table failed, trying 'promo_logs':", logErr2.message);
+                const { error: logErr3 } = await supabaseAdmin
+                  .from('promo_logs')
+                  .insert(logPayload);
+                  
+                if (logErr3) {
+                  console.error("❌ Promo code logging failed on all fallback tables:", logErr3.message);
+                } else {
+                  console.log("🎉 Successfully saved promo log to 'promo_logs'!");
+                }
+              } else {
+                console.log("🎉 Successfully saved promo log to 'promo_codes_log'!");
+              }
+            } else {
+              console.log("🎉 Successfully saved promo log to 'promo_code_logs'!");
+            }
+          } catch (dbErr: any) {
+            console.error("❌ Database exception logging promo code:", dbErr.message);
+          }
+        }
       }
     }
 
@@ -501,6 +575,7 @@ async function startServer() {
 
       const sessionOpts: Stripe.Checkout.SessionCreateParams = {
         payment_method_types: ['card'],
+        allow_promotion_codes: true, // Enable user-entered coupons / promotional codes in Stripe checkout
         line_items: [
           {
             price: priceId,
