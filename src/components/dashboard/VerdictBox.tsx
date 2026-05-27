@@ -22,7 +22,7 @@ export function VerdictBox({ verdict, highlighted }: VerdictBoxProps) {
       <div className="flex items-center gap-2 text-brand-accent text-xs font-bold uppercase tracking-wider mb-3">
         <Zap className="w-3 h-3 fill-current" /> Quick Verdict
       </div>
-      <p className="text-2xl font-bold leading-tight tracking-tight text-white/90">
+      <p className="text-2xl font-bold leading-tight tracking-tight text-brand-text/90">
         {verdict || 'Analyzing product potential...'}
       </p>
     </motion.div>

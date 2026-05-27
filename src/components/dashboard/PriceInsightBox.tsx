@@ -65,7 +65,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
 
       <div className="flex items-baseline gap-2 mb-8">
         <span className="text-sm font-bold text-brand-text-muted mb-4 block">Recommended Sweet Price:</span>
-        <span className={cn("text-5xl font-black tracking-tighter", active ? "text-brand-accent" : "text-white")}>
+        <span className={cn("text-5xl font-black tracking-tighter", active ? "text-brand-accent" : "text-brand-text")}>
           {currency}{range.sweetSpot.toFixed(2)}
         </span>
       </div>
@@ -82,7 +82,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-brand-text-muted">
           <div className="flex flex-col items-start">
             <span className="opacity-40 mb-1">Bottom</span>
-            <span className="text-white/80">{currency}{range.min.toFixed(2)}</span>
+            <span className="text-brand-text/80">{currency}{range.min.toFixed(2)}</span>
           </div>
           <div className="flex flex-col items-center text-brand-accent">
             <span className="opacity-40 mb-1">Sweet Spot</span>
@@ -90,7 +90,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
           </div>
           <div className="flex flex-col items-end">
             <span className="opacity-40 mb-1">Peak</span>
-            <span className="text-white/80">{currency}{range.max.toFixed(2)}</span>
+            <span className="text-brand-text/80">{currency}{range.max.toFixed(2)}</span>
           </div>
         </div>
       </div>

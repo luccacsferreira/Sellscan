@@ -33,7 +33,7 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
         <div className="md:w-1/2 space-y-6">
           <div>
             <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-1">Reality Mockup Engine</h3>
-            <p className="text-sm font-bold text-white/90">Preview your listing exactly as it appears live</p>
+            <p className="text-sm font-bold text-brand-text/90">Preview your listing exactly as it appears live</p>
           </div>
 
           <div className="space-y-3">
@@ -63,7 +63,7 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
           <div className="pt-4 border-t border-brand-border/50">
              <div className="flex items-center justify-between mb-4">
                 <span className="text-[10px] font-bold text-brand-text-muted uppercase">Generation Cost</span>
-                <span className="text-xs font-bold text-white">0.5 Credits</span>
+                <span className="text-xs font-bold text-brand-text">0.5 Credits</span>
              </div>
              <button 
                 onClick={handleGenerate}

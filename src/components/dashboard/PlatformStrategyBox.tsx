@@ -28,7 +28,7 @@ export function PlatformStrategyBox({ platforms, currencySymbol }: PlatformStrat
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-end">
              <span className="text-[9px] font-bold text-brand-text-muted uppercase">Global Market Avg.</span>
-             <span className="text-sm font-bold text-white">
+             <span className="text-sm font-bold text-brand-text">
                 {currencySymbol}{(platforms.reduce((acc, p) => acc + (p.avgPrice || 0), 0) / (platforms.length || 1)).toFixed(2)}
              </span>
            </div>
@@ -53,7 +53,7 @@ export function PlatformStrategyBox({ platforms, currencySymbol }: PlatformStrat
               <div className="w-8 h-8 rounded-lg bg-brand-bg border border-brand-border flex items-center justify-center text-[10px] font-black text-brand-accent">
                 {i + 1}
               </div>
-              <span className="font-bold text-white group-hover:text-brand-accent transition-colors">{p.name}</span>
+              <span className="font-bold text-brand-text group-hover:text-brand-accent transition-colors">{p.name}</span>
             </div>
             
             <div className="md:col-span-3">
@@ -72,7 +72,7 @@ export function PlatformStrategyBox({ platforms, currencySymbol }: PlatformStrat
 
             <div className="md:col-span-2 text-right">
               <div className="flex flex-col items-end">
-                <span className="text-sm font-black text-white">{currencySymbol}{p.profit.toFixed(2)}</span>
+                <span className="text-sm font-black text-brand-text">{currencySymbol}{p.profit.toFixed(2)}</span>
                 <span className="text-[9px] text-green-500 font-bold uppercase tracking-wider">After Fees</span>
               </div>
             </div>

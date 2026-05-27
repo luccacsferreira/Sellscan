@@ -32,7 +32,7 @@ export function IdentityBox({ imageUrl, name, brand, type, condition, category }
       <div className="p-8 flex-grow flex flex-col justify-center">
         <div className="mb-6">
           <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-[0.2em] block mb-3 opacity-60">Identified Item (AI Groud-Truth Verifier)</span>
-          <h3 className="text-3xl font-black tracking-tight text-white/95 leading-tight mb-2">
+          <h3 className="text-3xl font-black tracking-tight text-brand-text/95 leading-tight mb-2">
             {name || `${brand || 'Unknown'} ${type || 'Product'}`}
           </h3>
           <p className="text-brand-text-muted text-sm max-w-xl">Optimized for search velocity. High specificity identification ensures your listing matches buyer search intent.</p>
@@ -52,7 +52,7 @@ function DetailItem({ label, value }: { label: string, value: string }) {
   return (
     <div>
       <span className="text-[10px] uppercase font-bold text-brand-text-muted tracking-widest block mb-0.5">{label}</span>
-      <span className="text-sm font-semibold text-white/80">{value}</span>
+      <span className="text-sm font-semibold text-brand-text/80">{value}</span>
     </div>
   );
 }

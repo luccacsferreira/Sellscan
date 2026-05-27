@@ -62,7 +62,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol }: PracticalT
             </div>
             
             <div>
-              <h4 className={cn("font-bold text-sm mb-1 transition-colors", selectedTips.includes(i) ? "text-brand-accent" : "text-white")}>{tip.action}</h4>
+              <h4 className={cn("font-bold text-sm mb-1 transition-colors", selectedTips.includes(i) ? "text-brand-accent" : "text-brand-text")}>{tip.action}</h4>
               <p className="text-[11px] text-brand-text-muted leading-relaxed line-clamp-2">{tip.description}</p>
             </div>
 
@@ -84,7 +84,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol }: PracticalT
         <div className="flex items-center gap-6">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-1">Base Sweet Spot</span>
-            <span className="text-xl font-bold text-white/60">{currencySymbol}{basePrice.toFixed(2)}</span>
+            <span className="text-xl font-bold text-brand-text/60">{currencySymbol}{basePrice.toFixed(2)}</span>
           </div>
           <div className="text-brand-text-muted">
             <Plus className="w-5 h-5" />
@@ -102,7 +102,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol }: PracticalT
             <Star className="w-3 h-3 text-brand-accent fill-current" />
             <span className="text-[10px] font-extrabold text-brand-accent uppercase tracking-widest">New Target Price</span>
           </div>
-          <span className="text-4xl font-black tracking-tighter text-white">
+          <span className="text-4xl font-black tracking-tighter text-brand-text">
             {currencySymbol}{finalPrice.toFixed(2)}
           </span>
         </div>

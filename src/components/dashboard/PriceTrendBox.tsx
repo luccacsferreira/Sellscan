@@ -37,7 +37,7 @@ export function PriceTrendBox({ history, currencySymbol }: PriceTrendBoxProps) {
           "flex items-center gap-2 font-bold text-xs px-3 py-1 rounded-full border",
           history.isLive 
             ? "text-green-500 bg-green-500/10 border-green-500/20" 
-            : "text-brand-text-muted bg-white/5 border-white/10"
+            : "text-brand-text-muted bg-brand-border/15 border-brand-border/30"
         )}>
           <TrendingUp className="w-3 h-3" /> {history.isLive ? 'Live Market' : 'Inactive Market'}
         </div>
@@ -53,19 +53,19 @@ export function PriceTrendBox({ history, currencySymbol }: PriceTrendBoxProps) {
                   <stop offset="95%" stopColor="var(--color-brand-accent)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(128,128,128,0.15)" />
               <XAxis 
                 dataKey="date" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
+                tick={{ fill: 'rgba(128,128,128,0.6)', fontSize: 10, fontWeight: 'bold' }}
                 dy={10}
                 minTickGap={30}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 'bold' }}
+                tick={{ fill: 'rgba(128,128,128,0.6)', fontSize: 10, fontWeight: 'bold' }}
                 domain={['auto', 'auto']}
                 tickFormatter={(val) => `${currencySymbol}${val}`}
               />

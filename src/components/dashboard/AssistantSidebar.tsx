@@ -124,7 +124,7 @@ export function AssistantSidebar({ messages, onSendMessage, onRevert, isSending,
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
               placeholder="Ask for refinement..."
-              className="w-full bg-brand-border/20 border border-brand-border/50 rounded-2xl px-4 py-4 pr-12 text-xs focus:outline-none focus:border-brand-accent/40 transition-all resize-none h-24 text-white placeholder:text-brand-text-muted/50"
+              className="w-full bg-brand-border/20 border border-brand-border/50 rounded-2xl px-4 py-4 pr-12 text-xs focus:outline-none focus:border-brand-accent/40 transition-all resize-none h-24 text-brand-text placeholder:text-brand-text-muted/50"
             />
             <button 
               onClick={handleSend}

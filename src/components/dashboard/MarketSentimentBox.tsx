@@ -37,7 +37,7 @@ export function MarketSentimentBox({ sentiment }: MarketSentimentBoxProps) {
             <Globe className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-widest">Global Consensus</span>
           </div>
-          <p className="text-sm font-bold text-white/90 leading-relaxed italic">
+          <p className="text-sm font-bold text-brand-text/90 leading-relaxed italic">
             "{sentiment.consensus}"
           </p>
         </div>
