@@ -17,7 +17,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = fal
 
   React.useEffect(() => {
     if (active && onComplete) {
-      const timer = setTimeout(onComplete, 800);
+      const timer = setTimeout(onComplete, 1200);
       return () => clearTimeout(timer);
     }
   }, [active, onComplete]);
@@ -48,8 +48,11 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = fal
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {tips.map((tip, i) => (
-          <button
+          <motion.button
             key={i}
+            initial={{ opacity: 0, y: 8 }}
+            animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+            transition={{ delay: i * 0.15, duration: 0.35, ease: "easeOut" }}
             onClick={() => toggleTip(i)}
             className={cn(
               "p-5 rounded-2xl border transition-all text-left flex flex-col gap-3 group relative overflow-hidden",
@@ -88,7 +91,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = fal
                 {tip.impact} impact
               </span>
             </div>
-          </button>
+          </motion.button>
         ))}
       </div>
 

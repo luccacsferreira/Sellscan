@@ -17,7 +17,7 @@ export function PlatformStrategyBox({ platforms, currencySymbol, active = false,
 
   React.useEffect(() => {
     if (active && onComplete) {
-      const timer = setTimeout(onComplete, 800);
+      const timer = setTimeout(onComplete, 1200);
       return () => clearTimeout(timer);
     }
   }, [active, onComplete]);
@@ -56,8 +56,11 @@ export function PlatformStrategyBox({ platforms, currencySymbol, active = false,
 
       <div className="space-y-2">
         {displayedPlatforms.map((p, i) => (
-          <div 
+          <motion.div 
             key={i}
+            initial={{ opacity: 0, y: 8 }}
+            animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+            transition={{ delay: i * 0.12, duration: 0.35, ease: "easeOut" }}
             className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 rounded-xl bg-brand-bg/40 border border-brand-border/40 hover:border-brand-accent/40 transition-all group items-center"
           >
             <div className="md:col-span-3 flex items-center gap-3">
@@ -87,7 +90,7 @@ export function PlatformStrategyBox({ platforms, currencySymbol, active = false,
                 <span className="text-[9px] text-green-500 font-bold uppercase tracking-wider">After Fees</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp, Info } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { CountUp } from './Typewriter';
+import { Typewriter } from './Typewriter';
 
 interface PriceRange {
   min: number;
@@ -19,6 +19,14 @@ interface PriceInsightBoxProps {
 }
 
 export function PriceInsightBox({ worthRange, sellRange, currencySymbol, active = false, onComplete }: PriceInsightBoxProps) {
+  const [localStage, setLocalStage] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!active) {
+      setLocalStage(0);
+    }
+  }, [active]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -33,6 +41,8 @@ export function PriceInsightBox({ worthRange, sellRange, currencySymbol, active 
         gradient="from-neutral-700 via-neutral-500 to-neutral-700"
         credits="Refine: 0.5"
         isStageActive={active}
+        isTypingActive={active && localStage >= 0}
+        onComplete={() => setLocalStage(1)}
       />
       <PriceCard 
         title="Listing Strategy" 
@@ -42,14 +52,15 @@ export function PriceInsightBox({ worthRange, sellRange, currencySymbol, active 
         gradient="from-brand-accent/40 via-brand-accent to-brand-accent/40"
         credits="Refine: 0.2"
         active
-        isStageActive={active}
+        isStageActive={active && localStage >= 1}
+        isTypingActive={active && localStage >= 1}
         onComplete={onComplete}
       />
     </motion.div>
   );
 }
 
-function PriceCard({ title, subtitle, range, currency, gradient, active, credits, isStageActive, onComplete }: any) {
+function PriceCard({ title, subtitle, range, currency, gradient, active, credits, isStageActive, isTypingActive, onComplete }: any) {
   const denominator = range.max - range.min;
   const percentage = denominator === 0 ? 50 : ((range.sweetSpot - range.min) / denominator) * 100;
 
@@ -72,8 +83,8 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
       <div className="flex flex-col mb-8">
         <span className="text-xs font-bold text-brand-text-muted mb-2 block">Recommended Sweet Price:</span>
         <span className={cn("text-5xl font-black tracking-tighter min-h-[3rem] block", active ? "text-brand-accent" : "text-brand-text")}>
-          {isStageActive ? (
-            <CountUp value={range.sweetSpot} prefix={currency} onComplete={onComplete} duration={900} />
+          {isTypingActive ? (
+            <Typewriter text={`${currency}${range.sweetSpot.toFixed(2)}`} speed={25} onComplete={onComplete} />
           ) : (
             <span className="opacity-25 blur-[1.5px]">{currency}0.00</span>
           )}
@@ -97,7 +108,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             <span className="opacity-40 mb-1">Bottom</span>
             <span className="text-brand-text/80">
               {isStageActive ? (
-                <CountUp value={range.min} prefix={currency} duration={700} />
+                <span>{currency}{range.min.toFixed(2)}</span>
               ) : (
                 <span className="opacity-25 blur-[1px]">{currency}00.00</span>
               )}
@@ -107,7 +118,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             <span className="opacity-40 mb-1">Sweet Spot</span>
             <span className="text-brand-accent">
               {isStageActive ? (
-                <CountUp value={range.sweetSpot} prefix={currency} duration={850} />
+                <span>{currency}{range.sweetSpot.toFixed(2)}</span>
               ) : (
                 <span className="opacity-25 blur-[1px]">{currency}00.00</span>
               )}
@@ -117,7 +128,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             <span className="opacity-40 mb-1">Peak</span>
             <span className="text-brand-text/80">
               {isStageActive ? (
-                <CountUp value={range.max} prefix={currency} duration={950} />
+                <span>{currency}{range.max.toFixed(2)}</span>
               ) : (
                 <span className="opacity-25 blur-[1px]">{currency}00.00</span>
               )}

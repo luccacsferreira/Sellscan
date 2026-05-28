@@ -26,7 +26,10 @@ export function Typewriter({ text, speed = 8, onComplete, active = true }: Typew
       if (isCancelled) return;
 
       if (currentIndex >= text.length) {
-        if (onComplete) onComplete();
+        if (onComplete) {
+          // Add a tiny post-type cushion before proceeding to next card (e.g. 200ms)
+          setTimeout(onComplete, 200);
+        }
         return;
       }
 
@@ -36,15 +39,15 @@ export function Typewriter({ text, speed = 8, onComplete, active = true }: Typew
 
       let delay = speed;
 
-      // Detect end of phrases (period, exclamation, question mark followed by a space)
+      // Detect end of phrases (period, exclamation, question mark)
       // to insert an analytical, organic pause as if thinking.
-      if (
-        (currentChar === '.' || currentChar === '!' || currentChar === '?') &&
-        (currentIndex < text.length && text[currentIndex] === ' ')
-      ) {
-        delay = 280; // Small delay after sentence ends
-      } else if (currentChar === ',' && (currentIndex < text.length && text[currentIndex] === ' ')) {
-        delay = 120; // Even slighter delay on commas
+      const isPhraseEnding = currentChar === '.' || currentChar === '!' || currentChar === '?' || currentChar === ';';
+      const isPauseSeparator = currentChar === ',' || currentChar === ':';
+
+      if (isPhraseEnding) {
+        delay = 450; // Noticeable small pause after each phrase
+      } else if (isPauseSeparator) {
+        delay = 150; // Brief pause at commas/colons
       }
 
       setTimeout(typeNextChar, delay);
