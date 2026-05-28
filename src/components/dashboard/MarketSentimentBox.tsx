@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { MessageSquare, ThumbsUp, ThumbsDown, Globe } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { Typewriter } from './Typewriter';
 
 interface MarketSentimentBoxProps {
   sentiment: {
@@ -9,15 +10,19 @@ interface MarketSentimentBoxProps {
     goodThings: string[];
     badThings: string[];
   };
+  active?: boolean;
+  onComplete?: () => void;
 }
 
-export function MarketSentimentBox({ sentiment }: MarketSentimentBoxProps) {
+export function MarketSentimentBox({ sentiment, active = false, onComplete }: MarketSentimentBoxProps) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="glass-card p-6 border-brand-border/10"
+      className={cn(
+        "glass-card p-6 border-brand-border/10 transition-all duration-500",
+        !active && "opacity-40"
+      )}
     >
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -32,17 +37,23 @@ export function MarketSentimentBox({ sentiment }: MarketSentimentBoxProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-1 p-6 rounded-2xl bg-brand-bg/40 border border-brand-border/50 flex flex-col justify-center">
+        <div className={cn("md:col-span-1 p-6 rounded-2xl bg-brand-bg/40 border border-brand-border/50 flex flex-col justify-center min-h-[140px] transition-all duration-300", !active && "border-brand-border/20")}>
           <div className="flex items-center gap-2 text-brand-accent mb-4">
             <Globe className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-widest">Global Consensus</span>
           </div>
           <p className="text-sm font-bold text-brand-text/90 leading-relaxed italic">
-            "{sentiment.consensus}"
+            {active ? (
+              <>
+                "<Typewriter text={sentiment.consensus} speed={8} onComplete={onComplete} />"
+              </>
+            ) : (
+              <span className="opacity-25 blur-[1.5px] select-none">"Sentiment Consensus"</span>
+            )}
           </p>
         </div>
 
-        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className={cn("md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 transition-all duration-700 delay-200", active ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 blur-[1px]")}>
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-green-500">
               <ThumbsUp className="w-4 h-4" />

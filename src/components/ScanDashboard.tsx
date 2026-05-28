@@ -45,6 +45,16 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
   const [selectedMockup, setSelectedMockup] = useState<string | null>(null);
   const [isProjectMenuOpen, setIsProjectMenuOpen] = useState(false);
   const [analysisHistory, setAnalysisHistory] = useState<ProductAnalysis[]>([scan.analysis]);
+  const [animationStage, setAnimationStage] = useState(0);
+
+  useEffect(() => {
+    // Reset typing animation sequence for every new scan loaded
+    setAnimationStage(0);
+  }, [scan.id]);
+
+  const skipAnimation = () => {
+    setAnimationStage(6);
+  };
   
   const { currency } = useLocation();
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
@@ -142,13 +152,24 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
       {/* LEFT: RESULTS DASHBOARD (8 BOXES) */}
       <div className="flex-grow space-y-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <button 
-            onClick={onBack}
-            className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors group w-fit"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
-            <span className="text-xs font-black uppercase tracking-[0.2em]">Exit to Feed</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={onBack}
+              className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors group w-fit"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+              <span className="text-xs font-black uppercase tracking-[0.2em]">Exit to Feed</span>
+            </button>
+
+            {animationStage < 6 && (
+              <button 
+                onClick={skipAnimation}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-border/20 border border-brand-border/30 text-[9px] font-bold text-brand-accent hover:border-brand-accent/50 hover:bg-brand-accent/5 transition-all cursor-pointer animate-pulse"
+              >
+                <span>⚡ Fast-Forward AI</span>
+              </button>
+            )}
+          </div>
 
           <div className="relative">
             <button 
@@ -212,6 +233,8 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
         <VerdictBox 
           verdict={analysis.quickVerdict} 
           highlighted={highlightedCard === 'all'} 
+          active={animationStage >= 0}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 1))}
         />
 
         {/* BOX 2: PRODUCT IDENTITY */}
@@ -222,6 +245,8 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           type={analysis.productDetails.type}
           condition={analysis.productDetails.condition}
           category={analysis.productDetails.category}
+          active={animationStage >= 1}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 2))}
         />
 
         {/* BOX 3: PRICE INSIGHTS */}
@@ -229,12 +254,16 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           worthRange={analysis.worthRange}
           sellRange={analysis.priceRange}
           currencySymbol={currencySymbol}
+          active={animationStage >= 2}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 3))}
         />
 
         {/* BOX 4: PLATFORM STRATEGY */}
         <PlatformStrategyBox 
           platforms={analysis.platforms}
           currencySymbol={currencySymbol}
+          active={animationStage >= 3}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 4))}
         />
 
         {/* BOX 5: PRACTICAL TIPS */}
@@ -242,25 +271,33 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           tips={analysis.practicalTips}
           basePrice={analysis.priceRange.sweetSpot}
           currencySymbol={currencySymbol}
+          active={animationStage >= 4}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 5))}
         />
 
         {/* BOX 6: MARKET SENTIMENT */}
         <MarketSentimentBox 
           sentiment={analysis.marketSentiment} 
+          active={animationStage >= 5}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 6))}
         />
 
         {/* BOX 7: PRICE TREND */}
-        <PriceTrendBox 
-          history={analysis.priceHistory}
-          currencySymbol={currencySymbol}
-        />
+        <div className={cn("transition-all duration-700", animationStage >= 6 ? "opacity-100" : "opacity-30 blur-[2px] pointer-events-none")}>
+          <PriceTrendBox 
+            history={analysis.priceHistory}
+            currencySymbol={currencySymbol}
+          />
+        </div>
 
         {/* BOX 8: MOCKUP GENERATOR */}
-        <MockupGeneratorBox 
-          scan={scan}
-          platforms={analysis.platforms.map(p => p.name)}
-          onGenerate={setSelectedMockup}
-        />
+        <div className={cn("transition-all duration-700", animationStage >= 6 ? "opacity-100" : "opacity-30 blur-[2px] pointer-events-none")}>
+          <MockupGeneratorBox 
+            scan={scan}
+            platforms={analysis.platforms.map(p => p.name)}
+            onGenerate={setSelectedMockup}
+          />
+        </div>
       </div>
 
       {/* RIGHT SIDEBAR: ASSISTANT */}

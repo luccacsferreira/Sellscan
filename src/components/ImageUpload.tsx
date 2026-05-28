@@ -174,19 +174,21 @@ export function ImageUpload({
           onClick={() => handleAnalyze(false)}
           disabled={isLoading || (!selectedImage && !title.trim() && !description.trim())}
           className={cn(
-            "w-full sm:w-80 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-3",
-            (isLoading || (!selectedImage && !title.trim() && !description.trim())) 
+            "w-full sm:w-80 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center gap-3 active:scale-[0.98] duration-150",
+            (!selectedImage && !title.trim() && !description.trim())
               ? "bg-brand-border text-brand-text-muted cursor-not-allowed" 
-              : "bg-brand-accent text-brand-bg hover:scale-[1.02] shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)]"
+              : isLoading
+                ? "bg-[#7e8590] text-white cursor-wait"
+                : "bg-brand-accent text-brand-bg hover:scale-[1.02] active:bg-[#7e8590] active:text-white shadow-[0_10px_30px_-10px_var(--color-brand-accent-glow)]"
           )}
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-6 h-6 animate-spin" /> Analyzing product...
+              <Loader2 className="w-5 h-5 animate-spin" /> Scan Product
             </>
           ) : (
             <>
-              Scan Product <ArrowRight className="w-6 h-6" />
+              Scan Product <ArrowRight className="w-5 h-5" />
             </>
           )}
         </button>

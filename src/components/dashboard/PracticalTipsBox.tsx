@@ -8,12 +8,22 @@ interface PracticalTipsBoxProps {
   tips: PracticalTip[];
   basePrice: number;
   currencySymbol: string;
+  active?: boolean;
+  onComplete?: () => void;
 }
 
-export function PracticalTipsBox({ tips, basePrice, currencySymbol }: PracticalTipsBoxProps) {
+export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = false, onComplete }: PracticalTipsBoxProps) {
   const [selectedTips, setSelectedTips] = useState<number[]>([]);
 
+  React.useEffect(() => {
+    if (active && onComplete) {
+      const timer = setTimeout(onComplete, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [active, onComplete]);
+
   const toggleTip = (index: number) => {
+    if (!active) return;
     setSelectedTips(prev => 
       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
@@ -26,8 +36,10 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol }: PracticalT
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-      className="glass-card p-6 border-brand-border/10"
+      className={cn(
+        "glass-card p-6 border-brand-border/10 transition-all duration-500",
+        !active && "opacity-40"
+      )}
     >
       <div className="mb-8">
         <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-1">Value Injection Protocol</h3>

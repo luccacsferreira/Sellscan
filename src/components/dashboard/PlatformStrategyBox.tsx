@@ -7,18 +7,29 @@ import { PlatformInsight } from '../../types';
 interface PlatformStrategyBoxProps {
   platforms: PlatformInsight[];
   currencySymbol: string;
+  active?: boolean;
+  onComplete?: () => void;
 }
 
-export function PlatformStrategyBox({ platforms, currencySymbol }: PlatformStrategyBoxProps) {
+export function PlatformStrategyBox({ platforms, currencySymbol, active = false, onComplete }: PlatformStrategyBoxProps) {
   const [showAll, setShowAll] = useState(false);
   const displayedPlatforms = showAll ? platforms.slice(0, 10) : platforms.slice(0, 5);
+
+  React.useEffect(() => {
+    if (active && onComplete) {
+      const timer = setTimeout(onComplete, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [active, onComplete]);
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="glass-card p-6 border-brand-border/10 overflow-hidden"
+      className={cn(
+        "glass-card p-6 border-brand-border/10 overflow-hidden transition-all duration-500",
+        !active && "opacity-40"
+      )}
     >
       <div className="flex items-center justify-between mb-8 pb-4 border-b border-brand-border/50">
         <div>
