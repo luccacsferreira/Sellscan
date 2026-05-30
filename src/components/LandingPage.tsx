@@ -43,7 +43,7 @@ interface LandingPageProps {
 
 export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   const handleCheckout = async (tier: string) => {
@@ -384,15 +384,6 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
         <div className="flex justify-center mb-16">
           <div className="bg-brand-card/30 p-1 rounded-2xl border border-brand-border flex gap-1">
             <button 
-              onClick={() => setBillingCycle('monthly')}
-              className={cn(
-                "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all",
-                billingCycle === 'monthly' ? "bg-brand-accent text-brand-bg shadow-lg" : "text-brand-text-muted hover:text-brand-text underline-none"
-              )}
-            >
-              Monthly
-            </button>
-            <button 
               onClick={() => setBillingCycle('yearly')}
               className={cn(
                 "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2",
@@ -404,8 +395,17 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                 "text-[8px] px-1.5 py-0.5 rounded-full border lowercase",
                 billingCycle === 'yearly' ? "bg-white/20 border-white/30 text-white" : "bg-brand-accent/10 border-brand-accent/20 text-brand-accent"
               )}>
-                -20%
+                -31%
               </span>
+            </button>
+            <button 
+              onClick={() => setBillingCycle('monthly')}
+              className={cn(
+                "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all",
+                billingCycle === 'monthly' ? "bg-brand-accent text-brand-bg shadow-lg" : "text-brand-text-muted hover:text-brand-text underline-none"
+              )}
+            >
+              Monthly
             </button>
           </div>
         </div>
@@ -448,7 +448,8 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Basic"
              description="For the regular flipper hitting the local charity shops."
-             priceLabel={billingCycle === 'monthly' ? '$8.99' : '$6.74'}
+             priceLabel={billingCycle === 'monthly' ? '$8.99' : '$6.20'}
+             discount={billingCycle === 'yearly' ? '31% OFF' : undefined}
              credits="40 Credits / Month"
              features={[
                { text: "Gemini Pro + GPT-4o", included: true },
@@ -472,6 +473,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              tier="Premium"
              description="For pro resellers scaling their business to full-time."
              priceLabel={billingCycle === 'monthly' ? '$14.99' : '$10.34'}
+             discount={billingCycle === 'yearly' ? '31% OFF' : undefined}
              credits="120 Credits / Month"
              features={[
                { text: "Best Gemini + GPT-4o", included: true },
@@ -592,7 +594,8 @@ function PricingCard({
   onHover,
   onLeave,
   onAction,
-  isLoading
+  isLoading,
+  discount
 }: { 
   tier: string, 
   priceLabel: string, 
@@ -606,7 +609,8 @@ function PricingCard({
   onHover: () => void,
   onLeave: () => void,
   onAction?: () => void,
-  isLoading?: boolean
+  isLoading?: boolean,
+  discount?: string
 }) {
   return (
     <motion.div 
@@ -653,12 +657,19 @@ function PricingCard({
       )}
       
       <div className="mb-10">
-        <h3 className={cn(
-          "text-xl font-black mb-3 tracking-tight transition-all duration-300", 
-          isActive ? "text-brand-accent drop-shadow-[0_0_12px_rgba(85,205,209,0.6)]" : "text-brand-text"
-        )}>
-          {tier}
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className={cn(
+            "text-xl font-black tracking-tight transition-all duration-300", 
+            isActive ? "text-brand-accent drop-shadow-[0_0_12px_rgba(85,205,209,0.6)]" : "text-brand-text"
+          )}>
+            {tier}
+          </h3>
+          {discount && (
+            <span className="bg-brand-accent/20 text-brand-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-brand-accent/30 uppercase tracking-tighter">
+              {discount}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-brand-text-muted leading-relaxed mb-8 h-12">
           {description}
         </p>

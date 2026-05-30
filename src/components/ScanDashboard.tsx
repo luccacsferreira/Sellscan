@@ -47,10 +47,79 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
   const [analysisHistory, setAnalysisHistory] = useState<ProductAnalysis[]>([scan.analysis]);
   const [animationStage, setAnimationStage] = useState(0);
 
+  const box1Ref = useRef<HTMLDivElement>(null);
+  const box2Ref = useRef<HTMLDivElement>(null);
+  const box3Ref = useRef<HTMLDivElement>(null);
+  const box4Ref = useRef<HTMLDivElement>(null);
+  const box5Ref = useRef<HTMLDivElement>(null);
+  const box6Ref = useRef<HTMLDivElement>(null);
+  const box7Ref = useRef<HTMLDivElement>(null);
+  const box8Ref = useRef<HTMLDivElement>(null);
+
+  const [isInterfered, setIsInterfered] = useState(false);
+  const interferenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    // Reset typing animation sequence for every new scan loaded
+    // Force direct scroll to the very top immediately when new scan is loaded
+    window.scrollTo({ top: 0, behavior: 'instant' });
     setAnimationStage(0);
+    setIsInterfered(false);
+    if (interferenceTimeoutRef.current) {
+      clearTimeout(interferenceTimeoutRef.current);
+    }
   }, [scan.id]);
+
+  // Track physical manual zoom/scrolling interference to override auto scroll temporary
+  useEffect(() => {
+    const handleInterference = () => {
+      setIsInterfered(true);
+      if (interferenceTimeoutRef.current) {
+        clearTimeout(interferenceTimeoutRef.current);
+      }
+      interferenceTimeoutRef.current = setTimeout(() => {
+        setIsInterfered(false);
+      }, 2000);
+    };
+
+    window.addEventListener('wheel', handleInterference, { passive: true });
+    window.addEventListener('touchmove', handleInterference, { passive: true });
+    window.addEventListener('keydown', handleInterference, { passive: true });
+
+    return () => {
+      window.removeEventListener('wheel', handleInterference);
+      window.removeEventListener('touchmove', handleInterference);
+      window.removeEventListener('keydown', handleInterference);
+      if (interferenceTimeoutRef.current) {
+        clearTimeout(interferenceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Smooth scroll sequence to current active box
+  useEffect(() => {
+    if (isInterfered) return;
+
+    const scrollActiveIntoView = () => {
+      let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
+      if (animationStage === 0) targetRef = box1Ref;
+      else if (animationStage === 1) targetRef = box2Ref;
+      else if (animationStage === 2) targetRef = box3Ref;
+      else if (animationStage === 3) targetRef = box4Ref;
+      else if (animationStage === 4) targetRef = box5Ref;
+      else if (animationStage === 5) targetRef = box6Ref;
+      else if (animationStage === 6) targetRef = box7Ref;
+
+      if (targetRef && targetRef.current) {
+        targetRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    };
+
+    const timer = setTimeout(scrollActiveIntoView, 120);
+    return () => clearTimeout(timer);
+  }, [animationStage, isInterfered]);
 
   const skipAnimation = () => {
     setAnimationStage(6);
@@ -230,74 +299,100 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
         </div>
 
         {/* BOX 1: QUICK VERDICT */}
-        <VerdictBox 
-          verdict={analysis.quickVerdict} 
-          highlighted={highlightedCard === 'all'} 
-          active={animationStage >= 0}
-          onComplete={() => setAnimationStage(prev => Math.max(prev, 1))}
-        />
+        <div ref={box1Ref}>
+          <VerdictBox 
+            verdict={analysis.quickVerdict} 
+            highlighted={highlightedCard === 'all'} 
+            active={animationStage >= 0}
+            onComplete={() => setAnimationStage(prev => Math.max(prev, 1))}
+          />
+        </div>
 
         {/* BOX 2: PRODUCT IDENTITY */}
-        <IdentityBox 
-          imageUrl={scan.imageUrl}
-          name={analysis.productDetails.name}
-          brand={analysis.productDetails.brand}
-          type={analysis.productDetails.type}
-          condition={analysis.productDetails.condition}
-          category={analysis.productDetails.category}
-          active={animationStage >= 1}
-          onComplete={() => setAnimationStage(prev => Math.max(prev, 2))}
-        />
+        {animationStage >= 1 && (
+          <div ref={box2Ref}>
+            <IdentityBox 
+              imageUrl={scan.imageUrl}
+              name={analysis.productDetails.name}
+              brand={analysis.productDetails.brand}
+              type={analysis.productDetails.type}
+              condition={analysis.productDetails.condition}
+              category={analysis.productDetails.category}
+              active={animationStage >= 1}
+              onComplete={() => setAnimationStage(prev => Math.max(prev, 2))}
+            />
+          </div>
+        )}
 
         {/* BOX 3: PRICE INSIGHTS */}
-        <PriceInsightBox 
-          worthRange={analysis.worthRange}
-          sellRange={analysis.priceRange}
-          currencySymbol={currencySymbol}
-          active={animationStage >= 2}
-          onComplete={() => setAnimationStage(prev => Math.max(prev, 3))}
-        />
+        {animationStage >= 2 && (
+          <div ref={box3Ref}>
+            <PriceInsightBox 
+              worthRange={analysis.worthRange}
+              sellRange={analysis.priceRange}
+              currencySymbol={currencySymbol}
+              active={animationStage >= 2}
+              onComplete={() => setAnimationStage(prev => Math.max(prev, 3))}
+            />
+          </div>
+        )}
 
         {/* BOX 4: PLATFORM STRATEGY */}
-        <PlatformStrategyBox 
-          platforms={analysis.platforms}
-          currencySymbol={currencySymbol}
-          active={animationStage >= 3}
-          onComplete={() => setAnimationStage(prev => Math.max(prev, 4))}
-        />
+        {animationStage >= 3 && (
+          <div ref={box4Ref}>
+            <PlatformStrategyBox 
+              platforms={analysis.platforms}
+              currencySymbol={currencySymbol}
+              active={animationStage >= 3}
+              onComplete={() => setAnimationStage(prev => Math.max(prev, 4))}
+            />
+          </div>
+        )}
 
         {/* BOX 5: PRACTICAL TIPS */}
-        <PracticalTipsBox 
-          tips={analysis.practicalTips}
-          basePrice={analysis.priceRange.sweetSpot}
-          currencySymbol={currencySymbol}
-          active={animationStage >= 4}
-          onComplete={() => setAnimationStage(prev => Math.max(prev, 5))}
-        />
+        {animationStage >= 4 && (
+          <div ref={box5Ref}>
+            <PracticalTipsBox 
+              tips={analysis.practicalTips}
+              basePrice={analysis.priceRange.sweetSpot}
+              currencySymbol={currencySymbol}
+              active={animationStage >= 4}
+              onComplete={() => setAnimationStage(prev => Math.max(prev, 5))}
+            />
+          </div>
+        )}
 
         {/* BOX 6: MARKET SENTIMENT */}
-        <MarketSentimentBox 
-          sentiment={analysis.marketSentiment} 
-          active={animationStage >= 5}
-          onComplete={() => setAnimationStage(prev => Math.max(prev, 6))}
-        />
+        {animationStage >= 5 && (
+          <div ref={box6Ref}>
+            <MarketSentimentBox 
+              sentiment={analysis.marketSentiment} 
+              active={animationStage >= 5}
+              onComplete={() => setAnimationStage(prev => Math.max(prev, 6))}
+            />
+          </div>
+        )}
 
         {/* BOX 7: PRICE TREND */}
-        <div className={cn("transition-all duration-700", animationStage >= 6 ? "opacity-100" : "opacity-30 blur-[2px] pointer-events-none")}>
-          <PriceTrendBox 
-            history={analysis.priceHistory}
-            currencySymbol={currencySymbol}
-          />
-        </div>
+        {animationStage >= 6 && (
+          <div ref={box7Ref} className="transition-all duration-700">
+            <PriceTrendBox 
+              history={analysis.priceHistory}
+              currencySymbol={currencySymbol}
+            />
+          </div>
+        )}
 
         {/* BOX 8: MOCKUP GENERATOR */}
-        <div className={cn("transition-all duration-700", animationStage >= 6 ? "opacity-100" : "opacity-30 blur-[2px] pointer-events-none")}>
-          <MockupGeneratorBox 
-            scan={scan}
-            platforms={analysis.platforms.map(p => p.name)}
-            onGenerate={setSelectedMockup}
-          />
-        </div>
+        {animationStage >= 6 && (
+          <div ref={box8Ref} className="transition-all duration-700">
+            <MockupGeneratorBox 
+              scan={scan}
+              platforms={analysis.platforms.map(p => p.name)}
+              onGenerate={setSelectedMockup}
+            />
+          </div>
+        )}
       </div>
 
       {/* RIGHT SIDEBAR: ASSISTANT */}
