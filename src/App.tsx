@@ -1018,16 +1018,16 @@ function AppContent() {
           {view === 'upload' && (
             <motion.div
               key="upload"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="pt-24 flex items-center justify-center p-4"
+              exit={{ opacity: 0, y: -15 }}
+              className="pt-16 md:pt-24 flex items-center justify-center p-3 md:p-4"
             >
               <div className="w-full max-w-2xl">
-                <div className="text-center mb-12">
-                  <h1 className="text-4xl font-bold mb-4">What are you selling today?</h1>
-                  <p className="text-brand-text-muted">
-                    {activeProject ? `Adding to project: ${activeProject.name}` : "Upload a photo for the best analysis, or describe it in details."}
+                <div className="text-center mb-6 md:mb-12">
+                  <h1 className="text-2xl md:text-4xl font-black mb-2 md:mb-4 italic tracking-tight uppercase">What are you selling today?</h1>
+                  <p className="text-brand-text-muted text-xs md:text-base px-2">
+                    {activeProject ? `Adding to project: ${activeProject.name}` : "Upload a photo for best analysis, or describe it in details."}
                   </p>
                 </div>
                 <ImageUpload 

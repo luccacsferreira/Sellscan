@@ -164,14 +164,17 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
               <div className="text-center mb-8 md:mb-10">
                 <div 
-                  className="mb-6 md:mb-8 inline-block cursor-help"
+                  className="mb-8 md:mb-10 inline-block cursor-help group"
                   onClick={handleLogoClick}
                 >
-                  <img 
-                    src={sellscanLogo} 
-                    alt="Sellscan" 
-                    className="h-4 md:h-5 opacity-80" 
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-brand-accent/20 blur-2xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <img 
+                      src="/favicon.png" 
+                      alt="Sellscan" 
+                      className="h-10 md:h-12 w-auto relative z-10 transition-transform group-hover:scale-110" 
+                    />
+                  </div>
                 </div>
                 
                 <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2 md:mb-3">

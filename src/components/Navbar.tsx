@@ -193,10 +193,14 @@ export function Navbar({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute right-0 top-0 bottom-0 w-[280px] bg-brand-bg border-l border-brand-border p-6 flex flex-col"
+               className="absolute right-0 top-0 bottom-0 w-[280px] bg-brand-bg border-l border-brand-border p-6 flex flex-col"
             >
-              <div className="flex justify-end mb-8">
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-brand-text-muted hover:text-brand-text">
+              <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-3">
+                  <img src="/favicon.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-lg shadow-brand-accent/10" />
+                  <span className="text-sm font-black italic tracking-tighter text-brand-text">SELLSCAN</span>
+                </div>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-brand-text-muted hover:text-brand-text transition-colors">
                   <X className="w-6 h-6" />
                 </button>
               </div>

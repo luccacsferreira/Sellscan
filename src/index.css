@@ -39,6 +39,11 @@
   body {
     @apply bg-brand-bg text-brand-text font-sans antialiased transition-colors duration-300;
   }
+  @media (min-width: 1920px) {
+    html {
+      zoom: 1.1;
+    }
+  }
 }
 
 .glass-card {
@@ -59,4 +64,8 @@
 
 .accent-glow {
   box-shadow: 0 0 20px var(--color-brand-accent-glow);
+}
+
+.favicon-logo {
+  filter: drop-shadow(0 0 8px var(--color-brand-accent-glow));
 }
