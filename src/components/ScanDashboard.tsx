@@ -207,7 +207,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
   };
 
   return (
-    <div className="pt-20 pb-28 md:pb-20 px-4 md:px-10 max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row gap-10 relative">
+    <div className="pt-20 pb-28 md:pb-20 px-4 md:px-10 max-w-[1400px] mx-auto min-h-screen flex flex-col lg:flex-row gap-6 md:gap-10 relative">
       <AnimatePresence>
         {selectedMockup && (
           <PlatformMockup 
@@ -298,31 +298,31 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
           </div>
         </div>
 
-        {/* BOX 1: QUICK VERDICT */}
-        <div ref={box1Ref}>
-          <VerdictBox 
-            verdict={analysis.quickVerdict} 
-            highlighted={highlightedCard === 'all'} 
-            active={animationStage >= 0}
-            onComplete={() => setAnimationStage(prev => Math.max(prev, 1))}
+      {/* BOX 1: QUICK VERDICT */}
+      <div ref={box1Ref} className="px-1 md:px-0">
+        <VerdictBox 
+          verdict={analysis.quickVerdict} 
+          highlighted={highlightedCard === 'all'} 
+          active={animationStage >= 0}
+          onComplete={() => setAnimationStage(prev => Math.max(prev, 1))}
+        />
+      </div>
+
+      {/* BOX 2: PRODUCT IDENTITY */}
+      {animationStage >= 1 && (
+        <div ref={box2Ref} className="px-1 md:px-0">
+          <IdentityBox 
+            imageUrl={scan.imageUrl}
+            name={analysis.productDetails.name}
+            brand={analysis.productDetails.brand}
+            type={analysis.productDetails.type}
+            condition={analysis.productDetails.condition}
+            category={analysis.productDetails.category}
+            active={animationStage >= 1}
+            onComplete={() => setAnimationStage(prev => Math.max(prev, 2))}
           />
         </div>
-
-        {/* BOX 2: PRODUCT IDENTITY */}
-        {animationStage >= 1 && (
-          <div ref={box2Ref}>
-            <IdentityBox 
-              imageUrl={scan.imageUrl}
-              name={analysis.productDetails.name}
-              brand={analysis.productDetails.brand}
-              type={analysis.productDetails.type}
-              condition={analysis.productDetails.condition}
-              category={analysis.productDetails.category}
-              active={animationStage >= 1}
-              onComplete={() => setAnimationStage(prev => Math.max(prev, 2))}
-            />
-          </div>
-        )}
+      )}
 
         {/* BOX 3: PRICE INSIGHTS */}
         {animationStage >= 2 && (

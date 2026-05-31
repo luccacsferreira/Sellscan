@@ -127,13 +127,14 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                }
              }
            }}
+           className="px-4"
         >
           <motion.span 
             variants={{
               initial: { opacity: 0, y: 10 },
               animate: { opacity: 1, y: 0 }
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20 text-xs font-black tracking-widest uppercase mb-10"
+            className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20 text-[10px] md:text-xs font-black tracking-widest uppercase mb-8 md:mb-10"
           >
             <Zap className="w-3 h-3 fill-current" /> AI-powered resell scan
           </motion.span>
@@ -144,7 +145,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
               animate: { opacity: 1, y: 0 }
             }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.95]"
+            className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 md:mb-8 leading-[0.95] max-w-4xl mx-auto"
           >
             Scan any product. <br />
             <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-r from-brand-accent to-brand-accent/60">Know exactly</span> <br />
@@ -157,7 +158,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
               animate: { opacity: 1, y: 0 }
             }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-lg md:text-2xl text-brand-text-muted mb-12 max-w-2xl mx-auto leading-relaxed px-4 font-medium italic-none"
+            className="text-base md:text-2xl text-brand-text-muted mb-10 md:mb-12 max-w-2xl mx-auto leading-relaxed px-4 font-medium"
           >
             Upload a photo or describe any item. Sellscan analyses the market, 
             tells you what to fix, where to list it, and writes the description — in seconds.
@@ -169,18 +170,18 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
               animate: { opacity: 1, y: 0 }
             }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-6 px-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6"
           >
             <button 
               onClick={onStart}
-              className="w-full sm:w-auto bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-10 py-5 rounded-2xl text-lg font-black uppercase tracking-widest transition-all shadow-[0_15px_40px_-10px_var(--color-brand-accent-glow)] hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group"
+              className="w-full sm:w-auto bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-8 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-lg font-black uppercase tracking-widest transition-all shadow-lg hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 group"
             >
               Scan first product 
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
             <a 
               href="#features"
-              className="w-full sm:w-auto bg-brand-card hover:bg-brand-border border border-brand-border px-10 py-5 rounded-2xl text-lg font-black uppercase tracking-widest transition-all flex items-center justify-center hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full sm:w-auto bg-brand-card hover:bg-brand-border border border-brand-border px-8 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-lg font-black uppercase tracking-widest transition-all flex items-center justify-center hover:scale-[1.02] active:scale-[0.98]"
             >
               See how it works
             </a>

@@ -758,7 +758,7 @@ function AppContent() {
       
       <main className={cn(
         "min-h-[calc(100vh-64px)] overflow-x-hidden pt-16 transition-all duration-300",
-        view !== 'landing' ? "pb-28 md:pb-0" : ""
+        view !== 'landing' ? "pb-32 md:pb-0" : ""
       )}>
         <AnimatePresence mode="wait">
           {isLoading && (
@@ -767,29 +767,30 @@ function AppContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-10 bg-brand-bg backdrop-blur-[8px] overflow-y-auto"
+              className="fixed inset-0 z-[150] flex items-center justify-center p-3 md:p-10 bg-brand-bg backdrop-blur-[12px] overflow-y-auto"
             >
-              <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 gap-4 animate-in zoom-in-95 duration-500 items-stretch h-fit">
+              <div className="max-w-[1200px] w-full grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 animate-in zoom-in-95 duration-500 items-stretch h-fit">
                  
                  {/* Left Column: Progress Checklist (Bloom.ai style) */}
-                 <div className="md:col-span-4 glass-card p-6 md:p-8 border-white/5 bg-brand-bg/60 backdrop-blur-xl flex flex-col shadow-2xl">
+                 <div className="md:col-span-4 glass-card p-5 md:p-8 border-brand-border/30 bg-brand-card/20 backdrop-blur-3xl flex flex-col shadow-2xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-brand-accent/[0.02] -z-10" />
                     <div className="mb-6 md:mb-8">
                        <div className="w-10 h-10 rounded-2xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center mb-4 md:mb-5">
                           <Sparkles className="w-5 h-5 text-brand-accent" />
                        </div>
-                       <h2 className="text-lg md:text-xl font-black tracking-tight text-brand-text leading-tight">
-                         Scanning environment
+                       <h2 className="text-lg md:text-xl font-black tracking-tight text-brand-text leading-tight uppercase italic-none">
+                         Quantum Analysis
                        </h2>
-                       <p className="text-brand-text-muted text-[10px] mt-2 font-medium tracking-wide uppercase opacity-60">Status: Real-time analysis</p>
+                       <p className="text-brand-text-muted text-[10px] mt-2 font-black tracking-[0.2em] uppercase opacity-40">Phase: Operational</p>
                     </div>
 
-                    <div className="space-y-2 md:space-y-4 flex-grow">
+                    <div className="space-y-1 md:space-y-3 flex-grow">
                       {[
-                        { id: 'identifying', label: 'Extracting context' },
-                        { id: 'searching', label: 'Searching market' },
-                        { id: 'analyzing_reviews', label: 'Social sentiment' },
-                        { id: 'calculating', label: 'Pricing parity' },
-                        { id: 'finishing', label: 'Polishing data' }
+                        { id: 'identifying', label: 'Extracting DNA' },
+                        { id: 'searching', label: 'Market Crawler' },
+                        { id: 'analyzing_reviews', label: 'Sentiment Pulse' },
+                        { id: 'calculating', label: 'Price Matrix' },
+                        { id: 'finishing', label: 'Asset Finality' }
                       ].map((stage, idx, arr) => {
                         const stages = arr.map(s => s.id);
                         const currentIdx = stages.indexOf(loadingStage);
@@ -797,30 +798,30 @@ function AppContent() {
                         const isActive = stage.id === loadingStage;
 
                         return (
-                          <div key={stage.id} className="relative pl-8 h-9 md:h-10 flex items-center">
+                          <div key={stage.id} className="relative pl-8 h-8 md:h-10 flex items-center">
                             {/* Connector Line */}
                             {idx < arr.length - 1 && (
                               <div className={cn(
-                                "absolute left-[9.5px] top-[26px] md:top-[28px] w-[1px] h-[18px] md:h-[22px] transition-colors duration-500",
+                                "absolute left-[9.5px] top-[26px] md:top-[28px] w-[1px] h-[14px] md:h-[22px] transition-colors duration-500",
                                 isCompleted ? "bg-brand-accent" : "bg-brand-border/20"
                               )} />
                             )}
                             
                             <div className={cn(
                               "absolute left-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0",
-                              isCompleted ? "bg-brand-accent border-brand-accent text-brand-bg shadow-[0_0_10px_rgba(85,205,209,0.3)]" : 
-                              isActive ? "border-brand-accent bg-brand-accent/10" : "border-brand-border/30"
+                              isCompleted ? "bg-brand-accent border-brand-accent text-brand-bg" : 
+                              isActive ? "border-brand-accent bg-brand-accent/10 shadow-[0_0_15px_rgba(85,205,209,0.3)]" : "border-brand-border/30"
                             )}>
-                              {isCompleted ? <Check className="w-3 h-3 stroke-[3]" /> : (
+                              {isCompleted ? <Check className="w-2.5 h-2.5 stroke-[4]" /> : (
                                 isActive ? <div className="w-1 h-1 rounded-full bg-brand-accent animate-ping" /> : 
-                                <div className="w-1 h-1 rounded-full bg-brand-border/20" />
+                                <div className="w-0.5 h-0.5 rounded-full bg-brand-border/40" />
                               )}
                             </div>
                             
                             <div className="flex flex-col">
                               <span className={cn(
-                                "text-[11px] md:text-[12px] font-bold tracking-tight transition-colors",
-                                isCompleted || isActive ? "text-brand-text" : "text-brand-text-muted/50"
+                                "text-[10px] md:text-[11px] font-black uppercase tracking-widest md:tracking-[0.15em] transition-colors",
+                                isCompleted || isActive ? "text-brand-text" : "text-brand-text-muted/30"
                               )}>
                                 {stage.label}
                               </span>
@@ -830,46 +831,46 @@ function AppContent() {
                       })}
                     </div>
 
-                    <div className="mt-6 md:mt-8 pt-6 border-t border-white/5">
-                      <div className="flex items-center gap-3 text-brand-text-muted text-[10px] font-black uppercase tracking-widest opacity-40">
+                    <div className="mt-6 md:mt-8 pt-5 md:pt-6 border-t border-brand-border/30">
+                      <div className="flex items-center gap-3 text-brand-text-muted text-[10px] font-black uppercase tracking-widest opacity-30">
                          <Loader2 className="w-3 h-3 animate-spin text-brand-accent" />
-                         Engine Active
+                         Engine Lock
                       </div>
                     </div>
                  </div>
 
                  {/* Right: Visual Bento Grid */}
-                 <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     {/* Top Shared Span Card - Image Preview */}
-                    <div className="sm:col-span-2 glass-card p-3 border-white/5 bg-black/40 overflow-hidden aspect-video group relative flex items-center justify-center">
+                    <div className="sm:col-span-2 glass-card p-2 md:p-3 border-brand-border/30 bg-black/40 overflow-hidden aspect-[16/10] sm:aspect-video group relative flex items-center justify-center rounded-2xl md:rounded-3xl">
                        {imageToAnalyze ? (
                          <motion.img 
                            key={imageToAnalyze}
                            src={imageToAnalyze} 
                            initial={{ scale: 1.1, opacity: 0 }}
-                           animate={{ scale: 1, opacity: 0.5 }}
+                           animate={{ scale: 1, opacity: 0.3 }}
                            transition={{ duration: 1.5 }}
-                           className="w-full h-full object-contain rounded-lg" 
+                           className="w-full h-full object-contain rounded-xl" 
                          />
                        ) : (
-                         <div className="flex flex-col items-center gap-3 text-brand-text-muted/40">
+                         <div className="flex flex-col items-center gap-3 text-brand-text-muted/20">
                             <Globe className="w-8 h-8 animate-pulse" />
-                            <span className="text-[10px] font-black uppercase tracking-widest">Global Scan Engine</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Neural Interface</span>
                          </div>
                        )}
                        
                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="relative">
-                             <div className="w-20 h-20 rounded-full border-2 border-brand-accent/20 animate-[ping_3s_infinite]" />
-                             <div className="absolute inset-0 w-20 h-20 rounded-full border border-brand-accent/40 flex items-center justify-center">
-                                <Search className="w-8 h-8 text-brand-accent opacity-60" />
+                             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-brand-accent/10 animate-[ping_3s_infinite]" />
+                             <div className="absolute inset-0 w-16 h-16 md:w-20 md:h-20 rounded-full border border-brand-accent/20 flex items-center justify-center">
+                                <Search className="w-6 h-6 md:w-8 md:h-8 text-brand-accent opacity-30" />
                              </div>
                           </div>
                        </div>
 
-                       <div className="absolute bottom-4 left-4 p-2 px-4 rounded-full bg-brand-bg/80 border border-white/5 backdrop-blur-md flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-brand-accent animate-pulse" />
-                          <span className="text-[10px] font-black text-brand-text uppercase tracking-widest">{LOADING_STAGE_TEXT[loadingStage]}</span>
+                       <div className="absolute bottom-4 left-4 right-4 p-2.5 px-5 rounded-xl md:rounded-full bg-brand-bg/85 border border-brand-border/50 backdrop-blur-md flex items-center gap-3 shadow-xl">
+                          <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
+                          <span className="text-[9px] md:text-[10px] font-black text-brand-text/80 uppercase tracking-widest truncate">{LOADING_STAGE_TEXT[loadingStage]}</span>
                        </div>
                     </div>
 
@@ -878,13 +879,13 @@ function AppContent() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
-                      className="glass-card p-4 md:p-6 border-white/5 flex flex-col justify-center bg-brand-bg/40 relative overflow-hidden group"
+                      className="glass-card p-5 md:p-6 border-brand-border/30 flex flex-col justify-center bg-brand-card/10 relative overflow-hidden group rounded-2xl md:rounded-3xl"
                     >
-                      <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-40 transition-opacity">
-                         <div className="w-10 md:w-12 h-10 md:h-12 rounded-full border border-brand-accent animate-[spin_10s_linear_infinite]" />
+                      <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                         <div className="w-10 h-10 rounded-full border border-brand-accent animate-[spin_10s_linear_infinite]" />
                       </div>
                       
-                      <h4 className="text-[9px] font-black uppercase text-brand-accent tracking-[0.3em] mb-3 md:mb-4">Discovery Engine</h4>
+                      <h4 className="text-[9px] font-black uppercase text-brand-accent tracking-[0.3em] mb-3">Asset Identity</h4>
                       <AnimatePresence mode="wait">
                         {detectedName ? (
                           <motion.div 
@@ -893,16 +894,14 @@ function AppContent() {
                             animate={{ opacity: 1, y: 0 }}
                             className="space-y-1"
                           >
-                            <p className="text-[9px] md:text-[10px] font-bold text-brand-text-muted/60 uppercase tracking-widest">Identified Asset</p>
-                            <h3 className="text-sm md:text-xl font-black text-brand-text italic leading-tight uppercase">
+                            <h3 className="text-sm md:text-lg font-black text-brand-text italic-none leading-tight uppercase truncate">
                               {detectedName}
                             </h3>
                           </motion.div>
                         ) : (
-                          <motion.div key="wait" className="space-y-2 md:space-y-3">
-                             <div className="h-4 bg-brand-text/5 animate-pulse rounded w-3/4" />
-                             <div className="h-6 bg-brand-text/5 animate-pulse rounded w-1/2" />
-                             <p className="text-[9px] text-brand-text-muted/30 font-black uppercase tracking-widest animate-pulse italic">Connecting...</p>
+                          <motion.div key="wait" className="space-y-2">
+                             <div className="h-4 bg-white/5 animate-pulse rounded w-3/4" />
+                             <div className="h-3 bg-white/5 animate-pulse rounded w-1/2" />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -913,24 +912,24 @@ function AppContent() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
-                      className="glass-card p-6 border-white/5 flex flex-col bg-brand-accent/5 backdrop-blur-2xl"
+                      className="glass-card p-5 md:p-6 border-brand-border/30 flex flex-col bg-brand-accent/[0.03] backdrop-blur-2xl rounded-2xl md:rounded-3xl"
                     >
-                      <h4 className="text-[10px] font-black uppercase text-brand-text-muted/60 tracking-[0.2em] mb-4">Platform Reach</h4>
-                      <div className="flex flex-wrap gap-2">
+                      <h4 className="text-[9px] font-black uppercase text-brand-text-muted/40 tracking-[0.2em] mb-4">Market Reach</h4>
+                      <div className="flex flex-wrap gap-1.5">
                          {activePlatforms.map((p) => (
                            <motion.span 
                              key={p} 
                              initial={{ scale: 0.8, opacity: 0 }}
                              animate={{ scale: 1, opacity: 1 }}
-                             className="text-[9px] px-2 py-1 rounded-md bg-brand-bg border border-white/5 text-brand-text font-bold"
+                             className="text-[8px] md:text-[9px] px-2 py-1 rounded-lg bg-brand-card/50 border border-brand-border/50 text-brand-text/80 font-black uppercase"
                            >
                              {p}
                            </motion.span>
                          ))}
                          {activePlatforms.length === 0 && (
-                            <div className="space-y-2 w-full">
+                            <div className="flex gap-2">
                                {[1,2,3].map(i => (
-                                 <div key={i} className="h-4 bg-brand-text/5 animate-pulse rounded w-full" />
+                                 <div key={i} className="w-10 h-4 bg-white/5 animate-pulse rounded-lg" />
                                ))}
                             </div>
                          )}
@@ -942,32 +941,32 @@ function AppContent() {
                        initial={{ opacity: 0, y: 10 }}
                        animate={{ opacity: 1, y: 0 }}
                        transition={{ delay: 0.4 }}
-                       className="sm:col-span-2 grid grid-cols-2 gap-4"
+                       className="sm:col-span-2 grid grid-cols-2 gap-3 md:gap-4"
                     >
-                       <div className="glass-card p-5 border-white/5 bg-brand-bg/40">
-                          <h4 className="text-[9px] font-black uppercase text-brand-text-muted/40 tracking-widest mb-2">Price Estimate</h4>
+                       <div className="glass-card p-4 md:p-5 border-brand-border/30 bg-brand-card/10 rounded-2xl md:rounded-3xl">
+                          <h4 className="text-[8px] font-black uppercase text-brand-text-muted/30 tracking-widest mb-2">Live Price</h4>
                           <div className="flex items-baseline gap-1">
-                             <span className="text-2xl font-black text-brand-accent">
+                             <span className="text-xl md:text-2xl font-black text-brand-accent">
                                {livePrice ? `${currency === 'GBP' ? '£' : '$'}${livePrice.toFixed(0)}` : '--'}
                              </span>
-                             {livePrice && <span className="text-[10px] font-bold text-brand-text-muted">avg</span>}
+                             {livePrice && <span className="text-[9px] font-black text-brand-text-muted/40 uppercase tracking-tighter">EST</span>}
                           </div>
                        </div>
-                       <div className="glass-card p-5 border-white/5 bg-brand-bg/40">
-                          <h4 className="text-[9px] font-black uppercase text-brand-text-muted/40 tracking-widest mb-2">Market Heat</h4>
+                       <div className="glass-card p-4 md:p-5 border-brand-border/30 bg-brand-card/10 rounded-2xl md:rounded-3xl">
+                          <h4 className="text-[8px] font-black uppercase text-brand-text-muted/30 tracking-widest mb-2">Demand Hype</h4>
                           <div className="flex items-center gap-2">
                              <div className="flex gap-0.5">
                                 {[1,2,3,4,5].map(i => (
                                    <div 
                                      key={i} 
                                      className={cn(
-                                       "w-2 h-4 rounded-full transition-colors", 
-                                       liveRating && i <= Math.round(liveRating) ? "bg-brand-accent" : "bg-brand-border"
+                                       "w-1.5 h-3 md:w-2 md:h-4 rounded-full", 
+                                       liveRating && i <= Math.round(liveRating) ? "bg-brand-accent" : "bg-brand-border/30"
                                      )} 
                                    />
                                 ))}
                              </div>
-                             <span className="text-xs font-black text-brand-text">{liveRating ? liveRating.toFixed(1) : '--'}</span>
+                             <span className="text-[10px] font-black text-brand-text/60">{liveRating ? liveRating.toFixed(1) : '--'}</span>
                           </div>
                        </div>
                     </motion.div>

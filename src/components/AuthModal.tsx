@@ -32,13 +32,12 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   };
 
   const handleGoogleLogin = async () => {
-    if (!isSupabaseConfigured) {
-      setError({ message: 'Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your secrets.', type: 'error' });
-      return;
-    }
     setError(null);
     setIsLoading(true);
     try {
+      if (!isSupabaseConfigured) {
+        throw new Error('OAuth is not configured in this environment.');
+      }
       // Use popup flow for Google Login in AI Studio preview
       // This avoids the 403 X-Frame-Options error
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -150,35 +149,35 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-md bg-brand-card border border-brand-border/50 rounded-[2.5rem] overflow-hidden shadow-2xl"
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            className="relative w-full max-w-[420px] bg-brand-card border border-brand-border/50 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl mx-auto"
           >
-            <div className="p-10 relative">
+            <div className="p-6 md:p-10 relative">
               <button 
                 onClick={onClose}
-                className="absolute top-8 right-8 p-2 text-brand-text-muted hover:text-brand-text transition-colors z-10"
+                className="absolute top-6 right-6 md:top-8 md:right-8 p-2 text-brand-text-muted hover:text-brand-text transition-colors z-10"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="text-center mb-10">
+              <div className="text-center mb-8 md:mb-10">
                 <div 
-                  className="mb-8 inline-block cursor-help"
+                  className="mb-6 md:mb-8 inline-block cursor-help"
                   onClick={handleLogoClick}
                 >
                   <img 
                     src={sellscanLogo} 
                     alt="Sellscan" 
-                    className="h-5 opacity-80" 
+                    className="h-4 md:h-5 opacity-80" 
                   />
                 </div>
                 
-                <h2 className="text-3xl font-black tracking-tight mb-3">
+                <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-2 md:mb-3">
                   {mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Instant Access'}
                 </h2>
-                <p className="text-sm text-brand-text-muted font-medium">
+                <p className="text-xs md:text-sm text-brand-text-muted font-medium px-4">
                   {mode === 'login' 
                     ? 'Sign in to your dashboard' 
                     : mode === 'signup' 
@@ -192,7 +191,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    "mb-8 p-4 rounded-2xl flex items-start gap-3 text-xs font-bold",
+                    "mb-6 md:mb-8 p-3 md:p-4 rounded-xl md:rounded-2xl flex items-start gap-3 text-[11px] md:text-xs font-bold",
                     error.type === 'success' 
                       ? "bg-green-500/10 text-green-400 border border-green-500/20" 
                       : "bg-red-500/10 text-red-400 border border-red-500/20"
@@ -203,9 +202,9 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 </motion.div>
               )}
 
-              <form onSubmit={mode === 'magic-link' ? handleMagicLink : handleSubmit} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black uppercase text-brand-text-muted tracking-[0.15em] px-1">Email Address</label>
+              <form onSubmit={mode === 'magic-link' ? handleMagicLink : handleSubmit} className="space-y-3 md:space-y-4">
+                <div className="space-y-1.5 px-0.5">
+                  <label className="text-[9px] md:text-[10px] font-black uppercase text-brand-text-muted tracking-[0.15em] px-1">Email Address</label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted" />
                     <input
@@ -213,15 +212,15 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-brand-bg/50 border border-brand-border/50 rounded-2xl py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
+                      className="w-full bg-brand-bg/50 border border-brand-border/50 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
                       placeholder="name@example.com"
                     />
                   </div>
                 </div>
 
                 {mode !== 'magic-link' && (
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase text-brand-text-muted tracking-[0.15em] px-1">Password</label>
+                  <div className="space-y-1.5 px-0.5">
+                    <label className="text-[9px] md:text-[10px] font-black uppercase text-brand-text-muted tracking-[0.15em] px-1">Password</label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted" />
                       <input
@@ -229,7 +228,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-brand-bg/50 border border-brand-border/50 rounded-2xl py-4 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
+                        className="w-full bg-brand-bg/50 border border-brand-border/50 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
                         placeholder="••••••••"
                         minLength={6}
                       />
@@ -247,7 +246,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 <button
                   disabled={isLoading}
                   type="submit"
-                  className="w-full py-4 bg-brand-accent text-brand-bg rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-brand-accent/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 mt-4 disabled:opacity-50"
+                  className="w-full py-3.5 md:py-4 bg-brand-accent text-brand-bg rounded-xl md:rounded-2xl font-black text-[10.5px] md:text-xs uppercase tracking-[0.2em] shadow-lg shadow-brand-accent/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 mt-4 disabled:opacity-50"
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -259,8 +258,8 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 </button>
               </form>
 
-              <div className="mt-8">
-                <div className="relative flex items-center gap-4 mb-8">
+              <div className="mt-6 md:mt-8">
+                <div className="relative flex items-center gap-4 mb-6 md:mb-8">
                   <div className="h-px bg-brand-border/50 flex-grow" />
                   <span className="text-[10px] text-brand-text-muted uppercase font-black tracking-widest">Or</span>
                   <div className="h-px bg-brand-border/50 flex-grow" />
@@ -270,7 +269,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
                   className={cn(
-                    "w-full py-4 border rounded-2xl flex items-center justify-center gap-3 transition-all text-xs font-bold active:scale-[0.98] group",
+                    "w-full py-3.5 md:py-4 border rounded-xl md:rounded-2xl flex items-center justify-center gap-3 transition-all text-[11px] md:text-xs font-bold active:scale-[0.98] group",
                     isSupabaseConfigured 
                       ? "bg-white/5 border-brand-border/50 hover:bg-white/10" 
                       : "bg-red-500/5 border-red-500/20 text-red-400 opacity-50 cursor-not-allowed"
@@ -282,68 +281,26 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     <path fill={isSupabaseConfigured ? "#FBBC05" : "#ff0000"} d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
                     <path fill={isSupabaseConfigured ? "#EA4335" : "#ff0000"} d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                   </svg>
-                  {isSupabaseConfigured ? 'Continue with Google' : 'Configuration Required'}
+                  Continue with Google
                 </button>
               </div>
 
-              <div className="mt-10 text-center">
+              <div className="mt-8 md:mt-10 text-center">
                 <button 
                   onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-                  className="text-[10px] font-black uppercase text-brand-text-muted hover:text-brand-accent tracking-widest transition-colors"
+                  className="text-[9px] md:text-[10px] font-black uppercase text-brand-text-muted hover:text-brand-accent tracking-widest transition-colors"
                 >
                   {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
                 </button>
-                <div className="mt-4">
+                <div className="mt-3 md:mt-4">
                   <button 
                     onClick={() => setMode(mode === 'magic-link' ? 'login' : 'magic-link')}
-                    className="text-[9px] font-bold text-brand-text-muted/60 hover:text-brand-text transition-colors"
+                    className="text-[8px] md:text-[9px] font-bold text-brand-text-muted/60 hover:text-brand-text transition-colors"
                   >
                     {mode === 'magic-link' ? "Back to standard login" : "Or use Magic Link login"}
                   </button>
                 </div>
               </div>
-
-              {diagnosticClicks >= 3 && (
-                <motion.div 
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-8 p-4 bg-brand-bg rounded-2xl text-[9px] font-mono border border-brand-border overflow-hidden"
-                >
-                  <div className="flex justify-between items-center text-brand-accent font-bold mb-2">
-                    <span>DEBUG MODE</span>
-                    <button onClick={() => setShowManualConfig(!showManualConfig)} className="underline">TOGGLE CONFIG</button>
-                  </div>
-                  {!showManualConfig ? (
-                    <div className="space-y-1 opacity-60">
-                      <p>URL: {dbInfo.url}</p>
-                      <p>Configured: {String(isSupabaseConfigured)}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <input 
-                        type="text" 
-                        placeholder="Supabase URL"
-                        value={manualUrl}
-                        onChange={e => setManualUrl(e.target.value)}
-                        className="w-full bg-black/20 border border-brand-border rounded px-2 py-1 outline-none"
-                      />
-                      <input 
-                        type="password" 
-                        placeholder="Anon Key"
-                        value={manualKey}
-                        onChange={e => setManualKey(e.target.value)}
-                        className="w-full bg-black/20 border border-brand-border rounded px-2 py-1 outline-none"
-                      />
-                      <button 
-                        onClick={() => saveManualConfig(manualUrl, manualKey)}
-                        className="w-full bg-brand-accent text-brand-bg font-bold py-1 rounded"
-                      >
-                        SAVE
-                      </button>
-                    </div>
-                  )}
-                </motion.div>
-              )}
             </div>
           </motion.div>
         </div>
