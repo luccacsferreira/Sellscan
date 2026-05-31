@@ -22,6 +22,7 @@ interface NavbarProps {
   onSignInClick?: () => void;
   onGetStartedClick?: () => void;
   isLoggedIn?: boolean;
+  currentView: string;
   userEmail?: string;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
@@ -38,6 +39,7 @@ export function Navbar({
   onSignInClick,
   onGetStartedClick,
   isLoggedIn = false, 
+  currentView,
   userEmail,
   theme, 
   onToggleTheme 
@@ -79,13 +81,13 @@ export function Navbar({
           </div>
 
           <div className="hidden md:flex items-center gap-8">
-            {isLoggedIn ? (
+            {(isLoggedIn && currentView !== 'landing') ? (
               <>
                 <button 
                   onClick={onGoHome} 
                   className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
                 >
-                  Dashboard
+                  Home
                 </button>
                 <button 
                   onClick={onViewAnalytics} 
@@ -101,9 +103,8 @@ export function Navbar({
                 </button>
                 <button 
                   onClick={onViewAffiliate} 
-                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest flex items-center gap-2"
+                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-brand-accent" />
                   Partners
                 </button>
               </>
@@ -125,29 +126,38 @@ export function Navbar({
               </button>
 
               {isLoggedIn ? (
-                <div className="flex items-center gap-4">
-                  <div className="hidden lg:flex flex-col items-end mr-2">
-                     <div className="flex items-center gap-1.5 mb-0.5">
-                       <span className="text-[9px] font-bold uppercase text-brand-text-muted">Account</span>
-                       <div className={cn(
-                         "w-1 h-1 rounded-full animate-pulse",
-                         (window as any).SUPABASE_CONFIG?.VITE_SUPABASE_URL ? "bg-green-500" : "bg-red-500"
-                       )} />
-                     </div>
-                     <span className="text-[10px] font-medium text-brand-text truncate max-w-[120px]">{userEmail}</span>
-                  </div>
-                  <button 
-                    onClick={onNewScan}
-                    className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all shadow-[0_5px_20px_-5px_var(--color-brand-accent-glow)] group flex items-center gap-2"
-                  >
-                    <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" /> Scanner
-                  </button>
-                  <button 
-                    onClick={onViewSettings}
-                    className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group overflow-hidden"
-                  >
-                    <User className="w-5 h-5 text-brand-text-muted group-hover:text-brand-accent" />
-                  </button>
+                <div className="flex items-center gap-3">
+                  {currentView === 'landing' ? (
+                    <>
+                      <button 
+                        onClick={onGetStartedClick || onSignInClick} 
+                        className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2"
+                      >
+                        Get Started <LogIn className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={onViewSettings}
+                        className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group overflow-hidden"
+                      >
+                        <User className="w-5 h-5 text-brand-text-muted group-hover:text-brand-accent" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button 
+                        onClick={onNewScan}
+                        className="bg-brand-accent hover:bg-brand-accent/90 text-brand-bg px-5 py-2 rounded-full text-sm font-bold transition-all shadow-[0_5px_20px_-5px_var(--color-brand-accent-glow)] group flex items-center gap-2"
+                      >
+                        <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" /> Scanner
+                      </button>
+                      <button 
+                        onClick={onViewSettings}
+                        className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center cursor-pointer hover:border-brand-accent transition-all group overflow-hidden"
+                      >
+                        <User className="w-5 h-5 text-brand-text-muted group-hover:text-brand-accent" />
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
@@ -206,13 +216,13 @@ export function Navbar({
               </div>
 
               <div className="flex flex-col gap-6">
-                {isLoggedIn ? (
+                {(isLoggedIn && currentView !== 'landing') ? (
                   <>
                     <button 
                       onClick={() => handleMobileNav(onGoHome!)} 
                       className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
                     >
-                      Dashboard
+                      Home
                     </button>
                     <button 
                       onClick={() => handleMobileNav(onViewAnalytics!)} 
@@ -251,10 +261,29 @@ export function Navbar({
                     <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Pricing</a>
                     <button onClick={() => { setIsMobileMenuOpen(false); onViewDocs?.(); }} className="text-left text-lg font-bold text-brand-text">Documentation</button>
                     <div className="h-px bg-brand-border my-2" />
-                    <button onClick={() => { setIsMobileMenuOpen(false); onSignInClick?.(); }} className="text-left text-lg font-bold text-brand-text">Sign in</button>
-                    <button onClick={() => { setIsMobileMenuOpen(false); (onGetStartedClick || onSignInClick)?.(); }} className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
-                      Get Started <LogIn className="w-5 h-5" />
-                    </button>
+                    {isLoggedIn ? (
+                      <>
+                        <button 
+                          onClick={() => { setIsMobileMenuOpen(false); onGetStartedClick?.(); }} 
+                          className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+                        >
+                          Get Started <LogIn className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={() => { setIsMobileMenuOpen(false); onViewSettings?.(); }} 
+                          className="text-left text-lg font-bold text-brand-text flex items-center gap-2"
+                        >
+                           <User className="w-5 h-5" /> Account Details
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => { setIsMobileMenuOpen(false); onSignInClick?.(); }} className="text-left text-lg font-bold text-brand-text">Sign in</button>
+                        <button onClick={() => { setIsMobileMenuOpen(false); (onGetStartedClick || onSignInClick)?.(); }} className="bg-brand-accent text-brand-bg py-4 rounded-2xl font-bold flex items-center justify-center gap-2">
+                          Get Started <LogIn className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
                   </>
                 )}
               </div>

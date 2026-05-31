@@ -707,6 +707,7 @@ function AppContent() {
         onSignInClick={() => setShowAuthModal(true)}
         onGetStartedClick={() => setView('upload')}
         isLoggedIn={!!user}
+        currentView={view}
         userEmail={user?.email}
         theme={resolvedTheme}
         onToggleTheme={toggleTheme}
