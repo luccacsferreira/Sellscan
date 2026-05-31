@@ -316,11 +316,11 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           variants={{
             animate: {
               transition: {
-                staggerChildren: 0.15
+                staggerChildren: 0.08
               }
             }
           }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6"
         >
           <FeatureCard 
             icon={<Search className="w-6 h-6 text-brand-accent" />}
@@ -568,16 +568,23 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
   return (
     <motion.div 
       variants={{
-        initial: { opacity: 0, y: 20 },
-        animate: { opacity: 1, y: 0 }
+        initial: { opacity: 0, y: -40 },
+        animate: { 
+          opacity: 1, 
+          y: 0,
+          transition: {
+            duration: 0.4,
+            ease: [0.23, 1, 0.32, 1]
+          }
+        }
       }}
-      className="glass-card p-8 hover:border-brand-accent/50 transition-all group"
+      className="glass-card p-4 md:p-8 hover:border-brand-accent/50 transition-all group"
     >
-      <div className="w-12 h-12 rounded-xl bg-brand-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-        {icon}
+      <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-brand-accent/10 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
+        {React.cloneElement(icon as React.ReactElement, { className: "w-4 h-4 md:w-6 md:h-6 text-brand-accent" })}
       </div>
-      <h3 className="text-xl font-bold mb-3">{title}</h3>
-      <p className="text-brand-text-muted leading-relaxed">{description}</p>
+      <h3 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3">{title}</h3>
+      <p className="text-[10px] md:text-base text-brand-text-muted leading-relaxed line-clamp-3 md:line-clamp-none">{description}</p>
     </motion.div>
   );
 }
