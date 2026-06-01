@@ -31,6 +31,7 @@ import { UserLocation } from './types';
 import { AuthCallback } from './components/AuthCallback';
 import { DocsPage } from './components/DocsPage';
 import { AffiliatePage } from './components/AffiliatePage';
+import { partnerService } from './services/partnerService';
 import { NotificationModal } from './components/NotificationModal';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate';
@@ -86,17 +87,77 @@ function AppContent() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Dynamic HTML5 routing & referral click tracking synced with view state
   useEffect(() => {
-    // Check for referral code in URL
+    const handleLocationChange = () => {
+      const path = window.location.pathname;
+      const pathViewMap: Record<string, View> = {
+        '/': 'landing',
+        '/Home': 'home',
+        '/Partners': 'affiliate',
+        '/Scan': 'upload',
+        '/History': 'history',
+        '/Analytics': 'analytics',
+        '/Settings': 'settings',
+        '/Docs': 'docs',
+        '/Projects': 'project-detail',
+        '/Dashboard': 'dashboard'
+      };
+
+      const matchedView = pathViewMap[path];
+      if (matchedView) {
+        setView(matchedView);
+      } else {
+        // Double-check for 5-15 character alphanumeric referral slugs in the URL pathname!
+        // e.g. /giyzggOU87 (length 5-15, only alphanumeric, no dot in pathname)
+        const refMatch = path.match(/^\/([a-zA-Z0-9]{5,15})$/);
+        if (refMatch) {
+          const promoCode = refMatch[1];
+          console.log("Ref promo URL pathname match: ", promoCode);
+          partnerService.recordClick(promoCode);
+          
+          // Route them transparently to the landing view and clean address bar
+          setView('landing');
+          window.history.replaceState({}, '', '/');
+        }
+      }
+    };
+
+    // Parse query string standard ?ref=... backup as well
     const params = new URLSearchParams(window.location.search);
     const refCode = params.get('ref');
     if (refCode) {
-      localStorage.setItem('sellscan_ref_code', refCode);
-      // Clean up URL without refreshing
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
+      partnerService.recordClick(refCode);
     }
+
+    // Run once on load
+    handleLocationChange();
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
+
+  // Sync state view to the URL pathname whenever view state changes
+  useEffect(() => {
+    const viewPathMap: Record<string, string> = {
+      landing: '/',
+      home: '/Home',
+      affiliate: '/Partners',
+      upload: '/Scan',
+      history: '/History',
+      analytics: '/Analytics',
+      settings: '/Settings',
+      docs: '/Docs',
+      'project-detail': '/Projects',
+      'dashboard': '/Dashboard',
+      'auth-callback': '/auth-callback'
+    };
+    
+    const targetPath = viewPathMap[view];
+    if (targetPath && window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+    }
+  }, [view]);
 
   const [history, setHistory] = useState<ScanResult[]>(() => {
     const saved = localStorage.getItem('sellscan_history');
@@ -996,6 +1057,7 @@ function AppContent() {
                 onViewProject={handleSelectProject}
                 onViewAllScans={() => setView('history')}
                 onViewAnalytics={() => setView('analytics')}
+                onViewAffiliate={() => setView('affiliate')}
               />
             </motion.div>
           )}
