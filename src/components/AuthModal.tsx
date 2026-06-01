@@ -152,7 +152,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            className="relative w-full max-w-[420px] bg-brand-card border border-brand-border/50 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl mx-auto"
+            className="relative w-full max-w-[420px] bg-brand-card border border-brand-border dark:border-brand-border/50 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-2xl mx-auto"
           >
             <div className="p-6 md:p-10 relative">
               <button 
@@ -215,7 +215,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-brand-bg/50 border border-brand-border/50 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
+                      className="w-full bg-brand-bg/50 border border-brand-border dark:border-brand-border/50 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
                       placeholder="name@example.com"
                     />
                   </div>
@@ -231,7 +231,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-brand-bg/50 border border-brand-border/50 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
+                        className="w-full bg-brand-bg/50 border border-brand-border dark:border-brand-border/50 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-accent/50 focus:ring-1 focus:ring-brand-accent/20 transition-all font-medium"
                         placeholder="••••••••"
                         minLength={6}
                       />
@@ -263,9 +263,9 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
               <div className="mt-6 md:mt-8">
                 <div className="relative flex items-center gap-4 mb-6 md:mb-8">
-                  <div className="h-px bg-brand-border/50 flex-grow" />
+                  <div className="h-px bg-brand-border dark:bg-brand-border/50 flex-grow" />
                   <span className="text-[10px] text-brand-text-muted uppercase font-black tracking-widest">Or</span>
-                  <div className="h-px bg-brand-border/50 flex-grow" />
+                  <div className="h-px bg-brand-border dark:bg-brand-border/50 flex-grow" />
                 </div>
 
                 <button 
@@ -274,7 +274,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                   className={cn(
                     "w-full py-3.5 md:py-4 border rounded-xl md:rounded-2xl flex items-center justify-center gap-3 transition-all text-[11px] md:text-xs font-bold active:scale-[0.98] group",
                     isSupabaseConfigured 
-                      ? "bg-white/5 border-brand-border/50 hover:bg-white/10" 
+                      ? "bg-white/5 border-brand-border dark:border-brand-border/50 hover:bg-white/10" 
                       : "bg-red-500/5 border-red-500/20 text-red-400 opacity-50 cursor-not-allowed"
                   )}
                 >

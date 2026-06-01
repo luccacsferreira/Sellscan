@@ -38,41 +38,103 @@ export function ImageUpload({
   const description = persistedDescription;
   const setDescription = setPersistedDescription;
   const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string } | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (file: File) => {
+  const resizeAndCompressImage = (fileOrBlob: File | Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(fileOrBlob);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(img.src);
+          reject(new Error("Failed to get 2D canvas context"));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(img.src);
+        // Export as optimized JPEG for extreme compatibility and small payload
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => {
+        URL.revokeObjectURL(img.src);
+        reject(err);
+      };
+    });
+  };
+
+  const handleFile = async (file: File) => {
     if (!file) return;
 
-    // Check file size (20MB limit)
-    const MAX_SIZE = 20 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      setErrorModal({
-        isOpen: true,
-        title: "File too large",
-        message: "Please upload an image smaller than 20MB for optimal processing speeds."
-      });
-      return;
+    setIsProcessingImage(true);
+
+    try {
+      const fileName = file.name.toLowerCase();
+      const isHEIC = fileName.endsWith('.heic') || fileName.endsWith('.heif') || file.type === 'image/heic' || file.type === 'image/heif';
+
+      let blobToProcess: File | Blob = file;
+
+      if (isHEIC) {
+        try {
+          const heic2anyModule = await import('heic2any');
+          const heic2anyFn = (heic2anyModule.default || heic2anyModule) as any;
+          const result = await heic2anyFn({
+            blob: file,
+            toType: 'image/jpeg',
+            quality: 0.8
+          });
+          blobToProcess = Array.isArray(result) ? result[0] : result;
+        } catch (heicError) {
+          console.error("HEIC conversion failed:", heicError);
+        }
+      }
+
+      // Convert and compress to JPEG data URL
+      const dataUrl = await resizeAndCompressImage(blobToProcess);
+      setSelectedImage(dataUrl);
+    } catch (err: any) {
+      console.error("Image optimization error, falling back:", err);
+      // Fallback to FileReader if canvas approach fails
+      try {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setSelectedImage(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+      } catch (fallbackErr) {
+        setErrorModal({
+          isOpen: true,
+          title: "Formatting Error",
+          message: "We encountered an issue optimizing this image. Please try a different format or copy/paste a screenshot."
+        });
+      }
+    } finally {
+      setIsProcessingImage(false);
     }
-
-    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
-    const fileName = file.name.toLowerCase();
-    const isImageByExtension = validExtensions.some(ext => fileName.endsWith(ext));
-    const isImageByType = file.type.startsWith('image/');
-
-    if (!isImageByType && !isImageByExtension) {
-      setErrorModal({
-        isOpen: true,
-        title: "Not supported file format",
-        message: "Our scanning engine currently supports JPG, PNG, and WebP. Please ensure your file is a common image format."
-      });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setSelectedImage(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleAnalyze = (isDemo: boolean = false) => {
@@ -113,8 +175,14 @@ export function ImageUpload({
           onDrop={(e) => { e.preventDefault(); setDragActive(false); handleFile(e.dataTransfer.files[0]); }}
           onClick={() => !selectedImage && fileInputRef.current?.click()}
         >
-          {selectedImage ? (
-            <div className="relative w-full h-full">
+          {isProcessingImage ? (
+            <div className="text-center p-4">
+              <Loader2 className="w-10 h-10 text-brand-accent animate-spin mx-auto mb-4" />
+              <h3 className="text-sm font-bold text-brand-text">Optimizing image...</h3>
+              <p className="text-[10px] text-brand-text-muted mt-1">Converting & compressing for instant high-speed analysis</p>
+            </div>
+          ) : selectedImage ? (
+            <div className="relative w-full h-full animate-fade-in">
               <img src={selectedImage} alt="Preview" className="w-full h-full object-cover rounded-xl" />
               <button 
                 onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}

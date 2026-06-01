@@ -581,7 +581,7 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
       className="glass-card p-4 md:p-8 hover:border-brand-accent/50 transition-all group"
     >
       <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-brand-accent/10 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
-        {React.cloneElement(icon as React.ReactElement, { className: "w-4 h-4 md:w-6 md:h-6 text-brand-accent" })}
+        {React.cloneElement(icon as React.ReactElement<any>, { className: "w-4 h-4 md:w-6 md:h-6 text-brand-accent" })}
       </div>
       <h3 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3">{title}</h3>
       <p className="text-[10px] md:text-base text-brand-text-muted leading-relaxed line-clamp-3 md:line-clamp-none">{description}</p>

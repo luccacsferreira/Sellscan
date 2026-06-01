@@ -110,7 +110,7 @@ export function NotificationModal({
               <p className="text-[10px] font-medium text-brand-text-muted/60 leading-tight italic">
                 {isWarning 
                   ? "Try to upload a clearer photo with professional lighting or describe the item properties in the text field."
-                  : "Check the file format (PNG, JPG) and ensure it's less than 10MB."
+                  : "All formats are accepted (PNG, JPG, WebP, HEIC). Large files are automatically compressed on-the-fly."
                 }
               </p>
             </div>

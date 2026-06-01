@@ -632,7 +632,7 @@ function AppContent() {
     }
   };
 
-  if (isAuthInitializing && view !== 'auth-callback') {
+  if (isAuthInitializing && view !== 'auth-callback' && loadingUserInfo) {
     return (
       <div className="min-h-screen bg-brand-bg flex flex-col items-center justify-center p-6 text-brand-text">
         <motion.div 
@@ -640,51 +640,35 @@ function AppContent() {
           animate={{ opacity: 1, scale: 1 }}
           className="w-full max-w-sm glass-card p-10 bg-brand-bg border-brand-accent/20 text-center shadow-2xl relative overflow-hidden"
         >
-          {loadingUserInfo ? (
-            <div className="space-y-6">
-              <div className="relative mx-auto w-24 h-24">
-                <div className="absolute inset-0 rounded-full border-4 border-brand-accent/10" />
-                <div className="absolute inset-0 rounded-full border-4 border-brand-accent border-t-transparent animate-spin" />
-                <div className="absolute inset-0 p-1.5 flex items-center justify-center">
-                  <div className="w-full h-full rounded-full bg-brand-bg border border-brand-border overflow-hidden">
-                    {loadingUserInfo.avatar ? (
-                      <img src={loadingUserInfo.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-brand-accent/10">
-                        <Loader2 className="w-8 h-8 text-brand-accent animate-pulse" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-2xl font-black italic tracking-tight mb-1">
-                  {loadingUserInfo.name?.split(' ')[0] || 'Welcome back'}
-                </h2>
-                <div className="flex items-center justify-center gap-2 text-brand-accent font-bold text-[10px] uppercase tracking-[0.2em]">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  Logging you in
-                </div>
-                <div className="mt-4 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-brand-text-muted text-[10px] inline-block font-bold">
-                  {loadingUserInfo.email}
+          <div className="space-y-6">
+            <div className="relative mx-auto w-24 h-24">
+              <div className="absolute inset-0 rounded-full border-4 border-brand-accent/10" />
+              <div className="absolute inset-0 rounded-full border-4 border-brand-accent border-t-transparent animate-spin" />
+              <div className="absolute inset-0 p-1.5 flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-brand-bg border border-brand-border overflow-hidden">
+                  {loadingUserInfo.avatar ? (
+                    <img src={loadingUserInfo.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-brand-accent/10">
+                      <Loader2 className="w-8 h-8 text-brand-accent animate-pulse" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="relative mx-auto w-16 h-16">
-                <div className="absolute inset-0 rounded-full border-4 border-brand-accent/20" />
-                <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-brand-accent border-t-transparent animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-brand-accent" />
-                </div>
+            <div>
+              <h2 className="text-2xl font-black italic tracking-tight mb-1">
+                {loadingUserInfo.name?.split(' ')[0] || 'Welcome back'}
+              </h2>
+              <div className="flex items-center justify-center gap-2 text-brand-accent font-bold text-[10px] uppercase tracking-[0.2em]">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Logging you in
               </div>
-              <div className="text-center">
-                <img src={sellscanLogo} alt="Sellscan" className="h-4 mx-auto mb-2 opacity-80" />
-                <p className="text-brand-text-muted text-[10px] font-black uppercase tracking-[0.2em] opacity-50">Initializing Secure Session</p>
+              <div className="mt-4 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-brand-text-muted text-[10px] inline-block font-bold">
+                {loadingUserInfo.email}
               </div>
             </div>
-          )}
+          </div>
         </motion.div>
       </div>
     );
