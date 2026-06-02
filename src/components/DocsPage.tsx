@@ -32,6 +32,7 @@ const SECTIONS: Section[] = [
 
 export function DocsPage({ onBack }: { onBack: () => void }) {
   const [activeSection, setActiveSection] = useState('getting-started');
+  const [activePolicySubTab, setActivePolicySubTab] = useState('terms');
 
   return (
     <div className="flex flex-col md:flex-row min-h-[calc(100vh-80px)] bg-brand-bg text-brand-text">
@@ -82,15 +83,15 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
           <div className="pt-8 border-t border-brand-border/40">
             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-text-muted/40 mb-4 px-4">Resources</h3>
             <div className="space-y-1">
-              <a 
-                href="mailto:support@trysellscan.com" 
-                className="flex items-center gap-3.5 px-4 py-3 text-[13px] font-bold text-brand-text-muted hover:text-brand-text transition-colors rounded-xl hover:bg-white/5"
+              <button 
+                onClick={() => alert("To submit an official support ticket, please sign in and access the secure interactive Support desk located in your User Dashboard profile settings. Our agents respond within 24 hours.")}
+                className="w-full flex items-center gap-3.5 px-4 py-3 text-[13px] font-bold text-brand-text-muted hover:text-brand-text transition-colors rounded-xl hover:bg-white/5 text-left cursor-pointer"
               >
                 <div className="text-brand-text-muted/30">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 Support Ticket
-              </a>
+              </button>
               <button 
                 className="w-full flex items-center gap-3.5 px-4 py-3 text-[13px] font-bold text-brand-text-muted hover:text-brand-text transition-colors rounded-xl hover:bg-white/5"
               >
@@ -219,29 +220,189 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
           )}
 
           {activeSection === 'policies' && (
-            <div className="max-w-3xl space-y-12">
+            <div className="max-w-4xl space-y-10">
               <div>
-                <h1 className="text-4xl font-black mb-4">Policies</h1>
-                <p className="text-brand-text-muted text-lg">Terms of service and privacy information for Sellscan users.</p>
+                <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tighter">Policies & Legal Compliance</h1>
+                <p className="text-brand-text-muted text-lg max-w-2xl">
+                  Please review our comprehensive, binding terms and compliance mechanisms protecting user intellectual property, secure transaction pipelines, and privacy bounds.
+                </p>
               </div>
 
-              <div className="space-y-10">
-                <PolicySection 
-                  title="Data Usage" 
-                  content="Any images uploaded to Sellscan are processed by our AI models (Gemini/OpenAI) to generate analysis. Images are stored securely and are only accessible by you. We do not sell your data to third parties."
-                />
-                <PolicySection 
-                  title="Fair Use" 
-                  content="Credits are provided based on your subscription tier. Automated scraping or use of the application through bots is strictly prohibited and will result in account suspension."
-                />
-                <PolicySection 
-                  title="Refunds" 
-                  content="As our product provides immediate intangible value through AI processing, refunds are generally not provided for credits already consumed. You can cancel your subscription at any time to avoid future charges."
-                />
-                <PolicySection 
-                  title="AI Accuracy" 
-                  content="While our AI provides highly accurate market insights, all price estimates and authenticity checks are for information purposes only. Final selling decisions are the responsibility of the user."
-                />
+              {/* Sub-tabs buttons */}
+              <div className="flex flex-wrap gap-2 border-b border-brand-border pb-1">
+                {[
+                  { id: 'terms', label: 'Terms of Service' },
+                  { id: 'privacy', label: 'Privacy Policy' },
+                  { id: 'data', label: 'Data & AI Usage' },
+                  { id: 'cookies', label: 'Cookie Declaration' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActivePolicySubTab(tab.id)}
+                    className={cn(
+                      "px-5 py-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 relative -mb-[2px] cursor-pointer",
+                      activePolicySubTab === tab.id
+                        ? "border-brand-accent text-brand-accent"
+                        : "border-transparent text-brand-text-muted hover:text-brand-text"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Policy viewer panel */}
+              <div className="glass-card p-6 md:p-10 bg-brand-card/20 border-brand-border/40 rounded-3xl space-y-6 text-sm text-brand-text-muted leading-relaxed max-w-none">
+                
+                {activePolicySubTab === 'terms' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-brand-border pb-4">
+                      <h2 className="text-xl font-black text-brand-text tracking-tight uppercase">Terms of Service</h2>
+                      <span className="text-[10px] font-mono bg-brand-accent/10 text-brand-accent px-2 py-1 rounded">VERSION 2.2</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted italic">Last updated: June 2, 2026</p>
+                    <p>
+                      Welcome to <strong>trysellscan.com</strong> (“the Sellscan Platform”, “the Service”). By accessing, registering an account, capturing images, executing scans, or committing transactions with Sellscan Inc., you agree to be bound by these Terms of Service. If you do not accept these term clauses, you must suspend your access to the platform immediately.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">1. Scope of Service & Platform License</h3>
+                    <p>
+                      Sellscan utilizes advanced vision-language deep learning pipelines (including Google Gemini API nodes) to categorize, identify, assess, and suggest list parameters for fashion apparel, collectibles, rare vintage products, electronics, and standard retail items. Sellscan grants you a non-commercial, revocable, personal license to utilize our client-facing scanner modules and inventory manager panel according to standard usage quotas.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">2. Account Safety & Subscriptions</h3>
+                    <p>
+                      Access to specific processing thresholds (including Basic and Premium modules) requires secure account registration managed securely via Supabase Authentication. You must maintain confidential control over your sign-on credentials. Subscriptions operate on a persistent recurring billing baseline corresponding to your subscription cycle (Monthly or Yearly) and are processed exclusively via <strong>Stripe Certified Payment Gateway</strong>.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">3. Fair Allocation, Rate Limits & System Abuse</h3>
+                    <p>
+                      Platform resources are strictly metered based on credits. Subscriptions operate under automatic credit allocation ceilings to maintain optimal server response times and guarantee latency consistency for all creators. Running script-based automated screen scrapers, reverse-engineering API endpoints, or launching heavy batch-upload spiders from personal clients is strictly prohibited and constitutes immediate grounds for profile termination and credit forfeiture.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">4. Disclaimers: Market Valuation Estimates & AI Limitation</h3>
+                    <p>
+                      All returned valuation guidelines, suggested marketplace targets, sweet-spot pricing indexes, and text drafts are generated via neural-network heuristic approximations. <strong>Sellscan does not guarantee, represent, or warrant that physical scanned items will fetch specific financial rewards in secondary markets.</strong> Re-selling involves inherent visual and monetary risk; you agree that Sellscan owns zero liability for pricing choices, inventory transactions, or losses occurred on Etsy, eBay, Vinted, Wallapop, Depop, or any secondary trade websites.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">5. Customer Support & Official Contacts</h3>
+                    <p>
+                      For active billing queries, credit rectifications, or customer service support, please submit an official message directly through the <strong>Support channel inside your User profile dashboard</strong>. All commercial operations are structured exclusively under Delaware, United States governing system.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">6. Jurisdiction & Severe Terms</h3>
+                    <p>
+                      These terms are governed by and construed in accordance with the laws of Delaware, United States, without regard to its conflict of law provisions. Claims and disputes shall be settled exclusively in courts located inside that jurisdiction.
+                    </p>
+                  </div>
+                )}
+
+                {activePolicySubTab === 'privacy' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-brand-border pb-4">
+                      <h2 className="text-xl font-black text-brand-text tracking-tight uppercase">Privacy Policy</h2>
+                      <span className="text-[10px] font-mono bg-brand-accent/10 text-brand-accent px-2 py-1 rounded">VERSION 2.2</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted italic">Last updated: June 2, 2026</p>
+                    <p>
+                      At Sellscan, we hold client data integrity in the highest regard, designing secure image transmission channels and establishing standard structures to comply fully with the GDPR (General Data Protection Regulation) and California Consumer Privacy Act (CCPA).
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">1. Personal Information We Collect</h3>
+                    <ul className="list-disc pl-6 space-y-2">
+                      <li><strong>Identity Records:</strong> Authenticated email addresses and user unique identifiers (UUIDs) registered through Supabase Auth.</li>
+                      <li><strong>Image Uploads:</strong> Item visuals uploaded to the scanner. These images are optimized and cleaned of sensitive EXIF parameters automatically before processing.</li>
+                      <li><strong>Transaction Metadata:</strong> Stripe receipt logs, billing intervals, and transaction state tokens. Raw proprietary credit card numbers never traverse our databases.</li>
+                    </ul>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">2. Processing, Transmission, & AI Services</h3>
+                    <p>
+                      Visual files are cached in certified cloud object buckets and dispatched to AI servers (Google Gemini services) through secure proxies. Please consult our Data Usage & AI Policy to understand how these elements are strictly decoupled from general public retraining loops.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">3. Children's Privacy Protection (COPPA Compliance)</h3>
+                    <p>
+                      <strong>Sellscan’s visual scanner tools and subscription systems are built strictly for individuals aged 13 and older.</strong> We do not knowingly compile, request, or keep personal parameters or images representing individuals under the age of 13. If you believe a child under 13 has registered or dispatched data, please alert us through our official support chat or dashboard, and we will delete all corresponding account details securely and permanently.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">4. CCPA / GDPR Data Choices & Consumer Rights</h3>
+                    <p>
+                      We fully support global information rights. You can:
+                      <br />• Request complete export of all database entries associated with your Supabase identifier.
+                      <br />• Modify incorrect profile details.
+                      <br />• Initiate complete, irreversible accounts and scan history wipes directly through the User Profile Settings menu.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">5. Privacy Support Inquiries</h3>
+                    <p>
+                      For privacy-focused inquiries, please contact our privacy compliance group via the interactive Support center inside your User Profile dashboard, or execute a complete purge using in-app settings.
+                    </p>
+                  </div>
+                )}
+
+                {activePolicySubTab === 'data' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-brand-border pb-4">
+                      <h2 className="text-xl font-black text-brand-text tracking-tight uppercase">Data Usage & AI Policy</h2>
+                      <span className="text-[10px] font-mono bg-brand-accent/10 text-brand-accent px-2 py-1 rounded">VERSION 2.2</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted italic">Last updated: June 2, 2026</p>
+                    <p>
+                      This special document outlines how Sellscan handles visual coordinates, user-submitted media, generated descriptions, and machine learning pipelines without compromising intellectual capital or user transparency.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">1. Zero Foundational LLM Retraining</h3>
+                    <p>
+                      We enforce zero-retraining guidelines in our API service contracts: <strong>No photo uploads, description edits, listing edits, or pricing adjustments processed on Sellscan are ever utilized by downstream suppliers to train or refine public foundation models.</strong> Your business insights remain your exclusive competitive edge.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">2. Sanitization & EXIF Sweeper</h3>
+                    <p>
+                      Image files are compressed, scaled, and stripped of geographical coordinate stamps on the client-side or during initial ingestion. This prevents the dissemination of home or location-specific telemetry while keeping your uploads fast over standard wireless connections.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">3. Automated Individual Decision-making Disclaimer</h3>
+                    <p>
+                      Our visual agents employ automated categorization to offer appraising guidelines, but final commercial decisions are entirely human-guided. The platform provides recommendations solely as informational guidelines, and we encourage users to verify appraisals manually before settling transactions on external trade systems.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">4. Intellectual Ownership of AI Outputs</h3>
+                    <p>
+                      Every generated listing title, descriptive draft, and bulleted platform proposal is 100% owned by the creator. You possess unrestricted copyright privileges to copy, publish, modify, or export these files for commercial sale across Etsy, eBay, Vinted, Vestiaire Collective, Wallapop, Depop, or custom online storefronts.
+                    </p>
+                  </div>
+                )}
+
+                {activePolicySubTab === 'cookies' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b border-brand-border pb-4">
+                      <h2 className="text-xl font-black text-brand-text tracking-tight uppercase">Cookie Declaration</h2>
+                      <span className="text-[10px] font-mono bg-brand-accent/10 text-brand-accent px-2 py-1 rounded">VERSION 2.2</span>
+                    </div>
+                    <p className="text-xs text-brand-text-muted italic">Last updated: June 2, 2026</p>
+                    <p>
+                      We utilize cookies and browser storage with absolute restriction, reserving digital tracking exclusively for critical platform capabilities.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">1. Essential Operational Variables</h3>
+                    <p>
+                      These local instances are strictly necessary for the website to load:
+                      <br />• <strong>Security & Auth:</strong> Supabase session identifiers and tokens to keep you authorized during uploads.
+                      <br />• <strong>Preference Storage:</strong> Saved defaults such as your localized default currency values, last scanned filters, and theme configuration (light/dark) cached inside localStorage.
+                      <br />• <strong>Partner Allocation:</strong> Unique referral variables recorded locally to correctly credit active contributors if a premium tier is purchased.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">2. Zero Cross-Site Ad Tracking Cookies</h3>
+                    <p>
+                      <strong>trysellscan.com does not deploy marketing pixels, cross-site behavior trackers, or third-party ad network cookies.</strong> We do not sell your browsing patterns, inventory classifications, or platform coordinates to advertising brokers.
+                    </p>
+
+                    <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">3. Direct Control Options</h3>
+                    <p>
+                      You can change your browser settings to reject cookies entirely or clear your browser's localStorage at any point. Note that clearing operational tokens will sign you out and require credentials on your next session.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
