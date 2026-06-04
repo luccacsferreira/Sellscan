@@ -203,7 +203,7 @@ export function SettingsPage({
               <div>
                 <p className="text-sm font-bold">Current Plan</p>
                 <div className="flex gap-2 mt-1">
-                  {(['free', 'basic', 'premium'] as AIPlan[]).map(p => (
+                  {(['free', 'basic', 'reseller', 'entrepreneur'] as AIPlan[]).map(p => (
                     <button 
                       key={p}
                       onClick={() => {
@@ -387,8 +387,14 @@ function PipelineStep({ title, description, currentId, onSelect, plan }: {
       </div>
       <div className="grid grid-cols-1 gap-2">
         {AI_MODELS.map(m => {
-          const isLocked = (plan === 'free' && m.minPlan !== 'free') || 
-                          (plan === 'basic' && m.minPlan === 'premium');
+          const tierRanking: Record<AIPlan, number> = {
+            free: 0,
+            basic: 1,
+            reseller: 2,
+            entrepreneur: 3
+          };
+          
+          const isLocked = tierRanking[plan] < tierRanking[m.minPlan];
           return (
             <button
               key={m.id}

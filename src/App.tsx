@@ -397,13 +397,17 @@ function AppContent() {
       // Sync from Supabase using dbService
       const fetchData = async () => {
         try {
-          const [projectsData, scansData] = await Promise.all([
+          const [projectsData, scansData, profileData] = await Promise.all([
             dbService.getProjects(),
-            dbService.getScans()
+            dbService.getScans(),
+            dbService.getProfile()
           ]);
           
           if (projectsData) setProjects(projectsData);
           if (scansData) setHistory(scansData);
+          if (profileData?.tier) {
+            setPlan(profileData.tier as AIPlan);
+          }
         } catch (e) {
           console.error("Failed to sync from database", e);
         }

@@ -196,8 +196,8 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
                         <tr className="bg-white/5 border-b border-brand-border font-bold uppercase tracking-widest text-[10px] text-brand-text-muted">
                           <th className="px-6 py-5">Feature</th>
                           <th className="px-6 py-5">Explorer</th>
-                          <th className="px-6 py-5">Reseller</th>
-                          <th className="px-6 py-5 text-brand-accent">Founder</th>
+                          <th className="px-6 py-5">Basic</th>
+                          <th className="px-6 py-5 text-brand-accent">Reseller</th>
                           <th className="px-6 py-5">Entrepreneur</th>
                         </tr>
                       </thead>
@@ -218,13 +218,13 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
                   <div className="glass-card p-8 bg-brand-card/10 border-brand-border/40 space-y-4">
                     <h3 className="text-lg font-black text-brand-accent uppercase tracking-widest">Why Upgrade?</h3>
                     <p className="text-brand-text-muted leading-relaxed font-medium">
-                      The free <strong>Explorer</strong> tier is meant for casual decluttering. If you flip items regularly, the <strong>Reseller</strong> plan pays for itself with improved pricing accuracy and automated listing generation. 
+                      The free <strong>Explorer</strong> tier is meant for casual decluttering. If you flip items regularly, the <strong>Basic</strong> plan pays for itself with improved pricing accuracy and automated listing generation. 
                     </p>
                   </div>
                   <div className="glass-card p-8 bg-brand-accent/5 border-brand-accent/20 space-y-4">
-                    <h3 className="text-lg font-black text-brand-accent uppercase tracking-widest">Founder Benefits</h3>
+                    <h3 className="text-lg font-black text-brand-accent uppercase tracking-widest">Reseller Benefits</h3>
                     <p className="text-brand-text-muted leading-relaxed font-medium">
-                      Our <strong>Founder</strong> tier unlocks full access to the AI Chat assistant, allowing you to refine listings, ask for cross-platform pricing, and get deeper profit analysis on every scan.
+                      Our <strong>Reseller</strong> tier unlocks full access to the AI Chat assistant, allowing you to refine listings, ask for cross-platform pricing, and get deeper profit analysis on every scan.
                     </p>
                   </div>
                 </div>
@@ -453,7 +453,7 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
                       These local instances are strictly necessary for the website to load:
                       <br />• <strong>Security & Auth:</strong> Supabase session identifiers and tokens to keep you authorized during uploads.
                       <br />• <strong>Preference Storage:</strong> Saved defaults such as your localized default currency values, last scanned filters, and theme configuration (light/dark) cached inside localStorage.
-                      <br />• <strong>Partner Allocation:</strong> Unique referral variables recorded locally to correctly credit active contributors if a premium tier is purchased.
+                      <br />• <strong>Partner Allocation:</strong> Unique referral variables recorded locally to correctly credit active contributors if a paid plan is purchased.
                     </p>
 
                     <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono pt-4">2. Zero Cross-Site Ad Tracking Cookies</h3>

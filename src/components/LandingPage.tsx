@@ -9,7 +9,7 @@ import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { PricingCard } from './PricingCard';
-
+import { getPriceId } from '../lib/stripe';
 import af1Example from '../assets/Example_Image.jpeg';
 import clothesImg from '../assets/clothes.png';
 import voiceImg from '../assets/voice.png';
@@ -27,16 +27,6 @@ import glassesImg from '../assets/glasses.png';
 import shoeImg from '../assets/612eQB-fcqL._AC_UF894,1000_QL80_.png';
 import slImg from '../assets/s-l400.png';
 import clocksImg from '../assets/antique-clocks.png';
-
-// Configuration for Stripe Price IDs
-const STRIPE_PRICES = {
-  RESELLER_MONTHLY: 'price_reseller_monthly',
-  RESELLER_YEARLY: 'price_reseller_yearly',
-  FOUNDER_MONTHLY: 'price_founder_monthly',
-  FOUNDER_YEARLY: 'price_founder_yearly',
-  ENTREPRENEUR_MONTHLY: 'price_entrepreneur_monthly',
-  ENTREPRENEUR_YEARLY: 'price_entrepreneur_yearly',
-};
 
 interface LandingPageProps {
   onStart: () => void;
@@ -81,17 +71,10 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
         return;
       }
 
-      let priceId = '';
-      if (tier === 'Reseller') {
-        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.RESELLER_MONTHLY : STRIPE_PRICES.RESELLER_YEARLY;
-      } else if (tier === 'Founder') {
-        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.FOUNDER_MONTHLY : STRIPE_PRICES.FOUNDER_YEARLY;
-      } else if (tier === 'Entrepreneur') {
-        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.ENTREPRENEUR_MONTHLY : STRIPE_PRICES.ENTREPRENEUR_YEARLY;
-      }
+      let priceId = getPriceId(tier, billingCycle);
 
-      if (priceId.includes('price_')) {
-        alert("Action Required: Please copy your actual Price IDs from Stripe into LandingePage.tsx (STRIPE_PRICES constant).");
+      if (!priceId) {
+        alert("Action Required: This tier or billing cycle is not configured with a Price ID yet.");
         setLoadingTier(null);
         return;
       }
@@ -404,19 +387,23 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
         </motion.div>
 
         <div className="flex justify-center mb-16">
-          <div className="bg-white/50 dark:bg-brand-card/30 p-1.5 rounded-2xl border border-slate-200 dark:border-brand-border/60 flex flex-col items-center gap-4">
-            <div className="flex gap-1">
+          <div className="bg-brand-card/80 p-1.5 rounded-2xl border border-brand-border flex flex-col items-center gap-4 shadow-sm">
+            <div className="flex gap-1.5">
               <button 
                 onClick={() => setBillingCycle('yearly')}
                 className={cn(
                   "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer",
-                  billingCycle === 'yearly' ? "bg-brand-accent text-slate-900 shadow-lg" : "text-slate-500 hover:text-slate-900"
+                  billingCycle === 'yearly' 
+                    ? "bg-brand-accent text-slate-950 shadow-md font-extrabold" 
+                    : "text-brand-text-muted hover:text-brand-text"
                 )}
               >
                 Yearly Billing
                 <span className={cn(
-                  "text-[9px] px-2 py-0.5 rounded-md font-bold",
-                  billingCycle === 'yearly' ? "bg-white/20 text-slate-900" : "bg-brand-accent/10 text-brand-accent"
+                  "text-[9px] px-2 py-0.5 rounded-md font-black tracking-normal transition-colors",
+                  billingCycle === 'yearly' 
+                    ? "bg-white text-slate-900 dark:bg-slate-900 dark:text-white shadow-sm border border-black/5" 
+                    : "bg-brand-accent/15 text-brand-accent border border-brand-accent/10"
                 )}>
                   -31% SAVINGS
                 </span>
@@ -425,7 +412,9 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                 onClick={() => setBillingCycle('monthly')}
                 className={cn(
                   "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all cursor-pointer",
-                  billingCycle === 'monthly' ? "bg-brand-accent text-slate-900 shadow-lg" : "text-slate-500 hover:text-slate-900"
+                  billingCycle === 'monthly' 
+                    ? "bg-brand-accent text-slate-950 shadow-md font-extrabold" 
+                    : "text-brand-text-muted hover:text-brand-text"
                 )}
               >
                 Monthly
@@ -470,9 +459,9 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              isLoading={loadingTier === 'Free'}
           />
 
-          {/* Reseller Plan */}
+          {/* Basic Plan */}
           <PricingCard 
-             tier="Reseller"
+             tier="Basic"
              description="For regular flippers hitting local shops."
              priceLabel="$0.99"
              originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
@@ -485,40 +474,40 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                { text: "Basic AI chat usage", included: true },
                { text: "Claude Haiku Support", included: true },
              ]}
-             cta="Get Reseller"
+             cta="Get Basic"
              variant="primary"
              isActive={hoveredIndex === 1}
              isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(1)}
              onLeave={() => setHoveredIndex(null)}
-             onAction={() => handleCheckout('Reseller')}
-             isLoading={loadingTier === 'Reseller'}
+             onAction={() => handleCheckout('Basic')}
+             isLoading={loadingTier === 'Basic'}
           />
 
-          {/* Founder Plan - Most Popular */}
+          {/* Reseller Plan - Most Popular */}
           <PricingCard 
-             tier="Founder"
+             tier="Reseller"
              description="High-volume intelligence for professionals."
              priceLabel={billingCycle === 'monthly' ? '$3.99' : '$1.99'}
              originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
              credits="120 Credits / Month"
              popular
              features={[
-               { text: "Everything in Reseller", included: true },
+               { text: "Everything in Basic", included: true },
                { text: "Advanced Market Analysis", included: true },
                { text: "Demand & Profit Insights", included: true },
                { text: "Priority Server Processing", included: true },
                { text: "Full Chatbot access", included: true },
                { text: "More AI Listing drafts", included: true },
              ]}
-             cta="Get Founder"
+             cta="Get Reseller"
              variant="accent"
              isActive={hoveredIndex === 2}
              isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(2)}
              onLeave={() => setHoveredIndex(null)}
-             onAction={() => handleCheckout('Founder')}
-             isLoading={loadingTier === 'Founder'}
+             onAction={() => handleCheckout('Reseller')}
+             isLoading={loadingTier === 'Reseller'}
           />
 
           {/* Entrepreneur Plan */}
@@ -529,7 +518,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
              credits="300 Credits / Month"
              features={[
-               { text: "Everything in Founder", included: true },
+               { text: "Everything in Reseller", included: true },
                { text: "No Daily Limits", included: true },
                { text: "Landing Page Builder (5 credits)", included: true },
                { text: "Marketing Copy Generator", included: true },
@@ -715,7 +704,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                       These local instances are strictly necessary for the website to load:
                       <br />• <strong>Security & Auth:</strong> Supabase session identifiers and tokens to keep you authorized during uploads.
                       <br />• <strong>Preference Storage:</strong> Saved defaults such as your localized default currency values, last scanned filters, and theme configuration (light/dark) cached inside localStorage.
-                      <br />• <strong>Partner Allocation:</strong> Unique referral variables recorded locally to correctly credit active contributors if a premium tier is purchased.
+                      <br />• <strong>Partner Allocation:</strong> Unique referral variables recorded locally to correctly credit active contributors if a paid plan is purchased.
                     </p>
 
                     <h3 className="text-base font-bold text-brand-text uppercase tracking-wider font-mono mt-4">2. Zero Cross-Site Ad Tracking Cookies</h3>

@@ -18,7 +18,7 @@ export interface PracticalTip {
   description: string;
 }
 
-export type AIPlan = 'free' | 'basic' | 'premium';
+export type AIPlan = 'free' | 'basic' | 'reseller' | 'entrepreneur';
 
 export type AIModelId = 
   | 'gemini-1.5-flash' 

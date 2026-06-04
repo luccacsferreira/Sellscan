@@ -193,7 +193,7 @@ export function DiscountTimer({ variant = 'full', onClose }: DiscountTimerProps)
             Exclusive Launch Discount
           </h2>
           <p className="text-blue-700/80 text-sm mb-8 max-w-md font-semibold leading-relaxed">
-            Lock in your lifetime "Founder" rates before the timer hits zero. 
+            Lock in your lifetime "Reseller" rates before the timer hits zero. 
             Save up to 31% on all annual plans. Fully offline-resilient countdown enabled.
           </p>
 

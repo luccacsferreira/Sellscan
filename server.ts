@@ -224,14 +224,39 @@ async function startServer() {
         // Example mapping - Replace these with your actual Price IDs once you have them
         const priceId = session.metadata?.priceId || session.line_items?.data[0]?.price?.id || "";
         
-        // Match against your actual Stripe Price IDs
-        const isPremium = priceId === 'price_1TX3f0RCzE4WmLf5519Kp8zO' || priceId === 'price_1TX3jjRCzE4WmLf59KuysZhL';
-        const isBasic = priceId === 'price_1TX3cnRCzE4WmLf5UJseWbYZ' || priceId === 'price_1TX3iCRCzE4WmLf5fwXNkaBB';
+        // Match against actual Stripe Price IDs
+        const basicPriceIds = [
+          'price_1TeaH3RCzE4WmLf5ptaXAskM',
+          'price_1TeIc0RCzE4WmLf5kaoHFt9z',
+          'price_1TeaHrRCzE4WmLf53aVjR8jV',
+          'price_1TeIdORCzE4WmLf5PYHevCKT',
+          'price_1TX3cnRCzE4WmLf5UJseWbYZ',
+          'price_1TX3iCRCzE4WmLf5fwXNkaBB'
+        ];
+        
+        const resellerPriceIds = [
+          'price_1TeaJ7RCzE4WmLf5GFIP8o7V',
+          'price_1TeIfORCzE4WmLf5XyoIptU3',
+          'price_1TeaK2RCzE4WmLf5IdNCB8M5',
+          'price_1TeIhZRCzE4WmLf54arqUdNi',
+          'price_1TX3f0RCzE4WmLf5519Kp8zO',
+          'price_1TX3jjRCzE4WmLf59KuysZhL'
+        ];
 
-        if (isPremium) {
+        const entrepreneurPriceIds = [
+          'price_1TeaL7RCzE4WmLf5xOmRk72E',
+          'price_1TeIjuRCzE4WmLf5qLJn3MvC',
+          'price_1TeaM5RCzE4WmLf5pf4lB2KE',
+          'price_1TeIn6RCzE4WmLf5eXzi92yU'
+        ];
+
+        if (entrepreneurPriceIds.includes(priceId)) {
+          creditsToGrant = 300;
+          tier = 'entrepreneur';
+        } else if (resellerPriceIds.includes(priceId)) {
           creditsToGrant = 120;
-          tier = 'premium';
-        } else if (isBasic) {
+          tier = 'reseller';
+        } else if (basicPriceIds.includes(priceId)) {
           creditsToGrant = 40;
           tier = 'basic';
         }

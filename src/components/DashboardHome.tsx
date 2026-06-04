@@ -22,6 +22,7 @@ import { supabase } from '../lib/supabase';
 import { partnerService, PartnerLink } from '../services/partnerService';
 import { PricingCard } from './PricingCard';
 import { Zap } from 'lucide-react';
+import { getPriceId } from '../lib/stripe';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
@@ -63,6 +64,7 @@ export function DashboardHome({
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPartnerData = async () => {
@@ -81,6 +83,56 @@ export function DashboardHome({
     };
     fetchPartnerData();
   }, []);
+
+  const handleCheckout = async (tier: string) => {
+    if (tier === 'Explorer') {
+      onStartNewScan();
+      return;
+    }
+
+    try {
+      setLoadingTier(tier);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) return;
+
+      const priceId = getPriceId(tier, billingCycle);
+
+      if (!priceId) {
+        alert("Action Required: This tier or billing cycle is not configured with a Price ID yet.");
+        setLoadingTier(null);
+        return;
+      }
+
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId,
+          userId: session.user.id,
+          userEmail: session.user.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        try {
+          window.top!.location.href = data.url;
+        } catch (e) {
+          window.location.href = data.url;
+        }
+      }
+    } catch (err: any) {
+      console.error("❌ Checkout failed:", err);
+      alert(`Checkout Error: ${err.message}`);
+      setLoadingTier(null);
+    }
+  };
 
   const handleCopy = (code: string) => {
     const url = `${window.location.origin}/${code}`;
@@ -334,9 +386,14 @@ export function DashboardHome({
               />
             </button>
             <div className="flex items-center gap-2">
-              <span className={cn("text-xs font-bold transition-colors", billingCycle === 'yearly' ? "text-brand-text" : "text-brand-text-muted")}>Yearly</span>
-              <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-                Save 31%
+              <span className={cn("text-xs font-bold transition-colors", billingCycle === 'yearly' ? "text-brand-text" : "text-brand-text-muted")}>Yearly Billing</span>
+              <span className={cn(
+                "text-[9px] px-2 py-0.5 rounded-md font-black tracking-normal transition-colors",
+                billingCycle === 'yearly' 
+                  ? "bg-white text-slate-900 dark:bg-slate-900 dark:text-white shadow-sm border border-black/5" 
+                  : "bg-brand-accent/15 text-brand-accent border border-brand-accent/10"
+              )}>
+                -31% SAVINGS
               </span>
             </div>
           </div>
@@ -361,10 +418,11 @@ export function DashboardHome({
              isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(0)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Explorer')}
           />
 
           <PricingCard 
-             tier="Reseller"
+             tier="Basic"
              description="For regular flippers."
              priceLabel="$0.99"
              originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
@@ -377,35 +435,39 @@ export function DashboardHome({
                { text: "Basic AI chat usage", included: true },
                { text: "Claude Haiku Support", included: true },
              ]}
-             cta="Get Reseller"
+             cta="Get Basic"
              variant="primary"
              isActive={hoveredIndex === 1}
              isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(1)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Basic')}
+             isLoading={loadingTier === 'Basic'}
           />
 
           <PricingCard 
-             tier="Founder"
+             tier="Reseller"
              description="For professionals."
              priceLabel={billingCycle === 'monthly' ? '$3.99' : '$1.99'}
              originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
              credits="120 Credits / Month"
              popular
              features={[
-               { text: "Everything in Reseller", included: true },
+               { text: "Everything in Basic", included: true },
                { text: "Advanced Market Analysis", included: true },
                { text: "Demand & Profit Insights", included: true },
                { text: "Priority Server Processing", included: true },
                { text: "Full Chatbot access", included: true },
                { text: "More AI Listing drafts", included: true },
              ]}
-             cta="Get Founder"
+             cta="Get Reseller"
              variant="accent"
              isActive={hoveredIndex === 2}
              isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(2)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Reseller')}
+             isLoading={loadingTier === 'Reseller'}
           />
 
           <PricingCard 
@@ -415,7 +477,7 @@ export function DashboardHome({
              originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
              credits="300 Credits / Month"
              features={[
-               { text: "Everything in Founder", included: true },
+               { text: "Everything in Reseller", included: true },
                { text: "No Daily Limits", included: true },
                { text: "Landing Page Builder", included: true },
                { text: "Marketing Copy Generator", included: true },
@@ -428,6 +490,8 @@ export function DashboardHome({
              isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(3)}
              onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Entrepreneur')}
+             isLoading={loadingTier === 'Entrepreneur'}
           />
         </div>
       </section>

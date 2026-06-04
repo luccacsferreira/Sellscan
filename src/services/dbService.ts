@@ -30,6 +30,23 @@ export const dbService = {
   },
 
   /**
+   * Fetch current user profile
+   */
+  async getProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
+  /**
    * Create a new project
    */
   async createProject(project: Omit<Project, 'id' | 'createdAt'>) {
