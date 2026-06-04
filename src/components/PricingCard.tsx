@@ -13,6 +13,7 @@ interface PricingCardProps {
   popular?: boolean;
   credits: string;
   isActive: boolean;
+  isAnyHovered: boolean;
   onHover: () => void;
   onLeave: () => void;
   onAction?: () => void;
@@ -30,6 +31,7 @@ export function PricingCard({
   popular, 
   credits,
   isActive,
+  isAnyHovered,
   onHover,
   onLeave,
   onAction,
@@ -47,16 +49,20 @@ export function PricingCard({
       className={cn(
         "bg-white dark:bg-brand-card/90 p-8 lg:p-10 relative flex flex-col transition-all duration-500 group overflow-visible border rounded-[2.5rem] w-[85vw] sm:w-[320px] lg:w-auto shrink-0 snap-center",
         isActive 
-          ? "border-brand-accent/50 shadow-[0_20px_50px_-20px_rgba(85,205,209,0.3)] lg:scale-[1.02] z-10 ring-1 ring-brand-accent/20" 
-          : "border-slate-100 dark:border-brand-border/40"
+          ? "border-brand-accent shadow-[0_0_60px_-10px_rgba(85,205,209,0.6)] lg:scale-[1.08] z-20 ring-2 ring-brand-accent/40" 
+          : isAnyHovered 
+            ? "border-slate-100 dark:border-brand-border/20 opacity-40 blur-[2px] lg:scale-[0.95] grayscale-[0.5]" 
+            : (popular 
+                ? "border-brand-accent/50 shadow-[0_0_40px_-10px_rgba(85,205,209,0.4)] z-10" 
+                : "border-slate-100 dark:border-brand-border/40 hover:border-brand-accent/20")
       )}
     >
       {popular && (
         <div className={cn(
           "absolute -top-[2px] left-0 right-0 h-10 rounded-t-[2.5rem] flex items-center justify-center text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 z-0",
-          isActive 
-            ? "bg-brand-accent text-slate-900"
-            : "bg-slate-100 text-slate-400"
+          isActive || (!isAnyHovered && popular)
+            ? "bg-brand-accent text-slate-900 shadow-[0_-10px_20px_-5px_rgba(85,205,209,0.3)]"
+            : "bg-slate-100 dark:bg-brand-border/40 text-slate-400 dark:text-brand-text-muted/40"
         )}>
           Most Popular
         </div>
@@ -66,7 +72,7 @@ export function PricingCard({
         <div className="flex items-center justify-between mb-3">
           <h3 className={cn(
             "text-2xl font-bold tracking-tight mb-2 transition-all duration-300", 
-            isActive ? "text-slate-900" : "text-slate-700"
+            isActive || (!isAnyHovered && popular) ? "text-slate-900" : "text-slate-700"
           )}>
             {tier}
           </h3>
@@ -89,7 +95,7 @@ export function PricingCard({
 
         <div className={cn(
           "inline-flex items-center gap-2 px-4 py-1.5 rounded-xl transition-all duration-300 border font-bold text-[11px] uppercase tracking-wider",
-          isActive 
+          isActive || (!isAnyHovered && popular)
             ? "bg-brand-accent/10 border-brand-accent/20 text-brand-accent" 
             : "bg-slate-50 border-slate-100 text-slate-400"
         )}>
@@ -105,7 +111,7 @@ export function PricingCard({
           <div key={i} className={cn(
             "flex items-start gap-4 text-[13px] transition-all duration-300 font-medium",
             f.included 
-              ? (isActive ? "text-slate-900" : "text-slate-600") 
+              ? (isActive || (!isAnyHovered && popular) ? "text-slate-900" : "text-slate-600") 
               : "text-slate-300 dark:text-brand-text-muted/20"
           )}>
             <div className={cn(

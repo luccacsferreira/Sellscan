@@ -170,7 +170,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
             className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 md:mb-8 leading-[0.95] max-w-4xl mx-auto"
           >
             Scan any product. <br />
-            <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-r from-brand-accent to-brand-accent/60">Know exactly</span> <br />
+            <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-b from-brand-accent to-brand-accent/80 pb-4 inline-block">Know exactly</span> <br />
             how to sell it.
           </motion.h1>
 
@@ -434,15 +434,6 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           </div>
         </div>
 
-        <div className="max-w-2xl mx-auto text-center mb-12">
-          <p className="text-xs font-bold text-brand-accent uppercase tracking-[0.2em] mb-2 flex items-center justify-center gap-2">
-            <Zap className="w-3 h-3 fill-current" /> Limited Time Launch Offer
-          </p>
-          <p className="text-slate-500 dark:text-brand-text-muted text-sm font-medium">
-            Lock in these rates within <span className="text-slate-900 dark:text-brand-text font-bold px-1.5 py-0.5 bg-brand-accent/10 rounded">48 hours</span> of account creation to secure lifetime savings.
-          </p>
-        </div>
-
         <motion.div 
           initial="initial"
           whileInView="animate"
@@ -454,7 +445,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
               }
             }
           }}
-          className="flex flex-row lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory gap-6 md:gap-4 items-stretch pb-32 -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-none"
+          className="flex flex-row lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory gap-6 md:gap-4 items-stretch py-24 pb-32 -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-none"
         >
           {/* Explorer Plan */}
           <PricingCard 
@@ -472,6 +463,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              cta="Get started free"
              variant="muted"
              isActive={hoveredIndex === 0}
+             isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(0)}
              onLeave={() => setHoveredIndex(null)}
              onAction={() => handleCheckout('Free')}
@@ -496,6 +488,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              cta="Get Reseller"
              variant="primary"
              isActive={hoveredIndex === 1}
+             isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(1)}
              onLeave={() => setHoveredIndex(null)}
              onAction={() => handleCheckout('Reseller')}
@@ -520,7 +513,8 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              ]}
              cta="Get Founder"
              variant="accent"
-             isActive={hoveredIndex === 2 || hoveredIndex === null}
+             isActive={hoveredIndex === 2}
+             isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(2)}
              onLeave={() => setHoveredIndex(null)}
              onAction={() => handleCheckout('Founder')}
@@ -545,6 +539,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              cta="Get Entrepreneur"
              variant="accent"
              isActive={hoveredIndex === 3}
+             isAnyHovered={hoveredIndex !== null}
              onHover={() => setHoveredIndex(3)}
              onLeave={() => setHoveredIndex(null)}
              onAction={() => handleCheckout('Entrepreneur')}
@@ -556,7 +551,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
       {/* Redesigned Premium High-End Footer */}
       <footer className="border-t border-brand-border/60 bg-[#0A0E12] py-16 md:py-20 relative overflow-hidden mt-20">
         {/* Soft elegant neon ambient glow behind logo */}
-        <div className="absolute -bottom-10 left-5 w-80 h-80 bg-brand-accent/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 relative z-10 space-y-12">
           

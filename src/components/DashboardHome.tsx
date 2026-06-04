@@ -62,6 +62,7 @@ export function DashboardHome({
   const [partnerLinks, setPartnerLinks] = useState<PartnerLink[]>([]);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchPartnerData = async () => {
@@ -341,7 +342,7 @@ export function DashboardHome({
           </div>
         </div>
 
-        <div className="flex flex-row lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory gap-6 md:gap-4 items-stretch pb-12 -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-none">
+        <div className="flex flex-row lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory gap-6 md:gap-4 items-stretch py-24 pb-32 -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-none">
           <PricingCard 
              tier="Explorer"
              description="Perfect for casual decluttering."
@@ -356,9 +357,10 @@ export function DashboardHome({
              ]}
              cta="Refresh Credits"
              variant="muted"
-             isActive={false}
-             onHover={() => {}}
-             onLeave={() => {}}
+             isActive={hoveredIndex === 0}
+             isAnyHovered={hoveredIndex !== null}
+             onHover={() => setHoveredIndex(0)}
+             onLeave={() => setHoveredIndex(null)}
           />
 
           <PricingCard 
@@ -377,9 +379,10 @@ export function DashboardHome({
              ]}
              cta="Get Reseller"
              variant="primary"
-             isActive={false}
-             onHover={() => {}}
-             onLeave={() => {}}
+             isActive={hoveredIndex === 1}
+             isAnyHovered={hoveredIndex !== null}
+             onHover={() => setHoveredIndex(1)}
+             onLeave={() => setHoveredIndex(null)}
           />
 
           <PricingCard 
@@ -399,9 +402,10 @@ export function DashboardHome({
              ]}
              cta="Get Founder"
              variant="accent"
-             isActive={true}
-             onHover={() => {}}
-             onLeave={() => {}}
+             isActive={hoveredIndex === 2}
+             isAnyHovered={hoveredIndex !== null}
+             onHover={() => setHoveredIndex(2)}
+             onLeave={() => setHoveredIndex(null)}
           />
 
           <PricingCard 
@@ -420,9 +424,10 @@ export function DashboardHome({
              ]}
              cta="Get Entrepreneur"
              variant="accent"
-             isActive={false}
-             onHover={() => {}}
-             onLeave={() => {}}
+             isActive={hoveredIndex === 3}
+             isAnyHovered={hoveredIndex !== null}
+             onHover={() => setHoveredIndex(3)}
+             onLeave={() => setHoveredIndex(null)}
           />
         </div>
       </section>
