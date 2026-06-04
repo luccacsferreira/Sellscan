@@ -32,6 +32,47 @@ function BlueCloud({ className, style, delay = 0, scale = 1 }: { className?: str
   );
 }
 
+// A beautiful horizontal traveling cloud component with undulating vertical drift
+function TravelingCloud({ 
+  top, 
+  bottom, 
+  delay = 0, 
+  duration = 20, 
+  scale = 1,
+  className,
+  yPattern = [0, -12, 18, -12, 0]
+}: { 
+  top?: string; 
+  bottom?: string; 
+  delay?: number; 
+  duration?: number; 
+  scale?: number;
+  className?: string;
+  yPattern?: number[];
+}) {
+  return (
+    <motion.div
+      initial={{ left: "-30%", y: 0, opacity: 0 }}
+      animate={{ 
+        left: ["-30%", "115%"],
+        y: yPattern,
+        opacity: [0, 0.45, 0.55, 0.45, 0],
+        scale: [scale, scale * 1.12, scale * 0.95, scale * 1.08, scale]
+      }}
+      transition={{ 
+        duration: duration, 
+        repeat: Infinity, 
+        ease: "linear",
+        delay: delay 
+      }}
+      className={cn("absolute pointer-events-none text-blue-200/50 fill-blue-100/40 filter drop-shadow-[0_8px_16px_rgba(59,130,246,0.12)] z-0", className)}
+      style={{ top, bottom }}
+    >
+      <Cloud className="w-full h-full fill-current" />
+    </motion.div>
+  );
+}
+
 export function DiscountTimer({ variant = 'full', onClose }: DiscountTimerProps) {
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
   const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
@@ -108,84 +149,88 @@ export function DiscountTimer({ variant = 'full', onClose }: DiscountTimerProps)
   }
 
   return (
-    <div className="relative p-8 md:p-10 rounded-[2.5rem] bg-white border-2 border-blue-100/80 shadow-[0_20px_50px_rgba(59,130,246,0.18)] text-center flex flex-col items-center overflow-visible">
-      
-      {/* Surrounded by Beautiful Blue Clouds */}
-      <BlueCloud className="-top-12 -left-12 w-32 h-24" delay={0} scale={1.1} />
-      <BlueCloud className="-top-16 -right-12 w-36 h-28" delay={1.5} scale={1.0} />
-      <BlueCloud className="-bottom-12 -left-16 w-36 h-28" delay={0.7} scale={1.05} />
-      <BlueCloud className="-bottom-16 -right-10 w-32 h-24" delay={2.2} scale={0.95} />
-      <BlueCloud className="-left-20 top-1/3 w-28 h-20" delay={3.0} scale={0.9} />
-      <BlueCloud className="-right-20 top-1/2 w-28 h-20" delay={1.2} scale={0.9} />
+    <div className="relative w-full overflow-visible">
+      {/* 2-3 slow traveling, undulating background clouds crossing horizontally */}
+      <TravelingCloud top="-12%" duration={20} delay={0} scale={1.1} className="w-32 h-24" />
+      <TravelingCloud top="35%" duration={26} delay={5} scale={0.9} className="w-24 h-18" yPattern={[0, 15, -12, 10, 0]} />
+      <TravelingCloud bottom="-8%" duration={23} delay={10} scale={1.0} className="w-28 h-22" yPattern={[0, -10, 15, -8, 0]} />
 
-      {/* Internal decorative mini clouds for depth */}
-      <div className="absolute inset-x-0 bottom-0 top-0 overflow-hidden rounded-[2.3rem] pointer-events-none opacity-40">
-        <div className="absolute left-6 top-12 text-blue-100/60 w-16 h-12"><Cloud className="w-full h-full fill-current" /></div>
-        <div className="absolute right-12 bottom-16 text-blue-100/60 w-20 h-16"><Cloud className="w-full h-full fill-current" /></div>
-      </div>
+      {/* Subtle static matching framing clouds anchored at the corner borders */}
+      <BlueCloud className="-top-10 -left-6 w-24 h-18 opacity-45" delay={0} scale={1.0} />
+      <BlueCloud className="-bottom-8 -right-6 w-24 h-18 opacity-45" delay={1.5} scale={1.0} />
 
-      <div className="relative z-10 flex flex-col items-center">
+      {/* Main beautiful White Card Box */}
+      <div className="relative p-8 md:p-10 rounded-[2.5rem] bg-white border-2 border-blue-100/80 shadow-[0_20px_50px_rgba(59,130,246,0.18)] text-center flex flex-col items-center overflow-hidden z-10">
         
-        {/* Offline Protection / Status Badge */}
-        <div className="mb-5">
-          {isOffline ? (
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-black uppercase tracking-wider shadow-sm animate-pulse">
-              <WifiOff className="w-3.5 h-3.5" />
-              <span>Offline Mode • Live Timer Running</span>
-            </div>
-          ) : (
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-black uppercase tracking-wider shadow-sm">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Offline-Resilient Timer Active</span>
-            </div>
-          )}
+        {/* Internal decorative mini clouds inside the card bounds for deep depth */}
+        <div className="absolute inset-x-0 bottom-0 top-0 overflow-hidden rounded-[2.3rem] pointer-events-none opacity-20">
+          <div className="absolute left-6 top-12 text-blue-100/40 w-16 h-12"><Cloud className="w-full h-full fill-current" /></div>
+          <div className="absolute right-12 bottom-16 text-blue-100/40 w-20 h-16"><Cloud className="w-full h-full fill-current" /></div>
         </div>
 
-        <div className="w-16 h-16 rounded-2xl bg-blue-50 border-2 border-blue-100 flex items-center justify-center mb-6 shadow-[0_8px_20px_rgba(59,130,246,0.15)]">
-          <Zap className="w-8 h-8 text-blue-600 fill-current" />
+        <div className="relative z-10 flex flex-col items-center">
+          
+          {/* Offline Protection / Status Badge */}
+          <div className="mb-5">
+            {isOffline ? (
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-black uppercase tracking-wider shadow-sm animate-pulse">
+                <WifiOff className="w-3.5 h-3.5" />
+                <span>Offline Mode • Live Timer Running</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-xs font-black uppercase tracking-wider shadow-sm">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Offline-Resilient Timer Active</span>
+              </div>
+            )}
+          </div>
+
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 border-2 border-blue-100 flex items-center justify-center mb-6 shadow-[0_8px_20px_rgba(59,130,246,0.15)]">
+            <Zap className="w-8 h-8 text-blue-600 fill-current" />
+          </div>
+          
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-3 tracking-tight text-blue-950 uppercase">
+            Exclusive Launch Discount
+          </h2>
+          <p className="text-blue-700/80 text-sm mb-8 max-w-md font-semibold leading-relaxed">
+            Lock in your lifetime "Founder" rates before the timer hits zero. 
+            Save up to 31% on all annual plans. Fully offline-resilient countdown enabled.
+          </p>
+
+          {/* Timer Box with Blue Accents & White Box inner style */}
+          <div className="flex gap-4 mb-10">
+            <TimerUnit value={timeLeft.hours} label="Hours" />
+            <div className="text-3xl font-black text-blue-300 mt-2 animate-pulse">:</div>
+            <TimerUnit value={timeLeft.minutes} label="Minutes" />
+            <div className="text-3xl font-black text-blue-300 mt-2 animate-pulse">:</div>
+            <TimerUnit value={timeLeft.seconds} label="Seconds" />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <button 
+              onClick={onClose}
+              className="flex-1 px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_12px_25px_-5px_rgba(37,99,235,0.4)]"
+            >
+              Claim Discount Now
+            </button>
+            <button 
+              onClick={onClose}
+              className="flex-1 px-8 py-4 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 font-extrabold uppercase tracking-widest transition-all"
+            >
+              Maybe Later
+            </button>
+          </div>
         </div>
         
-        <h2 className="text-3xl md:text-4xl font-extrabold mb-3 tracking-tight text-blue-950 uppercase">
-          Exclusive Launch Discount
-        </h2>
-        <p className="text-blue-700/80 text-sm mb-8 max-w-md font-semibold leading-relaxed">
-          Lock in your lifetime "Founder" rates before the timer hits zero. 
-          Save up to 31% on all annual plans. Fully offline-resilient countdown enabled.
-        </p>
-
-        {/* Timer Box with Blue Accents & White Box inner style */}
-        <div className="flex gap-4 mb-10">
-          <TimerUnit value={timeLeft.hours} label="Hours" />
-          <div className="text-3xl font-black text-blue-300 mt-2 animate-pulse">:</div>
-          <TimerUnit value={timeLeft.minutes} label="Minutes" />
-          <div className="text-3xl font-black text-blue-300 mt-2 animate-pulse">:</div>
-          <TimerUnit value={timeLeft.seconds} label="Seconds" />
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full">
+        {onClose && (
           <button 
             onClick={onClose}
-            className="flex-1 px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_12px_25px_-5px_rgba(37,99,235,0.4)]"
+            className="absolute top-6 right-6 p-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-all z-20"
           >
-            Claim Discount Now
+            <X className="w-5 h-5" />
           </button>
-          <button 
-            onClick={onClose}
-            className="flex-1 px-8 py-4 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 font-extrabold uppercase tracking-widest transition-all"
-          >
-            Maybe Later
-          </button>
-        </div>
+        )}
       </div>
-      
-      {onClose && (
-        <button 
-          onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-xl bg-blue-50 border border-blue-100 text-blue-500 hover:text-blue-700 hover:bg-blue-100 transition-all z-20"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      )}
     </div>
   );
 }
