@@ -26,6 +26,7 @@ interface Section {
 const SECTIONS: Section[] = [
   { id: 'getting-started', title: 'Getting started', icon: <Target className="w-4 h-4" /> },
   { id: 'tutorial', title: 'How to use Sellscan', icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'plans', title: 'Pricing Plans', icon: <Zap className="w-4 h-4" /> },
   { id: 'credits', title: 'Credit Usage', icon: <CreditCard className="w-4 h-4" /> },
   { id: 'policies', title: 'Policies', icon: <Shield className="w-4 h-4" /> },
 ];
@@ -122,12 +123,18 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-12">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
                 <DocsCard 
                   title="Quick Start" 
                   description="Learn the basics of scanning your first product and interpreting AI insights."
-                  icon={<Zap className="w-5 h-5" />}
+                  icon={<Target className="w-5 h-5" />}
                   onClick={() => setActiveSection('tutorial')}
+                />
+                <DocsCard 
+                  title="Pricing Plans" 
+                  description="Explore our membership tiers, credit allocations, and exclusive feature unlocks."
+                  icon={<Zap className="w-5 h-5" />}
+                  onClick={() => setActiveSection('plans')}
                 />
                 <DocsCard 
                   title="Credit System" 
@@ -164,6 +171,63 @@ export function DocsPage({ onBack }: { onBack: () => void }) {
                   title="Refine with Chat"
                   description="Need a shorter description? Want to check the price on a different platform? Just ask the AI assistant. It has the full context of your scan."
                 />
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'plans' && (
+            <div className="space-y-12">
+              <div className="space-y-4">
+                <h1 className="text-4xl font-black tracking-tighter">Membership Tiers</h1>
+                <p className="text-xl text-brand-text-muted leading-relaxed max-w-2xl font-medium">
+                  Choose the intelligence tier that fits your resale volume. All paid plans include priority server access and advanced AI models.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-12 pt-8">
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-black uppercase tracking-tight flex items-center gap-3">
+                    <div className="w-1.5 h-6 bg-brand-accent rounded-full" />
+                    Tier Comparison
+                  </h2>
+                  <div className="overflow-x-auto rounded-3xl border border-brand-border bg-brand-card/20 backdrop-blur-sm">
+                    <table className="w-full text-left min-w-[700px]">
+                      <thead>
+                        <tr className="bg-white/5 border-b border-brand-border font-bold uppercase tracking-widest text-[10px] text-brand-text-muted">
+                          <th className="px-6 py-5">Feature</th>
+                          <th className="px-6 py-5">Explorer</th>
+                          <th className="px-6 py-5">Reseller</th>
+                          <th className="px-6 py-5 text-brand-accent">Founder</th>
+                          <th className="px-6 py-5">Entrepreneur</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-brand-border text-[13px]">
+                        <PlanRow label="Monthly Credits" values={['3/week', '40', '120', '300']} />
+                        <PlanRow label="AI Models" values={['Flash', 'Pro + GPT-4', 'Pro + GPT-4', 'Premium Bundle']} />
+                        <PlanRow label="Price Analysis" values={['Basic', 'Advanced', 'Full Data', 'Real-time']} />
+                        <PlanRow label="AI Chat Access" values={['None', 'Basic', 'Full', 'Unlimited']} />
+                        <PlanRow label="Listing Generator" values={['Disabled', 'Standard', 'Enhanced', 'Premium']} />
+                        <PlanRow label="Demand Insights" values={['None', 'Limited', 'Full', 'Deep Market']} />
+                        <PlanRow label="Priority Support" values={['No', 'Email', 'Dashboard', '24/7 Priority']} />
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="glass-card p-8 bg-brand-card/10 border-brand-border/40 space-y-4">
+                    <h3 className="text-lg font-black text-brand-accent uppercase tracking-widest">Why Upgrade?</h3>
+                    <p className="text-brand-text-muted leading-relaxed font-medium">
+                      The free <strong>Explorer</strong> tier is meant for casual decluttering. If you flip items regularly, the <strong>Reseller</strong> plan pays for itself with improved pricing accuracy and automated listing generation. 
+                    </p>
+                  </div>
+                  <div className="glass-card p-8 bg-brand-accent/5 border-brand-accent/20 space-y-4">
+                    <h3 className="text-lg font-black text-brand-accent uppercase tracking-widest">Founder Benefits</h3>
+                    <p className="text-brand-text-muted leading-relaxed font-medium">
+                      Our <strong>Founder</strong> tier unlocks full access to the AI Chat assistant, allowing you to refine listings, ask for cross-platform pricing, and get deeper profit analysis on every scan.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -438,6 +502,22 @@ function TutorialStep({ number, title, description }: { number: string, title: s
         <p className="text-brand-text-muted text-lg leading-relaxed">{description}</p>
       </div>
     </div>
+  );
+}
+
+function PlanRow({ label, values }: { label: string, values: string[] }) {
+  return (
+    <tr className="hover:bg-white/5 transition-colors">
+      <td className="px-6 py-4 font-bold text-brand-text-muted/60">{label}</td>
+      {values.map((v, i) => (
+        <td key={i} className={cn(
+          "px-6 py-4 font-medium",
+          i === 2 ? "text-brand-accent font-black" : "text-brand-text"
+        )}>
+          {v}
+        </td>
+      ))}
+    </tr>
   );
 }
 
