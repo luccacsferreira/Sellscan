@@ -26,6 +26,7 @@ interface NavbarProps {
   userEmail?: string;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  rightElement?: React.ReactNode;
 }
 
 export function Navbar({ 
@@ -42,7 +43,8 @@ export function Navbar({
   currentView,
   userEmail,
   theme, 
-  onToggleTheme 
+  onToggleTheme,
+  rightElement
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -117,6 +119,11 @@ export function Navbar({
             )}
             
             <div className="flex items-center gap-4">
+              {rightElement && (
+                <div className="hidden lg:block">
+                  {rightElement}
+                </div>
+              )}
               <button 
                 onClick={onToggleTheme}
                 className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted hover:text-brand-text"

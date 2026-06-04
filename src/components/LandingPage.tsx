@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote, Search, Check, X, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
+import { PricingCard } from './PricingCard';
 
 import af1Example from '../assets/Example_Image.jpeg';
 import clothesImg from '../assets/clothes.png';
@@ -29,10 +30,12 @@ import clocksImg from '../assets/antique-clocks.png';
 
 // Configuration for Stripe Price IDs
 const STRIPE_PRICES = {
-  BASIC_MONTHLY: 'price_1TX3cnRCzE4WmLf5UJseWbYZ',
-  BASIC_YEARLY: 'price_1TX3iCRCzE4WmLf5fwXNkaBB',
-  PREMIUM_MONTHLY: 'price_1TX3f0RCzE4WmLf5519Kp8zO',
-  PREMIUM_YEARLY: 'price_1TX3jjRCzE4WmLf59KuysZhL',
+  RESELLER_MONTHLY: 'price_reseller_monthly',
+  RESELLER_YEARLY: 'price_reseller_yearly',
+  FOUNDER_MONTHLY: 'price_founder_monthly',
+  FOUNDER_YEARLY: 'price_founder_yearly',
+  ENTREPRENEUR_MONTHLY: 'price_entrepreneur_monthly',
+  ENTREPRENEUR_YEARLY: 'price_entrepreneur_yearly',
 };
 
 interface LandingPageProps {
@@ -79,13 +82,15 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
       }
 
       let priceId = '';
-      if (tier === 'Basic') {
-        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.BASIC_MONTHLY : STRIPE_PRICES.BASIC_YEARLY;
-      } else if (tier === 'Premium') {
-        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.PREMIUM_MONTHLY : STRIPE_PRICES.PREMIUM_YEARLY;
+      if (tier === 'Reseller') {
+        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.RESELLER_MONTHLY : STRIPE_PRICES.RESELLER_YEARLY;
+      } else if (tier === 'Founder') {
+        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.FOUNDER_MONTHLY : STRIPE_PRICES.FOUNDER_YEARLY;
+      } else if (tier === 'Entrepreneur') {
+        priceId = billingCycle === 'monthly' ? STRIPE_PRICES.ENTREPRENEUR_MONTHLY : STRIPE_PRICES.ENTREPRENEUR_YEARLY;
       }
 
-      if (priceId.includes('_1PXXXXXXXXXXXXXX')) {
+      if (priceId.includes('price_')) {
         alert("Action Required: Please copy your actual Price IDs from Stripe into LandingePage.tsx (STRIPE_PRICES constant).");
         setLoadingTier(null);
         return;
@@ -398,34 +403,44 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           </p>
         </motion.div>
 
-        {/* Monthly/Yearly Toggle */}
         <div className="flex justify-center mb-16">
-          <div className="bg-brand-card/30 p-1 rounded-2xl border border-brand-border flex gap-1">
-            <button 
-              onClick={() => setBillingCycle('yearly')}
-              className={cn(
-                "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all flex items-center gap-2",
-                billingCycle === 'yearly' ? "bg-brand-accent text-brand-bg shadow-lg" : "text-brand-text-muted hover:text-brand-text"
-              )}
-            >
-              Yearly
-              <span className={cn(
-                "text-[8px] px-1.5 py-0.5 rounded-full border lowercase",
-                billingCycle === 'yearly' ? "bg-white/20 border-white/30 text-white" : "bg-brand-accent/10 border-brand-accent/20 text-brand-accent"
-              )}>
-                -31%
-              </span>
-            </button>
-            <button 
-              onClick={() => setBillingCycle('monthly')}
-              className={cn(
-                "px-6 py-2 rounded-xl text-xs font-bold uppercase transition-all",
-                billingCycle === 'monthly' ? "bg-brand-accent text-brand-bg shadow-lg" : "text-brand-text-muted hover:text-brand-text underline-none"
-              )}
-            >
-              Monthly
-            </button>
+          <div className="bg-white/50 dark:bg-brand-card/30 p-1.5 rounded-2xl border border-slate-200 dark:border-brand-border/60 flex flex-col items-center gap-4">
+            <div className="flex gap-1">
+              <button 
+                onClick={() => setBillingCycle('yearly')}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer",
+                  billingCycle === 'yearly' ? "bg-brand-accent text-slate-900 shadow-lg" : "text-slate-500 hover:text-slate-900"
+                )}
+              >
+                Yearly Billing
+                <span className={cn(
+                  "text-[9px] px-2 py-0.5 rounded-md font-bold",
+                  billingCycle === 'yearly' ? "bg-white/20 text-slate-900" : "bg-brand-accent/10 text-brand-accent"
+                )}>
+                  -31% SAVINGS
+                </span>
+              </button>
+              <button 
+                onClick={() => setBillingCycle('monthly')}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all cursor-pointer",
+                  billingCycle === 'monthly' ? "bg-brand-accent text-slate-900 shadow-lg" : "text-slate-500 hover:text-slate-900"
+                )}
+              >
+                Monthly
+              </button>
+            </div>
           </div>
+        </div>
+
+        <div className="max-w-2xl mx-auto text-center mb-12">
+          <p className="text-xs font-bold text-brand-accent uppercase tracking-[0.2em] mb-2 flex items-center justify-center gap-2">
+            <Zap className="w-3 h-3 fill-current" /> Limited Time Launch Offer
+          </p>
+          <p className="text-slate-500 dark:text-brand-text-muted text-sm font-medium">
+            Lock in these rates within <span className="text-slate-900 dark:text-brand-text font-bold px-1.5 py-0.5 bg-brand-accent/10 rounded">48 hours</span> of account creation to secure lifetime savings.
+          </p>
         </div>
 
         <motion.div 
@@ -439,22 +454,22 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
               }
             }
           }}
-          className="flex flex-row md:grid md:grid-cols-3 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory gap-4 md:gap-8 items-stretch pb-32 -mx-4 px-4 md:mx-0 md:px-0 scrollbar-none"
+          className="flex flex-row lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory gap-6 md:gap-4 items-stretch pb-32 -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-none"
         >
+          {/* Explorer Plan */}
           <PricingCard 
-             tier="Free"
-             description="Perfect for occasional decluttering."
+             tier="Explorer"
+             description="Perfect for casual decluttering."
              priceLabel="$0"
-             credits="1 Credit / Week"
+             credits="3 Credits / Week"
              features={[
-               { text: "Uses Gemini Flash only", included: true },
+               { text: "Gemini Flash Integration", included: true },
+               { text: "Basic item recognition", included: true },
                { text: "Basic price estimate", included: true },
-               { text: "1 marketplace suggestion", included: true },
-               { text: "Full item scan", included: false },
-               { text: "AI Listing generator", included: false },
-               { text: "AI Resale Chatbot", included: false }
+               { text: "Marketplace suggestion", included: true },
+               { text: "AI Resale Chat access", included: false },
              ]}
-             cta="Get started"
+             cta="Get started free"
              variant="muted"
              isActive={hoveredIndex === 0}
              onHover={() => setHoveredIndex(0)}
@@ -463,60 +478,79 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              isLoading={loadingTier === 'Free'}
           />
 
+          {/* Reseller Plan */}
           <PricingCard 
-             tier="Basic"
-             description="For the regular flipper hitting the local charity shops."
-             priceLabel={billingCycle === 'monthly' ? '$8.99' : '$6.20'}
-             discount={billingCycle === 'yearly' ? '31% OFF' : undefined}
+             tier="Reseller"
+             description="For regular flippers hitting local shops."
+             priceLabel="$1.00"
+             originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
              credits="40 Credits / Month"
              features={[
-               { text: "Gemini Pro + GPT-4o", included: true },
-               { text: "7 Credits/day soft limit", included: true },
-               { text: "Full item analysis", included: true },
+               { text: "Gemini Pro + GPT-4.1", included: true },
+               { text: "AI pricing analysis", included: true },
                { text: "AI Listing generator", included: true },
-               { text: "Limited Chatbot access", included: true },
-               { text: "Price range estimation", included: true },
+               { text: "Marketplace recommendations", included: true },
+               { text: "Basic AI chat usage", included: true },
+               { text: "Claude Haiku Support", included: true },
              ]}
-             cta={billingCycle === 'monthly' ? 'Go Basic' : 'Save with Yearly'}
+             cta="Get Reseller"
              variant="primary"
-             popular
-             isActive={hoveredIndex === 1 || hoveredIndex === null}
+             isActive={hoveredIndex === 1}
              onHover={() => setHoveredIndex(1)}
              onLeave={() => setHoveredIndex(null)}
-             onAction={() => handleCheckout('Basic')}
-             isLoading={loadingTier === 'Basic'}
+             onAction={() => handleCheckout('Reseller')}
+             isLoading={loadingTier === 'Reseller'}
           />
 
+          {/* Founder Plan - Most Popular */}
           <PricingCard 
-             tier="Premium"
-             description="For pro resellers scaling their business to full-time."
-             priceLabel={billingCycle === 'monthly' ? '$14.99' : '$10.34'}
-             discount={billingCycle === 'yearly' ? '31% OFF' : undefined}
+             tier="Founder"
+             description="High-volume intelligence for professionals."
+             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$2.00'}
+             originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
              credits="120 Credits / Month"
+             popular
              features={[
-               { text: "Best Gemini + GPT-4o", included: true },
-               { text: "No daily limits", included: true },
-               { text: "Multi-platform listings", included: true },
-               { text: "Profit & Demand estimation", included: true },
-               { text: "Scam & Risk detection", included: true },
-               { text: "Full Priority processing", included: true },
+               { text: "Everything in Reseller", included: true },
+               { text: "Advanced Market Analysis", included: true },
+               { text: "Demand & Profit Insights", included: true },
+               { text: "Priority Server Processing", included: true },
+               { text: "Full Chatbot access", included: true },
+               { text: "More AI Listing drafts", included: true },
              ]}
-             cta="Go Premium"
+             cta="Get Founder"
              variant="accent"
-             isActive={hoveredIndex === 2}
+             isActive={hoveredIndex === 2 || hoveredIndex === null}
              onHover={() => setHoveredIndex(2)}
              onLeave={() => setHoveredIndex(null)}
-             onAction={() => handleCheckout('Premium')}
-             isLoading={loadingTier === 'Premium'}
+             onAction={() => handleCheckout('Founder')}
+             isLoading={loadingTier === 'Founder'}
+          />
+
+          {/* Entrepreneur Plan */}
+          <PricingCard 
+             tier="Entrepreneur"
+             description="Ultimate power for multi-channel empires."
+             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$3.00'}
+             originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
+             credits="300 Credits / Month"
+             features={[
+               { text: "Everything in Founder", included: true },
+               { text: "No Daily Limits", included: true },
+               { text: "Landing Page Builder (5 credits)", included: true },
+               { text: "Marketing Copy Generator", included: true },
+               { text: "Premium AI Models Access", included: true },
+               { text: "Advanced Market Insights", included: true },
+             ]}
+             cta="Get Entrepreneur"
+             variant="accent"
+             isActive={hoveredIndex === 3}
+             onHover={() => setHoveredIndex(3)}
+             onLeave={() => setHoveredIndex(null)}
+             onAction={() => handleCheckout('Entrepreneur')}
+             isLoading={loadingTier === 'Entrepreneur'}
           />
         </motion.div>
-
-        <div className="max-w-2xl mx-auto text-center pb-32">
-          <p className="text-[10px] text-brand-text-muted tracking-wide leading-relaxed">
-            * 1 Credit is consumed per product scan. Some advanced AI refinements may consume additional sub-credits. 
-            Daily limits apply to Basic plans to ensure fair resource allocation. Credits refresh on your billing date.
-          </p>
-        </div>
       </section>
 
       {/* Redesigned Premium High-End Footer */}
@@ -975,147 +1009,6 @@ function FeatureCard({ icon, title, description }: { icon: React.ReactNode, titl
       </div>
       <h3 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3">{title}</h3>
       <p className="text-[10px] md:text-base text-brand-text-muted leading-relaxed line-clamp-3 md:line-clamp-none">{description}</p>
-    </motion.div>
-  );
-}
-
-function PricingCard({ 
-  tier, 
-  priceLabel, 
-  description, 
-  features, 
-  cta, 
-  variant, 
-  popular, 
-  credits,
-  isActive,
-  onHover,
-  onLeave,
-  onAction,
-  isLoading,
-  discount
-}: { 
-  tier: string, 
-  priceLabel: string, 
-  description: string, 
-  features: { text: string, included: boolean }[], 
-  cta: string, 
-  variant: 'muted' | 'accent' | 'primary', 
-  popular?: boolean, 
-  credits: string,
-  isActive: boolean,
-  onHover: () => void,
-  onLeave: () => void,
-  onAction?: () => void,
-  isLoading?: boolean,
-  discount?: string
-}) {
-  return (
-    <motion.div 
-      onMouseEnter={onHover}
-      onMouseLeave={onLeave}
-      variants={{
-        initial: { opacity: 0, y: 30 },
-        animate: { opacity: 1, y: 0 }
-      }}
-      whileHover={{ 
-        scale: 1.05,
-        y: -12,
-        transition: { duration: 0.4, ease: "easeOut" }
-      }}
-      className={cn(
-        "glass-card p-6 sm:p-8 lg:p-10 relative flex flex-col transition-all duration-500 group overflow-visible border-2 w-[85vw] sm:w-[380px] md:w-auto shrink-0 snap-center",
-        isActive 
-          ? "border-brand-accent bg-brand-bg/90 md:scale-[1.02] shadow-[0_0_60px_-10px_rgba(85,205,209,0.8),inset_0_0_30px_rgba(85,205,209,0.15)] z-10" 
-          : "bg-brand-card/20 border-brand-border/40 hover:border-brand-accent/20"
-      )}
-    >
-      {/* Neon Glow Outer */}
-      {isActive && (
-        <div className="absolute inset-0 rounded-[2rem] shadow-[0_0_30px_rgba(85,205,209,0.2)] pointer-events-none -z-1" />
-      )}
-
-      {/* Top Neon Bar Glow */}
-      <div className={cn(
-        "absolute -top-[2px] left-1/2 -translate-x-1/2 w-3/4 h-[4px] transition-all duration-500 rounded-full",
-        isActive 
-          ? "bg-brand-accent shadow-[0_0_25px_4px_var(--color-brand-accent)] opacity-100" 
-          : "bg-transparent opacity-0"
-      )} />
-
-      {popular && (
-        <div className={cn(
-          "absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-          isActive 
-            ? "bg-brand-accent text-brand-bg shadow-[0_10px_20px_-5px_rgba(85,205,209,0.4)]"
-            : "bg-brand-card text-brand-text-muted border border-brand-border"
-        )}>
-          Most Popular
-        </div>
-      )}
-      
-      <div className="mb-10">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className={cn(
-            "text-xl font-black tracking-tight transition-all duration-300", 
-            isActive ? "text-brand-accent drop-shadow-[0_0_12px_rgba(85,205,209,0.6)]" : "text-brand-text"
-          )}>
-            {tier}
-          </h3>
-          {discount && (
-            <span className="bg-brand-accent/20 text-brand-accent text-[9px] font-black px-2 py-0.5 rounded-full border border-brand-accent/30 uppercase tracking-tighter">
-              {discount}
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-brand-text-muted leading-relaxed mb-8 h-12">
-          {description}
-        </p>
-        <div className="flex items-baseline gap-1 mb-6">
-          <span className="text-5xl font-black tracking-tight">{priceLabel}</span>
-          <span className="text-brand-text-muted text-sm font-bold">/mo</span>
-        </div>
-        <div className={cn(
-          "inline-flex items-center gap-2 px-3 py-1 rounded-lg transition-all duration-300 border",
-          isActive 
-            ? "bg-brand-accent/20 border-brand-accent/40 text-brand-accent shadow-[0_0_20px_rgba(85,205,209,0.4)]" 
-            : "bg-white/5 border-white/10 text-brand-accent/70"
-        )}>
-          <Zap className="w-3 h-3 fill-current" /> <span className="text-[10px] font-bold uppercase tracking-widest">{credits}</span>
-        </div>
-      </div>
-
-      <div className="space-y-4 mb-12 flex-grow">
-        {features.map((f, i) => (
-          <div key={i} className={cn(
-            "flex items-start gap-3 text-sm transition-all duration-300",
-            f.included ? (isActive ? "text-brand-text" : "text-brand-text/90") : "text-brand-text-muted/30"
-          )}>
-            <div className={cn(
-              "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300",
-              f.included 
-                ? (isActive ? "bg-brand-accent text-brand-bg shadow-[0_0_10px_rgba(85,205,209,0.6)]" : "bg-brand-accent/10 text-brand-accent") 
-                : "bg-white/5 text-white/20"
-            )}>
-              {f.included ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
-            </div>
-            <span className="leading-snug font-medium italic-none">{f.text}</span>
-          </div>
-        ))}
-      </div>
-
-      <button 
-        onClick={onAction}
-        disabled={isLoading}
-        className={cn(
-          "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all duration-300 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-          isActive 
-            ? "bg-brand-accent text-brand-bg shadow-[0_0_40px_-5px_rgba(85,205,209,0.7)] hover:brightness-110" 
-            : "bg-white/5 border border-brand-border/60 text-brand-text-muted hover:bg-white/10"
-        )}
-      >
-        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : cta}
-      </button>
     </motion.div>
   );
 }

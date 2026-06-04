@@ -33,6 +33,7 @@ import { DocsPage } from './components/DocsPage';
 import { AffiliatePage } from './components/AffiliatePage';
 import { partnerService } from './services/partnerService';
 import { NotificationModal } from './components/NotificationModal';
+import { DiscountTimer } from './components/DiscountTimer';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate';
 
@@ -93,6 +94,7 @@ function AppContent() {
       const path = window.location.pathname;
       const pathViewMap: Record<string, View> = {
         '/': 'landing',
+        '/LandingPage': 'landing',
         '/Home': 'home',
         '/Partners': 'affiliate',
         '/Scan': 'upload',
@@ -150,11 +152,12 @@ function AppContent() {
       docs: '/Docs',
       'project-detail': '/Projects',
       'dashboard': '/Dashboard',
-      'auth-callback': '/auth-callback'
+      'auth-callback': '/auth-callback',
+      'landing-alias': '/LandingPage'
     };
     
-    const targetPath = viewPathMap[view];
-    if (targetPath && window.location.pathname !== targetPath) {
+    const targetPath = viewPathMap[view] || (view === 'landing' ? '/LandingPage' : '/');
+    if (targetPath && window.location.pathname !== targetPath && !(view === 'landing' && window.location.pathname === '/')) {
       window.history.pushState({}, '', targetPath);
     }
   }, [view]);
@@ -288,6 +291,7 @@ function AppContent() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showDiscountModal, setShowDiscountModal] = useState(false);
   const [scanError, setScanError] = useState<{ title: string; message: string } | null>(null);
   const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(null);
   const [pendingCheckout, setPendingCheckout] = useState<string | null>(null);
@@ -302,6 +306,15 @@ function AppContent() {
   const handleAuthSuccess = (authenticatedUser: User) => {
     setShowAuthModal(false);
     setUser(authenticatedUser);
+
+    // Initial discount modal check
+    const hasSeenDiscount = localStorage.getItem('sellscan_seen_discount');
+    if (!hasSeenDiscount) {
+      setTimeout(() => {
+        setShowDiscountModal(true);
+        localStorage.setItem('sellscan_seen_discount', 'true');
+      }, 1000);
+    }
 
     if (pendingScan) {
       handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
@@ -756,7 +769,31 @@ function AppContent() {
         userEmail={user?.email}
         theme={resolvedTheme}
         onToggleTheme={toggleTheme}
+        rightElement={user && <DiscountTimer variant="compact" />}
       />
+
+      {/* Discount Modal Overlay */}
+      <AnimatePresence>
+        {showDiscountModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowDiscountModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-xl z-10"
+            >
+              <DiscountTimer onClose={() => setShowDiscountModal(false)} />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Referral Welcome Banner */}
       {localStorage.getItem('sellscan_ref_code') && view !== 'landing' && (

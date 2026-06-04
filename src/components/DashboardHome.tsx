@@ -20,6 +20,8 @@ import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 import { supabase } from '../lib/supabase';
 import { partnerService, PartnerLink } from '../services/partnerService';
+import { PricingCard } from './PricingCard';
+import { Zap } from 'lucide-react';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
@@ -59,6 +61,7 @@ export function DashboardHome({
   const [partnerProfile, setPartnerProfile] = useState<AffiliateProfile | null>(null);
   const [partnerLinks, setPartnerLinks] = useState<PartnerLink[]>([]);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     const fetchPartnerData = async () => {
@@ -308,6 +311,121 @@ export function DashboardHome({
           )}
         </div>
       </div>
+
+      {/* Pricing Plans Section */}
+      <section className="pt-20 border-t border-brand-border/30">
+        <div className="text-center mb-12">
+          <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.3em] mb-4 block">Membership</span>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">Scale your resale empire</h2>
+          <p className="text-brand-text-muted text-base mb-8">Select the intelligence tier that fits your listing volume.</p>
+          
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4">
+            <span className={cn("text-xs font-bold transition-colors", billingCycle === 'monthly' ? "text-brand-text" : "text-brand-text-muted")}>Monthly</span>
+            <button 
+              onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
+              className="w-12 h-6 rounded-full bg-brand-bg border border-brand-border relative p-1 transition-colors hover:border-brand-accent/50"
+            >
+              <motion.div 
+                animate={{ x: billingCycle === 'monthly' ? 0 : 24 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                className="w-4 h-4 rounded-full bg-brand-accent"
+              />
+            </button>
+            <div className="flex items-center gap-2">
+              <span className={cn("text-xs font-bold transition-colors", billingCycle === 'yearly' ? "text-brand-text" : "text-brand-text-muted")}>Yearly</span>
+              <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                Save 31%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-row lg:grid lg:grid-cols-4 overflow-x-auto lg:overflow-x-visible snap-x snap-mandatory gap-6 md:gap-4 items-stretch pb-12 -mx-4 px-4 lg:mx-0 lg:px-0 scrollbar-none">
+          <PricingCard 
+             tier="Explorer"
+             description="Perfect for casual decluttering."
+             priceLabel="$0"
+             credits="3 Credits / Week"
+             features={[
+               { text: "Gemini Flash Integration", included: true },
+               { text: "Basic item recognition", included: true },
+               { text: "Basic price estimate", included: true },
+               { text: "Marketplace suggestion", included: true },
+               { text: "AI Resale Chat access", included: false },
+             ]}
+             cta="Refresh Credits"
+             variant="muted"
+             isActive={false}
+             onHover={() => {}}
+             onLeave={() => {}}
+          />
+
+          <PricingCard 
+             tier="Reseller"
+             description="For regular flippers."
+             priceLabel="$1.00"
+             originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
+             credits="40 Credits / Month"
+             features={[
+               { text: "Gemini Pro + GPT-4.1", included: true },
+               { text: "AI pricing analysis", included: true },
+               { text: "AI Listing generator", included: true },
+               { text: "Marketplace recommendations", included: true },
+               { text: "Basic AI chat usage", included: true },
+               { text: "Claude Haiku Support", included: true },
+             ]}
+             cta="Get Reseller"
+             variant="primary"
+             isActive={false}
+             onHover={() => {}}
+             onLeave={() => {}}
+          />
+
+          <PricingCard 
+             tier="Founder"
+             description="For professionals."
+             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$2.00'}
+             originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
+             credits="120 Credits / Month"
+             popular
+             features={[
+               { text: "Everything in Reseller", included: true },
+               { text: "Advanced Market Analysis", included: true },
+               { text: "Demand & Profit Insights", included: true },
+               { text: "Priority Server Processing", included: true },
+               { text: "Full Chatbot access", included: true },
+               { text: "More AI Listing drafts", included: true },
+             ]}
+             cta="Get Founder"
+             variant="accent"
+             isActive={true}
+             onHover={() => {}}
+             onLeave={() => {}}
+          />
+
+          <PricingCard 
+             tier="Entrepreneur"
+             description="Ultimate power."
+             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$3.00'}
+             originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
+             credits="300 Credits / Month"
+             features={[
+               { text: "Everything in Founder", included: true },
+               { text: "No Daily Limits", included: true },
+               { text: "Landing Page Builder", included: true },
+               { text: "Marketing Copy Generator", included: true },
+               { text: "Premium AI Models Access", included: true },
+               { text: "Advanced Market Insights", included: true },
+             ]}
+             cta="Get Entrepreneur"
+             variant="accent"
+             isActive={false}
+             onHover={() => {}}
+             onLeave={() => {}}
+          />
+        </div>
+      </section>
     </div>
   );
 }
