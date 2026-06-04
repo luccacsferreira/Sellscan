@@ -474,7 +474,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Reseller"
              description="For regular flippers hitting local shops."
-             priceLabel="$1.00"
+             priceLabel="$0.99"
              originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
              credits="40 Credits / Month"
              features={[
@@ -499,7 +499,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Founder"
              description="High-volume intelligence for professionals."
-             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$2.00'}
+             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$1.99'}
              originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
              credits="120 Credits / Month"
              popular
@@ -525,7 +525,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Entrepreneur"
              description="Ultimate power for multi-channel empires."
-             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$3.00'}
+             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$2.99'}
              originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
              credits="300 Credits / Month"
              features={[

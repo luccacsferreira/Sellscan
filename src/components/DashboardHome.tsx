@@ -366,7 +366,7 @@ export function DashboardHome({
           <PricingCard 
              tier="Reseller"
              description="For regular flippers."
-             priceLabel="$1.00"
+             priceLabel="$0.99"
              originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
              credits="40 Credits / Month"
              features={[
@@ -388,7 +388,7 @@ export function DashboardHome({
           <PricingCard 
              tier="Founder"
              description="For professionals."
-             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$2.00'}
+             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$1.99'}
              originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
              credits="120 Credits / Month"
              popular
@@ -411,7 +411,7 @@ export function DashboardHome({
           <PricingCard 
              tier="Entrepreneur"
              description="Ultimate power."
-             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$3.00'}
+             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$2.99'}
              originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
              credits="300 Credits / Month"
              features={[
