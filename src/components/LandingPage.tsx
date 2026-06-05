@@ -9,7 +9,7 @@ import { Upload, Camera, Type, ArrowRight, Zap, TrendingUp, MessageSquare, Quote
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 import { PricingCard } from './PricingCard';
-import { getPriceId } from '../lib/stripe';
+import { getPriceId, getPricingDisplay } from '../lib/stripe';
 import af1Example from '../assets/Example_Image.jpeg';
 import clothesImg from '../assets/clothes.png';
 import voiceImg from '../assets/voice.png';
@@ -463,8 +463,8 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Basic"
              description="For regular flippers hitting local shops."
-             priceLabel="$0.99"
-             originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
+             priceLabel={getPricingDisplay('Basic', billingCycle).priceLabel}
+             originalPrice={getPricingDisplay('Basic', billingCycle).originalPrice}
              credits="40 Credits / Month"
              features={[
                { text: "Gemini Pro + GPT-4.1", included: true },
@@ -488,8 +488,8 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Reseller"
              description="High-volume intelligence for professionals."
-             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$1.99'}
-             originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
+             priceLabel={getPricingDisplay('Reseller', billingCycle).priceLabel}
+             originalPrice={getPricingDisplay('Reseller', billingCycle).originalPrice}
              credits="120 Credits / Month"
              popular
              features={[
@@ -514,8 +514,8 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <PricingCard 
              tier="Entrepreneur"
              description="Ultimate power for multi-channel empires."
-             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$2.99'}
-             originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
+             priceLabel={getPricingDisplay('Entrepreneur', billingCycle).priceLabel}
+             originalPrice={getPricingDisplay('Entrepreneur', billingCycle).originalPrice}
              credits="300 Credits / Month"
              features={[
                { text: "Everything in Reseller", included: true },

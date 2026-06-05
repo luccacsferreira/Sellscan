@@ -26,10 +26,14 @@ export const STRIPE_PRICES = {
 };
 
 export function getPriceId(tier: string, billingCycle: 'monthly' | 'yearly'): string {
-  const LAUNCH_DATE_KEY = 'sellscan_launch_promo_start';
-  const DURATION = 48 * 60 * 60 * 1000;
-  const startTime = localStorage.getItem(LAUNCH_DATE_KEY);
-  const isDiscountActive = startTime ? (Date.now() - parseInt(startTime)) < DURATION : true;
+  const DEADLINE_KEY = 'sellscan_discount_deadline';
+  let targetTime = localStorage.getItem(DEADLINE_KEY);
+  if (!targetTime) {
+    const deadline = Date.now() + (48 * 60 * 60 * 1000);
+    localStorage.setItem(DEADLINE_KEY, deadline.toString());
+    targetTime = deadline.toString();
+  }
+  const isDiscountActive = Date.now() < parseInt(targetTime);
 
   const cycle = billingCycle === 'monthly' ? 'MONTHLY' : 'YEARLY';
   const suffix = isDiscountActive ? '_DISCOUNT' : '';
@@ -43,4 +47,63 @@ export function getPriceId(tier: string, billingCycle: 'monthly' | 'yearly'): st
     return STRIPE_PRICES.ENTREPRENEUR[key];
   }
   return '';
+}
+
+export function getPricingDisplay(tier: string, billingCycle: 'monthly' | 'yearly'): {
+  priceLabel: string;
+  originalPrice?: string;
+} {
+  const DEADLINE_KEY = 'sellscan_discount_deadline';
+  let targetTime = localStorage.getItem(DEADLINE_KEY);
+  if (!targetTime) {
+    const deadline = Date.now() + (48 * 60 * 60 * 1000);
+    localStorage.setItem(DEADLINE_KEY, deadline.toString());
+    targetTime = deadline.toString();
+  }
+  const isDiscountActive = Date.now() < parseInt(targetTime);
+  const isMonthly = billingCycle === 'monthly';
+
+  if (tier === 'Basic') {
+    if (isDiscountActive) {
+      return {
+        priceLabel: '$0.99',
+        originalPrice: isMonthly ? '$3.99' : '$2.99'
+      };
+    } else {
+      return {
+        priceLabel: isMonthly ? '$3.99' : '$2.99',
+        originalPrice: undefined
+      };
+    }
+  }
+
+  if (tier === 'Reseller') {
+    if (isDiscountActive) {
+      return {
+        priceLabel: isMonthly ? '$3.99' : '$1.99',
+        originalPrice: isMonthly ? '$5.99' : '$4.16'
+      };
+    } else {
+      return {
+        priceLabel: isMonthly ? '$5.99' : '$4.16',
+        originalPrice: undefined
+      };
+    }
+  }
+
+  if (tier === 'Entrepreneur') {
+    if (isDiscountActive) {
+      return {
+        priceLabel: isMonthly ? '$5.99' : '$2.99',
+        originalPrice: isMonthly ? '$8.99' : '$6.16'
+      };
+    } else {
+      return {
+        priceLabel: isMonthly ? '$8.99' : '$6.16',
+        originalPrice: undefined
+      };
+    }
+  }
+
+  return { priceLabel: '$0' };
 }

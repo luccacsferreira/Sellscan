@@ -22,7 +22,7 @@ import { supabase } from '../lib/supabase';
 import { partnerService, PartnerLink } from '../services/partnerService';
 import { PricingCard } from './PricingCard';
 import { Zap } from 'lucide-react';
-import { getPriceId } from '../lib/stripe';
+import { getPriceId, getPricingDisplay } from '../lib/stripe';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
@@ -424,8 +424,8 @@ export function DashboardHome({
           <PricingCard 
              tier="Basic"
              description="For regular flippers."
-             priceLabel="$0.99"
-             originalPrice={billingCycle === 'monthly' ? '$5.99' : '$7.17'}
+             priceLabel={getPricingDisplay('Basic', billingCycle).priceLabel}
+             originalPrice={getPricingDisplay('Basic', billingCycle).originalPrice}
              credits="40 Credits / Month"
              features={[
                { text: "Gemini Pro + GPT-4.1", included: true },
@@ -448,8 +448,8 @@ export function DashboardHome({
           <PricingCard 
              tier="Reseller"
              description="For professionals."
-             priceLabel={billingCycle === 'monthly' ? '$3.99' : '$1.99'}
-             originalPrice={billingCycle === 'monthly' ? '$8.99' : '$9.00'}
+             priceLabel={getPricingDisplay('Reseller', billingCycle).priceLabel}
+             originalPrice={getPricingDisplay('Reseller', billingCycle).originalPrice}
              credits="120 Credits / Month"
              popular
              features={[
@@ -473,8 +473,8 @@ export function DashboardHome({
           <PricingCard 
              tier="Entrepreneur"
              description="Ultimate power."
-             priceLabel={billingCycle === 'monthly' ? '$5.99' : '$2.99'}
-             originalPrice={billingCycle === 'monthly' ? '$14.99' : '$14.67'}
+             priceLabel={getPricingDisplay('Entrepreneur', billingCycle).priceLabel}
+             originalPrice={getPricingDisplay('Entrepreneur', billingCycle).originalPrice}
              credits="300 Credits / Month"
              features={[
                { text: "Everything in Reseller", included: true },

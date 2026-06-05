@@ -193,26 +193,156 @@ async function startServer() {
       const discountAmount = session.total_details?.amount_discount || 0;
 
       try {
+        console.log(`🔍 Retrieving expanded checkout session ${session.id}...`);
         const expandedSession = await stripe.checkout.sessions.retrieve(
           session.id,
           {
-            expand: ['discounts', 'discounts.promotion_code'],
+            expand: [
+              'discounts',
+              'discounts.promotion_code',
+              'subscription',
+              'subscription.discount',
+              'subscription.discount.promotion_code',
+              'invoice',
+              'invoice.discount',
+              'invoice.discount.promotion_code',
+            ],
           }
         );
+
+        // 1. Direct discounts array on expanded session
         const discounts = expandedSession.discounts;
         if (discounts && discounts.length > 0) {
           const discount = discounts[0];
           if (discount && typeof discount !== 'string') {
             if (discount.promotion_code && typeof discount.promotion_code !== 'string') {
               promoCode = discount.promotion_code.code;
+              console.log(`🎉 Found promoCode from expandedSession.discounts: ${promoCode}`);
             }
             if (discount.coupon) {
               couponId = typeof discount.coupon === 'string' ? discount.coupon : discount.coupon.id;
+              console.log(`🎉 Found couponId from expandedSession.discounts: ${couponId}`);
             }
           }
         }
+
+        // 2. Fallback to session.total_details.breakdown.discounts
+        const sessionDiscounts = (expandedSession as any).total_details?.breakdown?.discounts;
+        if (!promoCode && sessionDiscounts && sessionDiscounts.length > 0) {
+          console.log(`🔍 Checking ${sessionDiscounts.length} discounts in session.total_details.breakdown.discounts`);
+          for (const d of sessionDiscounts) {
+            const discObj = d.discount;
+            if (discObj && typeof discObj !== 'string') {
+              if (discObj.promotion_code && typeof discObj.promotion_code !== 'string') {
+                promoCode = discObj.promotion_code.code;
+                console.log(`🎉 Found promoCode from total_details breakdown: ${promoCode}`);
+              }
+              if (discObj.coupon) {
+                couponId = typeof discObj.coupon === 'string' ? discObj.coupon : discObj.coupon.id;
+                console.log(`🎉 Found couponId from total_details breakdown: ${couponId}`);
+              }
+            }
+          }
+        }
+
+        // 3. Fallback to subscription discount if we expanded subscription
+        if (!promoCode && expandedSession.subscription) {
+          const sub = expandedSession.subscription as any;
+          if (sub && typeof sub !== 'string') {
+            if (sub.discount) {
+              const disc = sub.discount;
+              if (disc.promotion_code && typeof disc.promotion_code !== 'string') {
+                promoCode = disc.promotion_code.code;
+                console.log(`🎉 Found promoCode from expandedSubscription (discount): ${promoCode}`);
+              }
+              if (disc.coupon) {
+                couponId = typeof disc.coupon === 'string' ? disc.coupon : disc.coupon.id;
+                console.log(`🎉 Found couponId from expandedSubscription (discount): ${couponId}`);
+              }
+            } else if (sub.discounts && sub.discounts.length > 0) {
+              const disc = sub.discounts[0];
+              if (disc && typeof disc !== 'string') {
+                if (disc.promotion_code && typeof disc.promotion_code !== 'string') {
+                  promoCode = disc.promotion_code.code;
+                  console.log(`🎉 Found promoCode from expandedSubscription (discounts list): ${promoCode}`);
+                }
+                if (disc.coupon) {
+                  couponId = typeof disc.coupon === 'string' ? disc.coupon : disc.coupon.id;
+                  console.log(`🎉 Found couponId from expandedSubscription (discounts list): ${couponId}`);
+                }
+              }
+            }
+          }
+        }
+
+        // 4. Fallback to invoice discount if we expanded invoice
+        if (!promoCode && expandedSession.invoice) {
+          const inv = expandedSession.invoice as any;
+          if (inv && typeof inv !== 'string') {
+            if (inv.discount) {
+              const disc = inv.discount;
+              if (disc.promotion_code && typeof disc.promotion_code !== 'string') {
+                promoCode = disc.promotion_code.code;
+                console.log(`🎉 Found promoCode from expandedInvoice (discount): ${promoCode}`);
+              }
+              if (disc.coupon) {
+                couponId = typeof disc.coupon === 'string' ? disc.coupon : disc.coupon.id;
+                console.log(`🎉 Found couponId from expandedInvoice (discount): ${couponId}`);
+              }
+            } else if (inv.discounts && inv.discounts.length > 0) {
+              const disc = inv.discounts[0];
+              if (disc && typeof disc !== 'string') {
+                if (disc.promotion_code && typeof disc.promotion_code !== 'string') {
+                  promoCode = disc.promotion_code.code;
+                  console.log(`🎉 Found promoCode from expandedInvoice (discounts list): ${promoCode}`);
+                }
+                if (disc.coupon) {
+                  couponId = typeof disc.coupon === 'string' ? disc.coupon : disc.coupon.id;
+                  console.log(`🎉 Found couponId from expandedInvoice (discounts list): ${couponId}`);
+                }
+              }
+            }
+          }
+        }
+
       } catch (err: any) {
         console.error("⚠️ Failed to retrieve expanded session discounts:", err.message);
+      }
+
+      // 5. Direct API fallback if subscription is a string and not expanded
+      if (!promoCode && session.subscription) {
+        try {
+          console.log(`🔍 Checking subscription ${session.subscription} via direct API query...`);
+          const subDetail = await stripe.subscriptions.retrieve(
+            session.subscription as string,
+            {
+              expand: ['discount', 'discount.promotion_code', 'discounts', 'discounts.promotion_code'],
+            }
+          ) as any;
+          if (subDetail.discount) {
+            const disc = subDetail.discount;
+            if (disc.promotion_code && typeof disc.promotion_code !== 'string') {
+              promoCode = disc.promotion_code.code;
+              console.log(`🎉 Found promoCode from subDetail (discount): ${promoCode}`);
+            }
+            if (disc.coupon) {
+              couponId = typeof disc.coupon === 'string' ? disc.coupon : disc.coupon.id;
+            }
+          } else if (subDetail.discounts && subDetail.discounts.length > 0) {
+            const disc = subDetail.discounts[0];
+            if (disc && typeof disc !== 'string') {
+              if (disc.promotion_code && typeof disc.promotion_code !== 'string') {
+                promoCode = disc.promotion_code.code;
+                console.log(`🎉 Found promoCode from subDetail (discounts list): ${promoCode}`);
+              }
+              if (disc.coupon) {
+                couponId = typeof disc.coupon === 'string' ? disc.coupon : disc.coupon.id;
+              }
+            }
+          }
+        } catch (subErr: any) {
+          console.warn("⚠️ Sub direct query error:", subErr.message);
+        }
       }
       
       if (supabaseAdmin && userId) {
