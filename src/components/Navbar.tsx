@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
-import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X, Sparkles } from 'lucide-react';
+import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X, Sparkles, Info, Settings, CreditCard, Gift, BookOpen, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import sellscanLogo from '../assets/sellscan_logo_transparent.png';
+import { AIPlan } from '../types';
 
 import { supabase } from '../lib/supabase';
 
@@ -28,6 +29,16 @@ interface NavbarProps {
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
   rightElement?: React.ReactNode;
+  
+  // Credit specific props
+  currentScan?: any;
+  plan?: AIPlan;
+  spentCredits?: {
+    scans: number;
+    messages: number;
+    integration: number;
+  };
+  onViewCredits?: () => void;
 }
 
 export function Navbar({ 
@@ -46,9 +57,14 @@ export function Navbar({
   userEmail,
   theme, 
   onToggleTheme,
-  rightElement
+  rightElement,
+  currentScan,
+  plan = 'free',
+  spentCredits = { scans: 0, messages: 0, integration: 0 },
+  onViewCredits
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isCreditsPopoverOpen, setIsCreditsPopoverOpen] = React.useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -71,17 +87,159 @@ export function Navbar({
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-brand-border z-20" />
         
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between relative z-10">
-          <div 
-            className="flex items-center h-16 cursor-pointer group pb-0 relative"
-            onClick={onGoHome}
-          >
-            <div className="relative h-10 w-32 md:h-12 md:w-40 flex items-center">
-              <img 
-                src={sellscanLogo} 
-                alt="Sellscan" 
-                className="h-full w-auto object-contain pointer-events-none transition-all duration-300 group-hover:scale-[1.02]"
-              />
+          <div className="flex items-center gap-2 relative">
+            <div 
+              className="flex items-center h-16 cursor-pointer group pb-0 relative"
+              onClick={() => {
+                if (currentScan && currentView === 'dashboard') {
+                  setIsCreditsPopoverOpen(prev => !prev);
+                } else if (onGoHome) {
+                  onGoHome();
+                }
+              }}
+            >
+              <div className="relative h-10 w-28 md:h-12 md:w-36 flex items-center">
+                <img 
+                  src={sellscanLogo} 
+                  alt="Sellscan" 
+                  className="h-full w-auto object-contain pointer-events-none transition-all duration-300 group-hover:scale-[1.02]"
+                />
+              </div>
             </div>
+
+            {currentScan && currentView === 'dashboard' && (
+              <div 
+                className="flex items-center gap-2 px-2 py-1 rounded-xl bg-white/[0.02] border border-brand-border/30 backdrop-blur-sm cursor-pointer hover:bg-white/[0.06] transition-all shrink-0"
+                onClick={() => setIsCreditsPopoverOpen(prev => !prev)}
+              >
+                <span className="text-brand-text-muted/60 font-black font-mono text-xs">/</span>
+                <div className="w-6 h-6 rounded-lg overflow-hidden border border-brand-border/40 shrink-0">
+                  <img 
+                    src={currentScan.imageUrl} 
+                    alt="Scan thumbnail" 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
+                <span className="text-[10px] md:text-xs font-black tracking-tight text-white/95 uppercase max-w-[100px] md:max-w-[170px] truncate leading-none">
+                  {currentScan.analysis?.suggestedTitle || currentScan.description || "Active Product"}
+                </span>
+              </div>
+            )}
+
+            {/* Credit usage popover sliding dropdown */}
+            <AnimatePresence>
+              {isCreditsPopoverOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40 bg-transparent" 
+                    onClick={() => setIsCreditsPopoverOpen(false)} 
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                    transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                    className="absolute top-14 left-0 w-80 bg-brand-bg/95 border border-brand-border p-5 rounded-3xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] backdrop-blur-2xl z-50 text-brand-text flex flex-col gap-4 text-left"
+                  >
+                    {/* Popover Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-white uppercase tracking-wider">Credit usage</span>
+                        <Info className="w-3.5 h-3.5 text-brand-border" />
+                      </div>
+                      <span className="text-[9px] font-bold text-brand-text-muted/60 uppercase">Renews 7/1/26 12am UTC</span>
+                    </div>
+
+                    <div className="space-y-3 pt-1">
+                      {/* Message Credits */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bold">
+                          <span className="text-brand-text-muted">Message credits</span>
+                          <span>{spentCredits.messages} / {
+                            (plan === 'free' ? 25 : plan === 'basic' ? 150 : plan === 'reseller' ? 1000 : 5000)
+                          }</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-brand-border/30 overflow-hidden">
+                          <div 
+                            className="h-full bg-brand-accent rounded-full" 
+                            style={{ 
+                              width: `${Math.min(100, (spentCredits.messages / (plan === 'free' ? 25 : plan === 'basic' ? 150 : plan === 'reseller' ? 1000 : 5000)) * 100)}%` 
+                            }} 
+                          />
+                        </div>
+                        <div className="text-[9px] text-brand-text-muted/50 font-bold uppercase tracking-wider">Daily limit: 0/5</div>
+                      </div>
+
+                      {/* Integration Credits */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bold">
+                          <span className="text-brand-text-muted">Integration credits</span>
+                          <span>{spentCredits.integration} / {
+                            (plan === 'free' ? 100 : plan === 'basic' ? 500 : plan === 'reseller' ? 2500 : 10000)
+                          }</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-brand-border/30 overflow-hidden">
+                          <div 
+                            className="h-full bg-brand-accent/70 rounded-full" 
+                            style={{ 
+                              width: `${Math.min(100, (spentCredits.integration / (plan === 'free' ? 100 : plan === 'basic' ? 500 : plan === 'reseller' ? 2500 : 10000)) * 100)}%` 
+                            }} 
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Upgrade button */}
+                    <button 
+                      onClick={() => {
+                        setIsCreditsPopoverOpen(false);
+                        onViewPricing?.();
+                      }}
+                      className="w-full py-2.5 rounded-2xl bg-brand-accent/15 border border-brand-accent/20 text-brand-accent text-xs font-black uppercase text-center hover:bg-brand-accent hover:text-brand-bg transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Zap className="w-3.5 h-3.5 fill-current" /> Upgrade your plan
+                    </button>
+
+                    {/* Menu links from screenshot */}
+                    <div className="flex flex-col border-t border-brand-border/30 pt-2.5 gap-1.5 shrink-0">
+                      {[
+                        { icon: <Settings className="w-3.5 h-3.5 animate-none" />, label: 'Settings', action: onViewSettings },
+                        { icon: <CreditCard className="w-3.5 h-3.5 animate-none" />, label: 'Pricing plans', action: onViewPricing },
+                        { icon: <Gift className="w-3.5 h-3.5 animate-none" />, label: 'Win free credits', action: () => alert("👋 Win Free Credits!\n\nEarn 25% commissions + lifetime scan credits when someone subscribes using your link in the Partner program!") },
+                        { icon: <BookOpen className="w-3.5 h-3.5 animate-none" />, label: 'Documentation', action: onViewDocs },
+                        { icon: <HelpCircle className="w-3.5 h-3.5 animate-none" />, label: 'Get help', action: () => alert("Need assistance? Send an email to support@sellscan.ai and our agents will respond in under an hour.") }
+                      ].map((item, idx) => (
+                        <button 
+                          key={idx}
+                          onClick={() => {
+                            setIsCreditsPopoverOpen(false);
+                            item.action?.();
+                          }}
+                          className="flex items-center gap-2.5 py-1 text-xs font-bold text-brand-text-muted hover:text-white transition-colors cursor-pointer text-left w-full"
+                        >
+                          <span className="text-brand-text-muted/65 group-hover:text-white">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Underlined view credit usage text from user */}
+                    <div className="text-center pt-2 border-t border-brand-border/20">
+                      <button 
+                        onClick={() => {
+                          setIsCreditsPopoverOpen(false);
+                          onViewCredits?.();
+                        }}
+                        className="text-xs text-brand-accent font-bold hover:brightness-110 underline decoration-brand-accent/30 underline-offset-4 cursor-pointer"
+                      >
+                        view your credit usage
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="hidden md:flex items-center gap-8">

@@ -37,9 +37,10 @@ import { PricingPlansPage } from './components/PricingPlansPage';
 import { DiscountTimer } from './components/DiscountTimer';
 import { UnclearProductSelector } from './components/UnclearProductSelector';
 import { OnboardingQuiz } from './components/OnboardingQuiz';
+import { CreditUsagePage } from './components/CreditUsagePage';
 import { getPriceId } from './lib/stripe';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz' | 'credit-usage';
 
 type LoadingStage = 
   | 'identifying' 
@@ -109,7 +110,8 @@ function AppContent() {
         '/Projects': 'project-detail',
         '/Dashboard': 'dashboard',
         '/Pricing': 'pricing',
-        '/GetStarted': 'quiz'
+        '/GetStarted': 'quiz',
+        '/Credits': 'credit-usage'
       };
 
       const matchedView = pathViewMap[path];
@@ -161,7 +163,8 @@ function AppContent() {
       'auth-callback': '/auth-callback',
       'landing-alias': '/LandingPage',
       pricing: '/Pricing',
-      quiz: '/GetStarted'
+      quiz: '/GetStarted',
+      'credit-usage': '/Credits'
     };
     
     const targetPath = viewPathMap[view] || (view === 'landing' ? '/LandingPage' : '/');
@@ -273,6 +276,30 @@ function AppContent() {
   const [plan, setPlan] = useState<AIPlan>(() => {
     return (localStorage.getItem('sellscan_plan') as AIPlan) || 'free';
   });
+
+  const [spentCredits, setSpentCredits] = useState<{ scans: number; messages: number; integration: number }>(() => {
+    const saved = localStorage.getItem('sellscan_spent_credits');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // fallback
+      }
+    }
+    return { scans: 14, messages: 6, integration: 15 };
+  });
+
+  const handleMessageSpent = () => {
+    setSpentCredits(prev => {
+      const next = { ...prev, messages: prev.messages + 1 };
+      localStorage.setItem('sellscan_spent_credits', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleAddBoosterCredits = (amount: number) => {
+    // Just a clean tracker to trigger reactivity
+  };
 
   const [pipeline, setPipeline] = useState<AIPipelineConfig>(() => {
     const saved = localStorage.getItem('sellscan_pipeline');
@@ -551,6 +578,12 @@ function AppContent() {
     
     setCurrentScan(newScan);
     saveToHistory(newScan);
+
+    setSpentCredits(prev => {
+      const next = { ...prev, scans: prev.scans + 1 };
+      localStorage.setItem('sellscan_spent_credits', JSON.stringify(next));
+      return next;
+    });
     
     // Clear persistence states for ImageUpload
     setUnsavedImage(null);
@@ -906,6 +939,10 @@ function AppContent() {
         theme={resolvedTheme}
         onToggleTheme={toggleTheme}
         rightElement={user && <DiscountTimer variant="compact" onClaimDiscount={() => setView('pricing')} />}
+        currentScan={currentScan}
+        plan={plan}
+        spentCredits={spentCredits}
+        onViewCredits={() => setView('credit-usage')}
       />
 
       {/* Discount Modal Overlay */}
@@ -1340,6 +1377,23 @@ function AppContent() {
              </motion.div>
           )}
 
+          {view === 'credit-usage' && (
+             <motion.div
+               key="credit-usage"
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+             >
+                <CreditUsagePage 
+                  plan={plan}
+                  spentCredits={spentCredits}
+                  onBack={() => setView('home')}
+                  onUpgradePlan={() => setView('pricing')}
+                  onAddBoosterCredits={handleAddBoosterCredits}
+                />
+             </motion.div>
+          )}
+
           {view === 'dashboard' && currentScan && (
             <motion.div
               key="dashboard"
@@ -1354,6 +1408,7 @@ function AppContent() {
                 projects={projects}
                 onBack={() => setView('home')}
                 pipeline={pipeline}
+                onMessageSent={handleMessageSpent}
               />
             </motion.div>
           )}

@@ -36,9 +36,10 @@ interface ScanDashboardProps {
   projects: Project[];
   onBack: () => void;
   pipeline: AIPipelineConfig;
+  onMessageSent?: () => void;
 }
 
-export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, onBack, pipeline }: ScanDashboardProps) {
+export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, onBack, pipeline, onMessageSent }: ScanDashboardProps) {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [highlightedCard, setHighlightedCard] = useState<string | null>(null);
@@ -175,6 +176,7 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
     setIsSending(true);
 
     try {
+      onMessageSent?.();
       const response = await chatAboutProduct([...chatMessages, userMessage], analysis, pipeline);
       
       const assistantMessage: ChatMessage = { role: 'assistant', content: response.chatResponse };
