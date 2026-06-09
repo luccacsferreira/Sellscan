@@ -33,9 +33,10 @@ import { DocsPage } from './components/DocsPage';
 import { AffiliatePage } from './components/AffiliatePage';
 import { partnerService } from './services/partnerService';
 import { NotificationModal } from './components/NotificationModal';
+import { PricingPlansPage } from './components/PricingPlansPage';
 import { DiscountTimer } from './components/DiscountTimer';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing';
 
 type LoadingStage = 
   | 'identifying' 
@@ -103,7 +104,8 @@ function AppContent() {
         '/Settings': 'settings',
         '/Docs': 'docs',
         '/Projects': 'project-detail',
-        '/Dashboard': 'dashboard'
+        '/Dashboard': 'dashboard',
+        '/Pricing': 'pricing'
       };
 
       const matchedView = pathViewMap[path];
@@ -153,7 +155,8 @@ function AppContent() {
       'project-detail': '/Projects',
       'dashboard': '/Dashboard',
       'auth-callback': '/auth-callback',
-      'landing-alias': '/LandingPage'
+      'landing-alias': '/LandingPage',
+      pricing: '/Pricing'
     };
     
     const targetPath = viewPathMap[view] || (view === 'landing' ? '/LandingPage' : '/');
@@ -766,6 +769,7 @@ function AppContent() {
         onViewSettings={() => setView('settings')}
         onViewDocs={() => setView('docs')}
         onViewAffiliate={() => setView('affiliate')}
+        onViewPricing={() => setView('pricing')}
         onSignInClick={() => setShowAuthModal(true)}
         onGetStartedClick={() => setView('upload')}
         isLoggedIn={!!user}
@@ -773,7 +777,7 @@ function AppContent() {
         userEmail={user?.email}
         theme={resolvedTheme}
         onToggleTheme={toggleTheme}
-        rightElement={user && <DiscountTimer variant="compact" />}
+        rightElement={user && <DiscountTimer variant="compact" onClaimDiscount={() => setView('pricing')} />}
       />
 
       {/* Discount Modal Overlay */}
@@ -793,7 +797,13 @@ function AppContent() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-xl z-10"
             >
-              <DiscountTimer onClose={() => setShowDiscountModal(false)} />
+              <DiscountTimer 
+                onClose={() => setShowDiscountModal(false)} 
+                onClaimDiscount={() => {
+                  setShowDiscountModal(false);
+                  setView('pricing');
+                }}
+              />
             </motion.div>
           </div>
         )}
@@ -1099,6 +1109,24 @@ function AppContent() {
                 onViewAllScans={() => setView('history')}
                 onViewAnalytics={() => setView('analytics')}
                 onViewAffiliate={() => setView('affiliate')}
+              />
+            </motion.div>
+          )}
+
+          {view === 'pricing' && (
+            <motion.div
+              key="pricing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <PricingPlansPage 
+                user={user}
+                onSignIn={(tier) => {
+                  if (tier) setPendingCheckout(tier);
+                  setShowAuthModal(true);
+                }}
+                onStartNewScan={() => setView('upload')}
               />
             </motion.div>
           )}

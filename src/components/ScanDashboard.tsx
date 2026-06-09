@@ -95,11 +95,13 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
     };
   }, []);
 
-  // Smooth scroll sequence to current active box
+  // Continuous smooth scrolling while AI is actively typing (animationStage < 6)
   useEffect(() => {
-    if (isInterfered) return;
+    if (animationStage >= 6 || isInterfered) return;
 
     const scrollActiveIntoView = () => {
+      if (isInterfered || animationStage >= 6) return;
+
       let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
       if (animationStage === 0) targetRef = box1Ref;
       else if (animationStage === 1) targetRef = box2Ref;
@@ -107,18 +109,18 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
       else if (animationStage === 3) targetRef = box4Ref;
       else if (animationStage === 4) targetRef = box5Ref;
       else if (animationStage === 5) targetRef = box6Ref;
-      else if (animationStage === 6) targetRef = box7Ref;
 
       if (targetRef && targetRef.current) {
         targetRef.current.scrollIntoView({
           behavior: 'smooth',
-          block: 'center'
+          block: 'end' // continuous scroll to the bottom of the writing container
         });
       }
     };
 
-    const timer = setTimeout(scrollActiveIntoView, 120);
-    return () => clearTimeout(timer);
+    // Keep scrolling to follow typwriter increments as text height grows
+    const interval = setInterval(scrollActiveIntoView, 150);
+    return () => clearInterval(interval);
   }, [animationStage, isInterfered]);
 
   const skipAnimation = () => {

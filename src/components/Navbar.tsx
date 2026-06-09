@@ -19,6 +19,7 @@ interface NavbarProps {
   onViewSettings?: () => void;
   onViewDocs?: () => void;
   onViewAffiliate?: () => void;
+  onViewPricing?: () => void;
   onSignInClick?: () => void;
   onGetStartedClick?: () => void;
   isLoggedIn?: boolean;
@@ -37,6 +38,7 @@ export function Navbar({
   onViewSettings,
   onViewDocs,
   onViewAffiliate,
+  onViewPricing,
   onSignInClick,
   onGetStartedClick,
   isLoggedIn = false, 
@@ -87,25 +89,31 @@ export function Navbar({
               <>
                 <button 
                   onClick={onGoHome} 
-                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                  className={cn("text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest", currentView === 'home' && "text-brand-font-black font-semibold text-brand-accent")}
                 >
                   Home
                 </button>
                 <button 
                   onClick={onViewAnalytics} 
-                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                  className={cn("text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest", currentView === 'analytics' && "text-brand-font-black font-semibold text-brand-accent")}
                 >
                   Analytics
                 </button>
                 <button 
                   onClick={onViewHistory} 
-                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                  className={cn("text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest", currentView === 'history' && "text-brand-font-black font-semibold text-brand-accent")}
                 >
                   History
                 </button>
                 <button 
+                  onClick={onViewPricing} 
+                  className={cn("text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest", currentView === 'pricing' && "text-brand-font-black font-semibold text-brand-accent")}
+                >
+                  Pricing
+                </button>
+                <button 
                   onClick={onViewAffiliate} 
-                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest"
+                  className={cn("text-brand-text-muted hover:text-brand-text transition-colors text-sm font-bold uppercase tracking-widest", currentView === 'affiliate' && "text-brand-font-black font-semibold text-brand-accent")}
                 >
                   Partners
                 </button>
@@ -113,7 +121,7 @@ export function Navbar({
             ) : (
               <>
                 <a href="#features" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Features</a>
-                <a href="#pricing" className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Pricing</a>
+                <button onClick={onViewPricing} className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Pricing</button>
                 <button onClick={onViewDocs} className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-medium">Documentation</button>
               </>
             )}
@@ -244,6 +252,12 @@ export function Navbar({
                       History
                     </button>
                     <button 
+                      onClick={() => handleMobileNav(onViewPricing!)} 
+                      className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
+                    >
+                      Pricing
+                    </button>
+                    <button 
                       onClick={() => handleMobileNav(onViewAffiliate!)} 
                       className="text-left text-lg font-bold text-brand-text flex items-center gap-3"
                     >
@@ -265,7 +279,7 @@ export function Navbar({
                 ) : (
                   <>
                     <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Features</a>
-                    <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-bold text-brand-text">Pricing</a>
+                    <button onClick={() => { setIsMobileMenuOpen(false); onViewPricing?.(); }} className="text-left text-lg font-bold text-brand-text">Pricing</button>
                     <button onClick={() => { setIsMobileMenuOpen(false); onViewDocs?.(); }} className="text-left text-lg font-bold text-brand-text">Documentation</button>
                     <div className="h-px bg-brand-border my-2" />
                     {isLoggedIn ? (
