@@ -35,8 +35,11 @@ import { partnerService } from './services/partnerService';
 import { NotificationModal } from './components/NotificationModal';
 import { PricingPlansPage } from './components/PricingPlansPage';
 import { DiscountTimer } from './components/DiscountTimer';
+import { UnclearProductSelector } from './components/UnclearProductSelector';
+import { OnboardingQuiz } from './components/OnboardingQuiz';
+import { getPriceId } from './lib/stripe';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz';
 
 type LoadingStage = 
   | 'identifying' 
@@ -105,7 +108,8 @@ function AppContent() {
         '/Docs': 'docs',
         '/Projects': 'project-detail',
         '/Dashboard': 'dashboard',
-        '/Pricing': 'pricing'
+        '/Pricing': 'pricing',
+        '/GetStarted': 'quiz'
       };
 
       const matchedView = pathViewMap[path];
@@ -156,7 +160,8 @@ function AppContent() {
       'dashboard': '/Dashboard',
       'auth-callback': '/auth-callback',
       'landing-alias': '/LandingPage',
-      pricing: '/Pricing'
+      pricing: '/Pricing',
+      quiz: '/GetStarted'
     };
     
     const targetPath = viewPathMap[view] || (view === 'landing' ? '/LandingPage' : '/');
@@ -220,6 +225,10 @@ function AppContent() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('identifying');
+  const [unclearOptions, setUnclearOptions] = useState<string[] | null>(null);
+  const [unclearOriginalAnalysis, setUnclearOriginalAnalysis] = useState<ProductAnalysis | null>(null);
+  const [unclearImageToReanalyze, setUnclearImageToReanalyze] = useState<string | null>(null);
+  const [unclearDescToReanalyze, setUnclearDescToReanalyze] = useState<string | null>(null);
   const [imageToAnalyze, setImageToAnalyze] = useState<string | null>(null);
   const [detectedName, setDetectedName] = useState<string | null>(null);
   const [livePrice, setLivePrice] = useState<number | null>(null);
@@ -306,6 +315,55 @@ function AppContent() {
   const [unsavedTitle, setUnsavedTitle] = useState<string>('');
   const [unsavedDescription, setUnsavedDescription] = useState<string>('');
 
+  const triggerCheckout = async (tier: string, activeUser: User) => {
+    try {
+      const priceId = getPriceId(tier, 'yearly');
+      if (!priceId) {
+        alert("This tier or billing cycle is not configured with a Price ID yet.");
+        return;
+      }
+
+      setIsLoading(true);
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId,
+          userId: activeUser.id,
+          userEmail: activeUser.email,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        try {
+          window.top!.location.href = data.url;
+        } catch (e) {
+          window.location.href = data.url;
+        }
+      }
+    } catch (err: any) {
+      console.error("Checkout failed:", err);
+      alert("Checkout failed: " + (err.message || "Unknown error"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOnboardingSubscribe = async (tier: string) => {
+    if (!user) {
+      setPendingCheckout(tier);
+      setShowAuthModal(true);
+      return;
+    }
+    await triggerCheckout(tier, user);
+  };
+
   const handleAuthSuccess = (authenticatedUser: User) => {
     setShowAuthModal(false);
     setUser(authenticatedUser);
@@ -323,9 +381,9 @@ function AppContent() {
       handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
       setPendingScan(null);
     } else if (pendingCheckout) {
-      // If we're on the landing page and have a pending checkout, stay here
-      // so the user can click the button again, now logged in.
+      const tierToCheckout = pendingCheckout;
       setPendingCheckout(null);
+      triggerCheckout(tierToCheckout, authenticatedUser);
     } else if (view === 'landing') {
       setView('home');
     }
@@ -475,6 +533,87 @@ function AppContent() {
     };
   }, [history]);
 
+  const finalizeAnalysis = (analysis: ProductAnalysis, img?: string, desc?: string) => {
+    // Now update the "Live" data with reality before we switch views
+    setDetectedName(analysis.productDetails.brand + ' ' + (analysis.productDetails.type || analysis.productDetails.category || analysis.productDetails.name));
+    setActivePlatforms(analysis.platforms.slice(0, 5).map(p => p.name));
+    setLivePrice(analysis.priceRange.sweetSpot);
+    setLiveRating((analysis as any).buyerSentiment?.overallRating || 4.8);
+
+    const newScan: ScanResult = {
+      id: Math.random().toString(36).substring(7),
+      timestamp: Date.now(),
+      imageUrl: img,
+      description: desc,
+      analysis,
+      projectId: activeProjectId || undefined
+    };
+    
+    setCurrentScan(newScan);
+    saveToHistory(newScan);
+    
+    // Clear persistence states for ImageUpload
+    setUnsavedImage(null);
+    setUnsavedTitle('');
+    setUnsavedDescription('');
+
+    setView('dashboard');
+  };
+
+  const handleUnclearChoice = async (chosenOption: string | null) => {
+    if (!chosenOption) {
+      if (unclearOriginalAnalysis) {
+        finalizeAnalysis(unclearOriginalAnalysis, unclearImageToReanalyze || undefined, unclearDescToReanalyze || undefined);
+      }
+      setIsLoading(false);
+      setUnclearOptions(null);
+      setUnclearOriginalAnalysis(null);
+      return;
+    }
+
+    setUnclearOptions(null);
+    setIsLoading(true);
+    setLoadingStage('identifying');
+
+    try {
+      const refinedDesc = `The user confirmed this item is: "${chosenOption}". ${unclearDescToReanalyze || ''}`.trim();
+      const refinedPromise = analyzeProduct({
+        image: unclearImageToReanalyze || undefined,
+        description: refinedDesc,
+        location: location || undefined,
+        isDemo: false,
+        pipeline: pipeline
+      });
+
+      // Show some smooth transitions to make refinement feel fast & cohesive
+      await new Promise(res => setTimeout(res, 800));
+      setLoadingStage('searching');
+      await new Promise(res => setTimeout(res, 1200));
+      setLoadingStage('calculating');
+      await new Promise(res => setTimeout(res, 1000));
+      setLoadingStage('finishing');
+
+      const refinedAnalysis = await refinedPromise;
+      finalizeAnalysis(refinedAnalysis, unclearImageToReanalyze || undefined, unclearDescToReanalyze || undefined);
+    } catch (err) {
+      console.error("Refinement failed, carrying over original estimate:", err);
+      if (unclearOriginalAnalysis) {
+        finalizeAnalysis(unclearOriginalAnalysis, unclearImageToReanalyze || undefined, unclearDescToReanalyze || undefined);
+      } else {
+        setScanError({
+          title: "Refinement Issue",
+          message: "Our agents had an issue finalizing the selected category. Try a standard photo."
+        });
+      }
+    } finally {
+      setIsLoading(false);
+      setUnclearOptions(null);
+      setUnclearOriginalAnalysis(null);
+      setUnclearImageToReanalyze(null);
+      setUnclearDescToReanalyze(null);
+    }
+  };
+
   const handleAnalyze = async (image?: string, description?: string, isDemo: boolean = false, forceUser?: User | null) => {
     const activeUser = forceUser !== undefined ? forceUser : user;
     
@@ -537,30 +676,16 @@ function AppContent() {
 
       const analysis = await aiPromise;
       
-      // Now update the "Live" data with reality before we switch views
-      setDetectedName(analysis.productDetails.brand + ' ' + (analysis.productDetails.type || analysis.productDetails.category));
-      setActivePlatforms(analysis.platforms.slice(0, 5).map(p => p.name));
-      setLivePrice(analysis.priceRange.sweetSpot);
-      setLiveRating((analysis as any).buyerSentiment?.overallRating || 4.8);
+      if (!isDemo && analysis.productDetails?.unclearProduct === true && analysis.alternativeOptions && analysis.alternativeOptions.length > 0) {
+        // Halt and render choice picker in overlay
+        setUnclearOptions(analysis.alternativeOptions);
+        setUnclearOriginalAnalysis(analysis);
+        setUnclearImageToReanalyze(image || null);
+        setUnclearDescToReanalyze(description || null);
+        return;
+      }
 
-      const newScan: ScanResult = {
-        id: Math.random().toString(36).substring(7),
-        timestamp: Date.now(),
-        imageUrl: image,
-        description: description,
-        analysis,
-        projectId: activeProjectId || undefined
-      };
-      
-      setCurrentScan(newScan);
-      saveToHistory(newScan);
-      
-      // Clear persistence states for ImageUpload
-      setUnsavedImage(null);
-      setUnsavedTitle('');
-      setUnsavedDescription('');
-
-      setView('dashboard');
+      finalizeAnalysis(analysis, image, description);
     } catch (error) {
       console.error("Analysis failed:", error);
       const isMissingKey = error instanceof Error && 
@@ -581,7 +706,10 @@ function AppContent() {
         });
       }
     } finally {
-      setIsLoading(false);
+      // Only disable loading screen if we aren't showing the selection prompt
+      if (!unclearOptions) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -771,7 +899,7 @@ function AppContent() {
         onViewAffiliate={() => setView('affiliate')}
         onViewPricing={() => setView('pricing')}
         onSignInClick={() => setShowAuthModal(true)}
-        onGetStartedClick={() => setView('upload')}
+        onGetStartedClick={() => setView('quiz')}
         isLoggedIn={!!user}
         currentView={view}
         userEmail={user?.email}
@@ -1082,7 +1210,7 @@ function AppContent() {
               transition={{ duration: 0.3 }}
             >
               <LandingPage 
-                onStart={() => setView('upload')} 
+                onStart={() => setView('quiz')} 
                 onSignIn={(tier) => {
                   if (tier) setPendingCheckout(tier);
                   setShowAuthModal(true);
@@ -1109,6 +1237,21 @@ function AppContent() {
                 onViewAllScans={() => setView('history')}
                 onViewAnalytics={() => setView('analytics')}
                 onViewAffiliate={() => setView('affiliate')}
+              />
+            </motion.div>
+          )}
+
+          {view === 'quiz' && (
+            <motion.div
+              key="quiz"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <OnboardingQuiz 
+                onStartScanning={() => setView('upload')}
+                onSubscribe={handleOnboardingSubscribe}
+                onViewAllPlans={() => setView('pricing')}
               />
             </motion.div>
           )}
@@ -1573,6 +1716,13 @@ function AppContent() {
             window.location.reload();
           }
         }}
+      />
+
+      <UnclearProductSelector 
+        isOpen={!!unclearOptions}
+        imageUrl={unclearImageToReanalyze}
+        options={unclearOptions || []}
+        onSelect={handleUnclearChoice}
       />
     </div>
   );

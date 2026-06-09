@@ -705,6 +705,105 @@ async function startServer() {
       res.status(500).json({ error: error.message });
     }
   });
+
+  app.post("/api/ai/suggest-plan", async (req, res) => {
+    try {
+      const { describeOther, volume, platforms } = req.body;
+      const userText = describeOther || "";
+      const volText = volume || "";
+      const plArray = platforms || [];
+
+      // Built-in rule-based fallback if no AI key configured or if call fails
+      const fallbackSuggestion = () => {
+        let suggestedTier = "Explorer";
+        let reasoning = "Based on your active start, the Explorer tier is the perfect zero-cost launchpad to scan items, test market speeds, and learn the ropes!";
+
+        const lowUserText = userText.toLowerCase();
+        const isProfessional = lowUserText.includes("professional") || lowUserText.includes("business") || lowUserText.includes("entrepreneur") || lowUserText.includes("shop") || lowUserText.includes("reseller") || lowUserText.includes("wholesale") || lowUserText.includes("store");
+        
+        if (volText.includes("200+") || lowUserText.includes("bulk") || lowUserText.includes("warehouse") || (isProfessional && volText.includes("51 - 200"))) {
+          suggestedTier = "Entrepreneur";
+          reasoning = `Since you run a larger scale operation with ${volText || "high volume"} active inventory and list across multiple channels, the Entrepreneur plan is engineered for you. You get maximum scans, advanced sentiment analytics, and custom developer tools.`;
+        } else if (volText.includes("51 - 200") || isProfessional || lowUserText.includes("flip") || lowUserText.includes("ebayer")) {
+          suggestedTier = "Reseller";
+          reasoning = `As an active flipper targeting platforms like ${plArray.join(', ') || 'eBay, Grailed'}, your listing density matches the Reseller tier perfectly. This unlocks our premier cross-platform intelligence, dedicated margins tracker, and pricing matrices.`;
+        } else if (volText.includes("11 - 50") || lowUserText.includes("hobby") || lowUserText.includes("clean") || lowUserText.includes("garage")) {
+          suggestedTier = "Basic";
+          reasoning = `With a moderate pace of ${volText || "11-50 listings"} a month, the Basic plan gives you the essential scan credits, condition rating benchmarks, and platform routing to lift your side-gig to new heights.`;
+        }
+        
+        return { suggestedTier, reasoning };
+      };
+
+      const geminiKey = process.env.GEMINI_API_KEY;
+      const openaiKey = process.env.OPENAI_API_KEY;
+
+      if (!geminiKey && !openaiKey) {
+        console.warn("⚠️ No AI keys configured for plan suggestion. Using rule-based builder.");
+        return res.json(fallbackSuggestion());
+      }
+
+      const promptHtml = `You are the Sellscan dynamic plan recommendation engine.
+We offer four plans:
+- 'Explorer': For casual decluttering/hobbyists, list <10 items/mo.
+- 'Basic': For regular local flippers, list 10-50 items/mo.
+- 'Reseller': For dedicated part-time/full-time flippers, list 50-200 items/mo, cross-platform listing.
+- 'Entrepreneur': For bulk liquidators, brick-and-mortar stores, or high volume operations listing >200 items/mo.
+
+Based on this user profile, select the absolute best plan and write a professional, highly encouraging 2-3 sentence reasoning addressing them directly:
+- User's business model (especially if custom/other description was provided): "${userText}"
+- Intended volume: "${volText}"
+- Platforms to list: "${plArray.join(', ')}"
+
+Return **JSON ONLY** with the exact schema:
+{
+  "suggestedTier": "Explorer" | "Basic" | "Reseller" | "Entrepreneur",
+  "reasoning": "A personalized explanation speaking directly to their strategy, noting their platforms/volume, and outlining exactly why this tier is supreme for them."
+}`;
+
+      if (geminiKey) {
+        try {
+          const genAI = new GoogleGenAI(geminiKey);
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          const result = await model.generateContent(promptHtml);
+          const response = await result.response;
+          const responseText = response.text() || "";
+          
+          const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            return res.json(JSON.parse(jsonMatch[0]));
+          }
+          return res.json(JSON.parse(responseText.trim()));
+        } catch (err) {
+          console.error("Gemini failed parsing suggested plan:", err);
+        }
+      }
+
+      if (openaiKey) {
+        try {
+          const openai = new OpenAI({ apiKey: openaiKey });
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [{ role: "user", content: promptHtml }],
+            response_format: { type: "json_object" }
+          });
+          const content = response.choices[0].message.content || "";
+          return res.json(JSON.parse(content.trim()));
+        } catch (err) {
+          console.error("OpenAI failed parsing suggested plan:", err);
+        }
+      }
+
+      // Final bulletproof fallback
+      return res.json(fallbackSuggestion());
+    } catch (error: any) {
+      console.error("Endpoint failed, fallback triggered:", error);
+      res.json({
+        suggestedTier: "Basic",
+        reasoning: "We recommend starting on the Basic plan to fully pilot your multi-platform listings with generous credits!"
+      });
+    }
+  });
   
   app.post("/api/stripe/create-checkout", async (req, res) => {
     try {

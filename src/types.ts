@@ -66,6 +66,7 @@ export interface ProductAnalysis {
     max: number;
     sweetSpot: number;
   };
+  alternativeOptions?: string[];
   productDetails: {
     name: string;
     type: string;
@@ -74,6 +75,7 @@ export interface ProductAnalysis {
     category: string;
     characteristics: string[];
     lowConfidence?: boolean;
+    unclearProduct?: boolean;
   };
   marketSentiment: {
     consensus: string;
