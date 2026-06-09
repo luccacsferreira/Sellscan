@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatAmount } from '../../lib/utils';
 
 interface PricePoint {
   date: string;
@@ -282,7 +282,7 @@ export function PriceTrendBox({ history, currencySymbol, scanId, productName }: 
                 tickLine={false} 
                 tick={{ fill: 'rgba(128,128,128,0.6)', fontSize: 10, fontWeight: 'bold' }}
                 domain={['auto', 'auto']}
-                tickFormatter={(val) => `${currencySymbol}${val}`}
+                tickFormatter={(val) => `${currencySymbol}${formatAmount(val)}`}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -294,7 +294,7 @@ export function PriceTrendBox({ history, currencySymbol, scanId, productName }: 
                 }}
                 itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
                 labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}
-                formatter={(value: any) => [`${currencySymbol}${value}`, 'Market Price']}
+                formatter={(value: any) => [`${currencySymbol}${formatAmount(value)}`, 'Market Price']}
               />
               <Area 
                 type="monotone" 

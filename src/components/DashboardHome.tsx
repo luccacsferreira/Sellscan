@@ -16,7 +16,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { ScanResult, Project, UserStats, AffiliateProfile } from '../types';
-import { cn } from '../lib/utils';
+import { cn, formatAmount } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 import { supabase } from '../lib/supabase';
 import { partnerService, PartnerLink } from '../services/partnerService';
@@ -178,13 +178,13 @@ export function DashboardHome({
         <StatCard 
           icon={<TrendingUp className="w-5 h-5" />}
           label="Market Value"
-          value={`${currencySymbol}${stats.totalMarketValue.toLocaleString()}`}
+          value={`${currencySymbol}${formatAmount(stats.totalMarketValue)}`}
           trend="Based on 20+ sources"
         />
         <StatCard 
           icon={<BarChart3 className="w-5 h-5" />}
           label="Avg. Resale"
-          value={`${currencySymbol}${stats.averageSweetSpot.toFixed(0)}`}
+          value={`${currencySymbol}${formatAmount(stats.averageSweetSpot)}`}
           trend="Optimal sweet spot"
         />
         <div 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Wrench, Check, Plus, Star } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatAmount } from '../../lib/utils';
 import { PracticalTip } from '../../types';
 
 interface PracticalTipsBoxProps {
@@ -82,7 +82,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = fal
             </div>
 
             <div className="mt-auto pt-4 flex items-center justify-between border-t border-brand-border/30">
-              <span className="text-[10px] font-bold text-brand-accent uppercase">+{currencySymbol}{tip.valueAdd}</span>
+              <span className="text-[10px] font-bold text-brand-accent uppercase">+{currencySymbol}{formatAmount(tip.valueAdd)}</span>
               <span className={cn(
                 "text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter",
                 tip.impact === 'high' ? "bg-green-500/10 text-green-500" : 
@@ -99,14 +99,14 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = fal
         <div className="flex items-center gap-6">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-1">Base Sweet Spot</span>
-            <span className="text-xl font-bold text-brand-text/60">{currencySymbol}{basePrice.toFixed(2)}</span>
+            <span className="text-xl font-bold text-brand-text/60">{currencySymbol}{formatAmount(basePrice)}</span>
           </div>
           <div className="text-brand-text-muted">
             <Plus className="w-5 h-5" />
           </div>
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-1">Total Value Add</span>
-            <span className="text-xl font-bold text-brand-accent">+{currencySymbol}{addedValue.toFixed(2)}</span>
+            <span className="text-xl font-bold text-brand-accent">+{currencySymbol}{formatAmount(addedValue)}</span>
           </div>
         </div>
 
@@ -118,7 +118,7 @@ export function PracticalTipsBox({ tips, basePrice, currencySymbol, active = fal
             <span className="text-[10px] font-extrabold text-brand-accent uppercase tracking-widest">New Target Price</span>
           </div>
           <span className="text-4xl font-black tracking-tighter text-brand-text">
-            {currencySymbol}{finalPrice.toFixed(2)}
+            {currencySymbol}{formatAmount(finalPrice)}
           </span>
         </div>
       </div>

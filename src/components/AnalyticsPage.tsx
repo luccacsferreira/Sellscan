@@ -17,6 +17,7 @@ import {
 import { ArrowLeft, TrendingUp, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { UserStats } from '../types';
 import { useLocation } from '../lib/LocationContext';
+import { formatAmount } from '../lib/utils';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
@@ -168,10 +169,10 @@ export function AnalyticsPage({ stats, onBack }: AnalyticsPageProps) {
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false}
-                  tickFormatter={(val) => `${currencySymbol}${val}`}
+                  tickFormatter={(val) => `${currencySymbol}${formatAmount(val)}`}
                 />
                 <Tooltip 
-                  formatter={(value: number) => [`${currencySymbol}${value}`, 'Market Value']}
+                  formatter={(value: number) => [`${currencySymbol}${formatAmount(value)}`, 'Market Value']}
                   contentStyle={{ 
                     backgroundColor: '#212121', 
                     border: '1px solid #2B2B2B',

@@ -7,7 +7,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Clock, ExternalLink, ArrowRight, Search, Trash2, FolderRoot, ChevronDown, Check } from 'lucide-react';
 import { ScanResult, Project } from '../types';
-import { cn } from '../lib/utils';
+import { cn, formatAmount } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -154,7 +154,7 @@ export function HistoryPage({ history, projects, onSelect, onUpdateScan, onClear
                     {scan.analysis?.productDetails?.brand || 'Unknown'} {scan.analysis?.productDetails?.type || 'Product'}
                   </h3>
                   <div className="flex items-center justify-between mt-4">
-                    <span className="text-xl font-bold">{currencySymbol}{scan.analysis?.priceRange?.sweetSpot || 0}</span>
+                    <span className="text-xl font-bold">{currencySymbol}{formatAmount(scan.analysis?.priceRange?.sweetSpot)}</span>
                     <div className="w-8 h-8 rounded-full bg-brand-bg border border-brand-border flex items-center justify-center group-hover:bg-brand-accent group-hover:text-brand-bg transition-all">
                       <ArrowRight className="w-4 h-4" />
                     </div>

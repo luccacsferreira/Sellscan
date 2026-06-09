@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp, Info } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatAmount, formatPrice } from '../../lib/utils';
 import { Typewriter } from './Typewriter';
 
 interface PriceRange {
@@ -84,9 +84,9 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
         <span className="text-xs font-bold text-brand-text-muted mb-2 block">Recommended Sweet Price:</span>
         <span className={cn("text-5xl font-black tracking-tighter min-h-[3rem] block", active ? "text-brand-accent" : "text-brand-text")}>
           {isTypingActive ? (
-            <Typewriter text={`${currency}${range.sweetSpot.toFixed(2)}`} speed={25} onComplete={onComplete} />
+            <Typewriter text={formatPrice(range.sweetSpot, currency)} speed={25} onComplete={onComplete} />
           ) : (
-            <span className="opacity-25 blur-[1.5px]">{currency}0.00</span>
+            <span className="opacity-25 blur-[1.5px]">{currency}0,00</span>
           )}
         </span>
       </div>
@@ -108,9 +108,9 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             <span className="opacity-40 mb-1">Bottom</span>
             <span className="text-brand-text/80">
               {isStageActive ? (
-                <span>{currency}{range.min.toFixed(2)}</span>
+                <span>{formatPrice(range.min, currency)}</span>
               ) : (
-                <span className="opacity-25 blur-[1px]">{currency}00.00</span>
+                <span className="opacity-25 blur-[1px]">{currency}00,00</span>
               )}
             </span>
           </div>
@@ -118,9 +118,9 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             <span className="opacity-40 mb-1">Sweet Spot</span>
             <span className="text-brand-accent">
               {isStageActive ? (
-                <span>{currency}{range.sweetSpot.toFixed(2)}</span>
+                <span>{formatPrice(range.sweetSpot, currency)}</span>
               ) : (
-                <span className="opacity-25 blur-[1px]">{currency}00.00</span>
+                <span className="opacity-25 blur-[1px]">{currency}00,00</span>
               )}
             </span>
           </div>
@@ -128,9 +128,9 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             <span className="opacity-40 mb-1">Peak</span>
             <span className="text-brand-text/80">
               {isStageActive ? (
-                <span>{currency}{range.max.toFixed(2)}</span>
+                <span>{formatPrice(range.max, currency)}</span>
               ) : (
-                <span className="opacity-25 blur-[1px]">{currency}00.00</span>
+                <span className="opacity-25 blur-[1px]">{currency}00,00</span>
               )}
             </span>
           </div>

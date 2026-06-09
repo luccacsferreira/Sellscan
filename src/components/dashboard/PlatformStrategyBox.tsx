@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, TrendingUp, Info, ChevronDown, Check } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, formatAmount } from '../../lib/utils';
 import { PlatformInsight } from '../../types';
 
 interface PlatformStrategyBoxProps {
@@ -40,7 +40,7 @@ export function PlatformStrategyBox({ platforms, currencySymbol, active = false,
            <div className="flex flex-col items-end">
              <span className="text-[9px] font-bold text-brand-text-muted uppercase">Global Market Avg.</span>
              <span className="text-sm font-bold text-brand-text">
-                {currencySymbol}{(platforms.reduce((acc, p) => acc + (p.avgPrice || 0), 0) / (platforms.length || 1)).toFixed(2)}
+                {currencySymbol}{formatAmount(platforms.reduce((acc, p) => acc + (p.avgPrice || 0), 0) / (platforms.length || 1))}
              </span>
            </div>
         </div>
@@ -77,16 +77,16 @@ export function PlatformStrategyBox({ platforms, currencySymbol, active = false,
             </div>
 
             <div className="md:col-span-2">
-              <span className="text-sm font-black text-brand-accent">{currencySymbol}{p.listPrice.toFixed(2)}</span>
+              <span className="text-sm font-black text-brand-accent">{currencySymbol}{formatAmount(p.listPrice)}</span>
             </div>
 
             <div className="md:col-span-2">
-              <span className="text-xs font-medium text-brand-text-muted">{currencySymbol}{p.avgPrice.toFixed(2)}</span>
+              <span className="text-xs font-medium text-brand-text-muted">{currencySymbol}{formatAmount(p.avgPrice)}</span>
             </div>
 
             <div className="md:col-span-2 text-right">
               <div className="flex flex-col items-end">
-                <span className="text-sm font-black text-brand-text">{currencySymbol}{p.profit.toFixed(2)}</span>
+                <span className="text-sm font-black text-brand-text">{currencySymbol}{formatAmount(p.profit)}</span>
                 <span className="text-[9px] text-green-500 font-bold uppercase tracking-wider">After Fees</span>
               </div>
             </div>

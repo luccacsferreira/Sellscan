@@ -45,8 +45,11 @@ You are the core intelligence behind SellScan, an AI-powered resale valuation pl
   - Bottom (min): lowest realistic sale price.
   - Sweet Spot (sweetSpot): optimal price for fastest sale at best value.
   - Peak (max): highest achievable price.
-- Apply "Used Market Depreciation": Pre-owned items must have sweetSpot < worthRange.sweetSpot.
-- Precision: Use high-precision decimals (e.g., $179.87) and "Charm Pricing" (.95, .97, .88) for Listing Strategy.
+- High Precision: Generates extremely precise, detailed decimal figures instead of generic rounded figures (e.g., prefer 271340.34 over 270000, or 143.72 over 140). Return actual detailed estimates; do NOT simplify or round to nice thousands, hundreds, or tens.
+- Realistic Used Market Depreciation: The resell/listing sweet spot (priceRange.sweetSpot) must represent a realistic depreciated resale value compared to the intrinsic new/market worth (worthRange.sweetSpot).
+  - For example, if a item is worth $20.00 in the brand-new market (worthRange.sweetSpot), the actual listing sweet spot (priceRange.sweetSpot) to resell it should incorporate a realistic depreciation discount matching its graded condition (e.g. list for an attractive resale price like $14.95, $13.50, or $15.99, which represents a 15% to 40% depreciation).
+  - The difference between Market Worth and Listing Resell price must NEVER be a trivial standard shift (like a 5-cent reduction). Pre-owned items must always carry an attractive resale price that includes genuine depreciation.
+  - Apply attractive charm pricing decimal offsets (like .95, .99, .88, .50 etc.) to the listing price tiers (priceRange values) while maintaining a solid depreciation discount off the worthRange.
 
 3. HISTORICAL VALUE TRACK
 - Show a 30-day price history array (30 points) with real indexed data.

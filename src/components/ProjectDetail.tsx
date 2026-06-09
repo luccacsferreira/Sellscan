@@ -10,7 +10,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Project, ScanResult } from '../types';
-import { cn } from '../lib/utils';
+import { cn, formatAmount } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -121,7 +121,7 @@ export function ProjectDetail({
                 <div className="mt-auto flex items-center justify-between">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">Target Price</span>
-                    <span className="text-xl font-bold">{currencySymbol}{scan.analysis?.priceRange?.sweetSpot || 0}</span>
+                    <span className="text-xl font-bold">{currencySymbol}{formatAmount(scan.analysis?.priceRange?.sweetSpot)}</span>
                   </div>
                   <div className="w-8 h-8 rounded-full bg-brand-bg border border-brand-border flex items-center justify-center group-hover:bg-brand-accent group-hover:text-brand-bg transition-all">
                     <ArrowRight className="w-4 h-4" />
