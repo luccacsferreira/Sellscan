@@ -379,6 +379,8 @@ export function ScanDashboard({ scan, onUpdateAnalysis, onUpdateScan, projects, 
             <PriceTrendBox 
               history={analysis.priceHistory}
               currencySymbol={currencySymbol}
+              scanId={scan.id}
+              productName={analysis.productDetails.name}
             />
           </div>
         )}
