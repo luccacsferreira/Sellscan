@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatAmount } from '../../lib/utils';
 
 interface TypewriterProps {
   text: string;
@@ -110,5 +111,5 @@ export function CountUp({ value, duration = 800, prefix = '', suffix = '', onCom
     return () => clearInterval(interval);
   }, [value, duration, active]);
 
-  return <span>{prefix}{currentVal.toFixed(2)}{suffix}</span>;
+  return <span>{prefix}{formatAmount(currentVal)}{suffix}</span>;
 }

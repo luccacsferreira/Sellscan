@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ArrowLeft, FolderRoot, ChevronDown, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProductAnalysis, ChatMessage, ScanResult, Project, AIPipelineConfig } from '../types';
-import { cn } from '../lib/utils';
+import { cn, formatAmount } from '../lib/utils';
 import { chatAboutProduct } from '../services/aiService';
 import { useLocation } from '../lib/LocationContext';
 
@@ -433,7 +433,7 @@ function PlatformMockup({ platform, scan, onClose }: { platform: string, scan: S
                <div className="space-y-6">
                   <h1 className="text-3xl font-black tracking-tight">{scan.analysis.suggestedTitle}</h1>
                   <div className="flex items-center justify-between border-y border-brand-border/50 py-6">
-                    <span className="text-4xl font-black text-brand-accent">{CURRENCY_SYMBOLS[scan.analysis.priceRange.currency] || scan.analysis.priceRange.currency}{scan.analysis.priceRange.sweetSpot.toFixed(2)}</span>
+                    <span className="text-4xl font-black text-brand-accent">{CURRENCY_SYMBOLS[scan.analysis.priceRange.currency] || scan.analysis.priceRange.currency}{formatAmount(scan.analysis.priceRange.sweetSpot)}</span>
                     <button className="px-8 py-3 rounded-2xl bg-brand-accent text-brand-bg font-black uppercase text-xs">Buy Now</button>
                   </div>
                   <div className="prose prose-invert prose-sm">

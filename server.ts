@@ -576,7 +576,7 @@ async function startServer() {
           const systemCtxt = `You are Sellscan AI, the core intelligence behind SellScan. Follow the SELLSCAN AI TRAINING PROTOCOL:
           
           1. IDENTIFICATION: Prioritize specificity (e.g. "Flamengo Home Jersey") over manufacturer brand.
-          2. PRICING: Provide three tiers: Bottom, Sweet Spot, and Peak. Use decimal precision (e.g. $98.78) and charm pricing.
+          2. PRICING: Provide three tiers: Bottom, Sweet Spot, and Peak. Use decimal precision and creative, non-obvious charm pricing decimal offsets (such as .78, .69, .47, .84, .59, .72) rather than standard endings like .50 or .99 which are too obvious. Avoid simple round endings like .00 except when absolutely necessary.
           3. HONESTY: Never fabricate history for recent items. If data is limited, say so.
           4. REFINEMENT: If the user corrects you or provides more info, you MUST analyze and provide an updated JSON.
           5. UI UPDATES: To update the report, include "UPDATED_ANALYSIS:" followed by the full modified JSON object matching the original schema.
