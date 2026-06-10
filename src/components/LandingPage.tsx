@@ -90,8 +90,17 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Server responded with ${response.status}`);
+        let errorMessage = `Server responded with ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          try {
+            const text = await response.text();
+            if (text) errorMessage = text;
+          } catch (e2) {}
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

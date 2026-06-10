@@ -144,7 +144,7 @@ async function startServer() {
       console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(key, { apiVersion: '2025-02-24.acacia' as any });
+    return new Stripe(key);
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
@@ -828,7 +828,7 @@ Return **JSON ONLY** with the exact schema:
       console.log(`🌐 Origins: SUCCESS=${origin}/dashboard, CANCEL=${origin}/#pricing`);
 
       const sessionOpts: Stripe.Checkout.SessionCreateParams = {
-        automatic_payment_methods: { enabled: true },
+        payment_method_types: ['card'],
         allow_promotion_codes: true, // Enable user-entered coupons / promotional codes in Stripe checkout
         line_items: [
           {
