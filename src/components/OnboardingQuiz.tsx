@@ -171,31 +171,31 @@ export function OnboardingQuiz({
           credits: '3 Credits / Week',
           color: 'from-gray-500/20 to-zinc-600/20',
           badge: 'border-white/10 text-brand-text/80 bg-white/5',
-          features: ['Google Vision & Gemini Flash model', 'Universal market parsing', 'Single-active project tracker', 'Basic scan limits']
+          features: ['Gemini 1.5 Lite Integration', 'Basic item recognition', 'Basic price estimate', 'Marketplace suggestions']
         };
       case 'Basic':
         return {
-          price: '$19/mo',
-          credits: '40 Scan Credits / Month',
+          price: '$0.99*',
+          credits: '40 Credits / Month',
           color: 'from-blue-500/10 to-indigo-600/15',
           badge: 'border-blue-500/30 text-blue-400 bg-blue-500/5',
-          features: ['Priority queue parsing', 'Advanced condition estimation', 'Multi-platform listings suggest', 'Historic logs & archives']
+          features: ['Gemini 2.5 Pro + GPT-4.1', 'Extra Marketplace Suggestions', 'AI Listing generator', 'Custom Listing Rules']
         };
       case 'Reseller':
         return {
-          price: '$49/mo',
-          credits: '150 Professional Credits / Month',
+          price: '$1.99*',
+          credits: '120 Credits / Month',
           color: 'from-brand-accent/10 to-brand-accent/25',
           badge: 'border-brand-accent/30 text-brand-accent bg-brand-accent/5',
-          features: ['Deep Gemini Pro analysis models', 'Detailed platform margin spreadsheets', 'Dynamic sentiment logs', 'Full developer tools Access']
+          features: ['Gemini 2.5 Pro + GPT 5.0', 'Unlimited Chatbot usage', 'Batch Upload (up to 5)', 'Mock-up Generator']
         };
       case 'Entrepreneur':
         return {
-          price: '$99/mo',
-          credits: '600 Extreme Credits / Month',
+          price: '$2.99*',
+          credits: '300 Credits / Month',
           color: 'from-amber-500/10 to-orange-600/20',
           badge: 'border-amber-500/30 text-amber-400 bg-amber-500/5',
-          features: ['Highest premium queue speeds', 'Unlimited dynamic folders', 'Advanced volume CSV integrations', 'Priority 24/7 client managers']
+          features: ['Gemini 2.5 + GPT 5.2 + Claude 4.6', 'Unrestricted Landing Page Builder', 'Batch Upload (up to 20)', 'Custom AI model selection']
         };
     }
   };

@@ -394,7 +394,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                 className={cn(
                   "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer",
                   billingCycle === 'yearly' 
-                    ? "bg-brand-accent text-slate-950 shadow-md font-extrabold" 
+                    ? "bg-brand-accent text-slate-900 shadow-md font-extrabold" 
                     : "text-brand-text-muted hover:text-brand-text"
                 )}
               >
@@ -402,7 +402,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                 <span className={cn(
                   "text-[9px] px-2 py-0.5 rounded-md font-black tracking-normal transition-colors",
                   billingCycle === 'yearly' 
-                    ? "bg-white text-slate-900 dark:bg-slate-900 dark:text-white shadow-sm border border-black/5" 
+                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm border border-black/5" 
                     : "bg-brand-accent/15 text-brand-accent border border-brand-accent/10"
                 )}>
                   -31% SAVINGS
@@ -443,7 +443,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              priceLabel="$0"
              credits="3 Credits / Week"
              features={[
-               { text: "Gemini Flash Integration", included: true },
+               { text: "Gemini 1.5 Lite Integration", included: true },
                { text: "Basic item recognition", included: true },
                { text: "Basic price estimate", included: true },
                { text: "Marketplace suggestion", included: true },
@@ -467,12 +467,12 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              originalPrice={getPricingDisplay('Basic', billingCycle).originalPrice}
              credits="40 Credits / Month"
              features={[
-               { text: "Gemini Pro + GPT-4.1", included: true },
+               { text: "Gemini 2.5 Pro + GPT-4.1", included: true },
+               { text: "Extra Marketplace Suggestions", included: true },
                { text: "AI pricing analysis", included: true },
                { text: "AI Listing generator", included: true },
-               { text: "Marketplace recommendations", included: true },
                { text: "Basic AI chat usage", included: true },
-               { text: "Claude Haiku Support", included: true },
+               { text: "Custom Listing Rules", included: true },
              ]}
              cta="Get Basic"
              variant="primary"
@@ -493,12 +493,12 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              credits="120 Credits / Month"
              popular
              features={[
+               { text: "Gemini 2.5 Pro + GPT 5.0", included: true },
+               { text: "Unlimited Chatbot usage", included: true },
+               { text: "Batch Upload (up to 5)", included: true },
+               { text: "Mock-up Generator", included: true },
+               { text: "Faster Processing speeds", included: true },
                { text: "Everything in Basic", included: true },
-               { text: "Advanced Market Analysis", included: true },
-               { text: "Demand & Profit Insights", included: true },
-               { text: "Priority Server Processing", included: true },
-               { text: "Full Chatbot access", included: true },
-               { text: "More AI Listing drafts", included: true },
              ]}
              cta="Get Reseller"
              variant="accent"
@@ -518,12 +518,12 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              originalPrice={getPricingDisplay('Entrepreneur', billingCycle).originalPrice}
              credits="300 Credits / Month"
              features={[
-               { text: "Everything in Reseller", included: true },
+               { text: "Gemini 2.5 + GPT 5.2 + Claude 4.6", included: true },
+               { text: "Unrestricted Landing Page Builder", included: true },
+               { text: "Batch Upload (up to 20)", included: true },
                { text: "No Daily Limits", included: true },
-               { text: "Landing Page Builder (5 credits)", included: true },
-               { text: "Marketing Copy Generator", included: true },
-               { text: "Premium AI Models Access", included: true },
-               { text: "Advanced Market Insights", included: true },
+               { text: "Custom AI model selection", included: true },
+               { text: "Everything in Reseller", included: true },
              ]}
              cta="Get Entrepreneur"
              variant="accent"

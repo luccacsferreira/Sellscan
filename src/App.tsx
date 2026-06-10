@@ -342,9 +342,9 @@ function AppContent() {
   const [unsavedTitle, setUnsavedTitle] = useState<string>('');
   const [unsavedDescription, setUnsavedDescription] = useState<string>('');
 
-  const triggerCheckout = async (tier: string, activeUser: User) => {
+  const triggerCheckout = async (tier: string, activeUser: User, billingCycle: 'monthly' | 'yearly' = 'yearly') => {
     try {
-      const priceId = getPriceId(tier, 'yearly');
+      const priceId = getPriceId(tier, billingCycle);
       if (!priceId) {
         alert("This tier or billing cycle is not configured with a Price ID yet.");
         return;
@@ -362,8 +362,18 @@ function AppContent() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Server responded with ${response.status}`);
+        let errorMessage = `Server responded with ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If not JSON, use text
+          try {
+            const text = await response.text();
+            if (text) errorMessage = text;
+          } catch (e2) {}
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

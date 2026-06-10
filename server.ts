@@ -144,7 +144,7 @@ async function startServer() {
       console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(key);
+    return new Stripe(key, { apiVersion: '2025-02-24.acacia' as any });
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
@@ -821,14 +821,14 @@ Return **JSON ONLY** with the exact schema:
         return res.status(500).json({ error: "Stripe is not configured on the server." });
       }
 
-      const protocol = req.headers['x-forwarded-proto'] || 'http';
       const host = req.headers.host;
+      const protocol = req.headers['x-forwarded-proto'] || (host?.includes('localhost') ? 'http' : 'https');
       const origin = `${protocol}://${host}`;
 
       console.log(`🌐 Origins: SUCCESS=${origin}/dashboard, CANCEL=${origin}/#pricing`);
 
       const sessionOpts: Stripe.Checkout.SessionCreateParams = {
-        payment_method_types: ['card'],
+        automatic_payment_methods: { enabled: true },
         allow_promotion_codes: true, // Enable user-entered coupons / promotional codes in Stripe checkout
         line_items: [
           {
@@ -839,13 +839,19 @@ Return **JSON ONLY** with the exact schema:
         mode: 'subscription',
         success_url: successUrl || `${origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: cancelUrl || `${origin}/#pricing`,
-        customer_email: userEmail,
-        client_reference_id: userId,
         metadata: {
           userId: userId || "",
           priceId: priceId
         }
       };
+
+      if (userEmail) {
+        sessionOpts.customer_email = userEmail;
+      }
+      
+      if (userId) {
+        sessionOpts.client_reference_id = userId;
+      }
 
       const session = await stripe.checkout.sessions.create(sessionOpts);
       console.log(`✅ Session created: ${session.id} | URL: ${session.url?.substring(0, 30)}...`);
