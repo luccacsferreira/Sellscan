@@ -27,7 +27,14 @@ export type AIModelId =
   | 'gpt-4o' 
   | 'gpt-5-preview'
   | 'claude-3.5-sonnet'
-  | 'claude-3.5-opus';
+  | 'claude-3.5-opus'
+  | 'gemini-1.5-lite'
+  | 'gemini-2.5-pro'
+  | 'gpt-4.1'
+  | 'gpt-5.0'
+  | 'gpt-5.2'
+  | 'claude-4.6-haiku'
+  | 'claude-4.6-sonnet';
 
 export interface AIModelInfo {
   id: AIModelId;

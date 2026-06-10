@@ -4,24 +4,32 @@
  */
 
 // Configuration for Stripe Price IDs
+// Using standard naming for easy override via environment variables
+const getPriceEnv = (key: string) => {
+  // In Vite/React, we use import.meta.env for public variables
+  // But for price IDs, we can also check standard globals if injected
+  const val = (import.meta.env[`VITE_STRIPE_PRICE_${key}`]) || (window as any).STRIPE_PRICE_IDS?.[key];
+  return val || '';
+};
+
 export const STRIPE_PRICES = {
   BASIC: {
-    MONTHLY: 'price_1TeaH3RCzE4WmLf5ptaXAskM',
-    MONTHLY_DISCOUNT: 'price_1TeIc0RCzE4WmLf5kaoHFt9z',
-    YEARLY: 'price_1TeaHrRCzE4WmLf53aVjR8jV',
-    YEARLY_DISCOUNT: 'price_1TeIdORCzE4WmLf5PYHevCKT',
+    MONTHLY: getPriceEnv('BASIC_MONTHLY'),
+    MONTHLY_DISCOUNT: getPriceEnv('BASIC_MONTHLY_DISCOUNT'),
+    YEARLY: getPriceEnv('BASIC_YEARLY'),
+    YEARLY_DISCOUNT: getPriceEnv('BASIC_YEARLY_DISCOUNT'),
   },
   RESELLER: {
-    MONTHLY: 'price_1TeaJ7RCzE4WmLf5GFIP8o7V',
-    MONTHLY_DISCOUNT: 'price_1TeIfORCzE4WmLf5XyoIptU3',
-    YEARLY: 'price_1TeaK2RCzE4WmLf5IdNCB8M5',
-    YEARLY_DISCOUNT: 'price_1TeIhZRCzE4WmLf54arqUdNi',
+    MONTHLY: getPriceEnv('RESELLER_MONTHLY'),
+    MONTHLY_DISCOUNT: getPriceEnv('RESELLER_MONTHLY_DISCOUNT'),
+    YEARLY: getPriceEnv('RESELLER_YEARLY'),
+    YEARLY_DISCOUNT: getPriceEnv('RESELLER_YEARLY_DISCOUNT'),
   },
   ENTREPRENEUR: {
-    MONTHLY: 'price_1TeaL7RCzE4WmLf5xOmRk72E',
-    MONTHLY_DISCOUNT: 'price_1TeIjuRCzE4WmLf5qLJn3MvC',
-    YEARLY: 'price_1TeaM5RCzE4WmLf5pf4lB2KE',
-    YEARLY_DISCOUNT: 'price_1TeIn6RCzE4WmLf5eXzi92yU',
+    MONTHLY: getPriceEnv('ENTREPRENEUR_MONTHLY'),
+    MONTHLY_DISCOUNT: getPriceEnv('ENTREPRENEUR_MONTHLY_DISCOUNT'),
+    YEARLY: getPriceEnv('ENTREPRENEUR_YEARLY'),
+    YEARLY_DISCOUNT: getPriceEnv('ENTREPRENEUR_YEARLY_DISCOUNT'),
   }
 };
 

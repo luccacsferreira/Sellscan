@@ -118,7 +118,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
       }
     } catch (err: any) {
       console.error("Checkout failed:", err);
-      alert("Checkout could not be started: " + (err.message || "Unknown error") + "\n\nTip: Make sure STRIPE_SECRET_KEY is set in your environment variables.");
+      alert("Checkout could not be started: " + (err.message || "Unknown error") + "\n\nTip: Please contact support if the issue persists.");
     } finally {
       setLoadingTier(null);
     }

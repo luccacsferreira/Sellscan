@@ -128,11 +128,44 @@ async function startServer() {
     OPENAI: process.env.OPENAI_API_KEY ? "CONFIGURED" : "MISSING",
     SUPABASE: (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) ? "CONFIGURED" : "MISSING",
     ADMIN: process.env.SUPABASE_SERVICE_ROLE_KEY ? "CONFIGURED" : "MISSING",
+    TOTAL_ENV_KEYS: envKeys.length,
     CWD: process.cwd(),
-    TOTAL_ENV_KEYS: envKeys.length
   };
+
+  // Targeted API Key detection for the user's "21 keys" check
+  const importantKeys = [
+    'GEMINI_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 
+    'VITE_STRIPE_PUBLISHABLE_KEY',
+    'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
+    'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'APP_URL'
+  ];
+  
+  // Normalization map for common UI-truncated environment variables from Google Cloud / Cloud Run
+  const truncatedMapping: Record<string, string> = {
+    'VITE_STRIPE_PRICE_ENTREPRENEUR_YEARLY_D': 'VITE_STRIPE_PRICE_ENTREPRENEUR_YEARLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOU': 'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_BASIC_MONTHLY_DISCOUN': 'VITE_STRIPE_PRICE_BASIC_MONTHLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_RESELLER_MONTHLY_DISC': 'VITE_STRIPE_PRICE_RESELLER_MONTHLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_ENTREPRENEUR_MONTHLY_D': 'VITE_STRIPE_PRICE_ENTREPRENEUR_MONTHLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCO': 'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOUNT'
+  };
+
+  Object.entries(truncatedMapping).forEach(([truncated, full]) => {
+    if (process.env[truncated] && !process.env[full]) {
+      process.env[full] = process.env[truncated];
+      console.log(`✨ [NORMALIZED] Mapped truncated env ${truncated} -> ${full}`);
+    }
+  });
+
+  const priceIdKeys = Object.keys(process.env).filter(k => k.startsWith('VITE_STRIPE_PRICE_') && (process.env[k]?.length || 0) > 5);
+  const foundImportant = importantKeys.filter(k => !!process.env[k]);
+  const totalUserManaged = foundImportant.length + priceIdKeys.length;
   
   console.log("📋 Configuration Status:", configStatus);
+  console.log(`🎯 USER API KEY VERIFICATION: Detected ${totalUserManaged} of 22 expected keys.`);
+  if (totalUserManaged < 21) {
+    console.warn(`⚠️ Warning: Only ${totalUserManaged} active keys detected. Please check your AI Studio Secrets panel.`);
+  }
 
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
@@ -144,7 +177,7 @@ async function startServer() {
       console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(key);
+    return new Stripe(key, { apiVersion: '2026-05-27.dahlia' as any });
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
@@ -346,49 +379,44 @@ async function startServer() {
       }
       
       if (supabaseAdmin && userId) {
-        // Determine credits based on price (You can map Price IDs here)
-        // This is a basic implementation - you should customize this mapping
+        // Determine credits based on price (Dynamic mapping from Environment)
         let creditsToGrant = 0;
-        let tier = 'free';
+        let tier = 'Explorer';
+        
+        const priceMap: Record<string, { tier: string, credits: number }> = {};
+        const tiersList = [
+          { name: 'basic', credits: 40, envPrefix: 'BASIC' },
+          { name: 'reseller', credits: 120, envPrefix: 'RESELLER' },
+          { name: 'entrepreneur', credits: 300, envPrefix: 'ENTREPRENEUR' }
+        ];
+        const cycleSuffixes = ['MONTHLY', 'MONTHLY_DISCOUNT', 'YEARLY', 'YEARLY_DISCOUNT'];
 
-        // Example mapping - Replace these with your actual Price IDs once you have them
+        tiersList.forEach(t => {
+          cycleSuffixes.forEach(s => {
+            const envKey = `VITE_STRIPE_PRICE_${t.envPrefix}_${s}`;
+            const id = process.env[envKey];
+            if (id) {
+              priceMap[id] = { tier: t.name, credits: t.credits };
+            }
+          });
+        });
+
+        // Special fallback for known previous test IDs if env variables aren't set
+        const hardcodedMap: Record<string, { tier: string, credits: number }> = {
+          'price_1TeaH3RCzE4WmLf5ptaXAskM': { tier: 'basic', credits: 40 },
+          'price_1TeaJ7RCzE4WmLf5GFIP8o7V': { tier: 'reseller', credits: 120 },
+          'price_1TeaL7RCzE4WmLf5xOmRk72E': { tier: 'entrepreneur', credits: 300 }
+        };
+
         const priceId = session.metadata?.priceId || session.line_items?.data[0]?.price?.id || "";
+        const mapping = priceMap[priceId] || hardcodedMap[priceId];
         
-        // Match against actual Stripe Price IDs
-        const basicPriceIds = [
-          'price_1TeaH3RCzE4WmLf5ptaXAskM',
-          'price_1TeIc0RCzE4WmLf5kaoHFt9z',
-          'price_1TeaHrRCzE4WmLf53aVjR8jV',
-          'price_1TeIdORCzE4WmLf5PYHevCKT',
-          'price_1TX3cnRCzE4WmLf5UJseWbYZ',
-          'price_1TX3iCRCzE4WmLf5fwXNkaBB'
-        ];
-        
-        const resellerPriceIds = [
-          'price_1TeaJ7RCzE4WmLf5GFIP8o7V',
-          'price_1TeIfORCzE4WmLf5XyoIptU3',
-          'price_1TeaK2RCzE4WmLf5IdNCB8M5',
-          'price_1TeIhZRCzE4WmLf54arqUdNi',
-          'price_1TX3f0RCzE4WmLf5519Kp8zO',
-          'price_1TX3jjRCzE4WmLf59KuysZhL'
-        ];
-
-        const entrepreneurPriceIds = [
-          'price_1TeaL7RCzE4WmLf5xOmRk72E',
-          'price_1TeIjuRCzE4WmLf5qLJn3MvC',
-          'price_1TeaM5RCzE4WmLf5pf4lB2KE',
-          'price_1TeIn6RCzE4WmLf5eXzi92yU'
-        ];
-
-        if (entrepreneurPriceIds.includes(priceId)) {
-          creditsToGrant = 300;
-          tier = 'entrepreneur';
-        } else if (resellerPriceIds.includes(priceId)) {
-          creditsToGrant = 120;
-          tier = 'reseller';
-        } else if (basicPriceIds.includes(priceId)) {
-          creditsToGrant = 40;
-          tier = 'basic';
+        if (mapping) {
+          tier = mapping.tier;
+          creditsToGrant = mapping.credits;
+          console.log(`💳 Resolved Tier: ${tier} | Credits: ${creditsToGrant} (Price: ${priceId})`);
+        } else {
+          console.warn(`🛑 Unrecognized Price ID: ${priceId}. No tier or credits mapped.`);
         }
 
         const { error } = await supabaseAdmin
@@ -466,12 +494,20 @@ async function startServer() {
 
   // Dynamic environment configuration for the client (available in all environments)
   app.get("/env-config.js", (req, res) => {
+    const priceIds: Record<string, string> = {};
+    Object.keys(process.env).forEach(key => {
+      if (key.includes('STRIPE_PRICE_')) {
+        priceIds[key.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = process.env[key] || '';
+      }
+    });
+
     const config = {
       VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
       VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 
                               process.env.SUPABASE_ANON_KEY || 
                               process.env.VITE_SUPABASE_ANC || 
-                              process.env.SUPABASE_ANON_KEY
+                              process.env.SUPABASE_ANON_KEY,
+      VITE_STRIPE_PUBLISHABLE_KEY: process.env.VITE_STRIPE_PUBLISHABLE_KEY
     };
     
     console.log(`🛡️ Serving /env-config.js | Host: ${req.headers.host} | CWD: ${process.cwd()} | URL: ${config.VITE_SUPABASE_URL ? 'FOUND' : 'MISSING'}`);
@@ -480,6 +516,7 @@ async function startServer() {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.send(`
       window.SUPABASE_CONFIG = ${JSON.stringify(config)};
+      window.STRIPE_PRICE_IDS = ${JSON.stringify(priceIds)};
       console.log('🛡️ Config loaded via /env-config.js');
     `);
   });
@@ -826,10 +863,17 @@ Return **JSON ONLY** with the exact schema:
       const origin = `${protocol}://${host}`;
 
       console.log(`🌐 Origins: SUCCESS=${origin}/dashboard, CANCEL=${origin}/#pricing`);
+      console.log(`📦 Payload for session:`, {
+        priceId,
+        userId: userId || "MISSING",
+        userEmail: userEmail || "MISSING",
+        mode: 'subscription'
+      });
 
-      const sessionOpts: Stripe.Checkout.SessionCreateParams = {
-        payment_method_types: ['card'],
-        allow_promotion_codes: true, // Enable user-entered coupons / promotional codes in Stripe checkout
+      const sessionOpts: any = {
+        automatic_payment_methods: { enabled: true },
+        allow_promotion_codes: true, 
+        billing_address_collection: 'auto',
         line_items: [
           {
             price: priceId,
@@ -842,6 +886,11 @@ Return **JSON ONLY** with the exact schema:
         metadata: {
           userId: userId || "",
           priceId: priceId
+        },
+        subscription_data: {
+          metadata: {
+            userId: userId || ""
+          }
         }
       };
 
@@ -885,6 +934,13 @@ Return **JSON ONLY** with the exact schema:
           return res.status(500).send("Server Error: Missing index.html");
         }
         
+        const priceIds: Record<string, string> = {};
+        Object.keys(process.env).forEach(key => {
+          if (key.includes('STRIPE_PRICE_')) {
+            priceIds[key.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = process.env[key] || '';
+          }
+        });
+
         const config = {
           VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
           VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 
@@ -892,7 +948,8 @@ Return **JSON ONLY** with the exact schema:
                                   process.env.VITE_SUPABASE_ANC || 
                                   process.env.SUPABASE_ANON_KEY ||
                                   process.env.VITE_SUPABASE_ANON ||
-                                  process.env.SUPABASE_ANON
+                                  process.env.SUPABASE_ANON,
+          VITE_STRIPE_PUBLISHABLE_KEY: process.env.VITE_STRIPE_PUBLISHABLE_KEY
         };
         
         // Detailed debug info for console
@@ -916,6 +973,7 @@ Return **JSON ONLY** with the exact schema:
         const configScript = `
           <script id="supabase-config-injection">
             window.SUPABASE_CONFIG = ${JSON.stringify(config)};
+            window.STRIPE_PRICE_IDS = ${JSON.stringify(priceIds)};
             console.log('%c SELLSCAN SYSTEM BOOT ', 'background: #55cdd1; color: #000; font-weight: bold; padding: 4px; border-radius: 4px;');
             console.log('🛡️ Status:', ${JSON.stringify(debug.status)});
             console.log('🤖 Gemini:', ${debug.resolved.gemini ? "'✅ Configured'" : "'❌ Missing'"});
