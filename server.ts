@@ -143,11 +143,12 @@ async function startServer() {
   // Normalization map for common UI-truncated environment variables from Google Cloud / Cloud Run
   const truncatedMapping: Record<string, string> = {
     'VITE_STRIPE_PRICE_ENTREPRENEUR_YEARLY_D': 'VITE_STRIPE_PRICE_ENTREPRENEUR_YEARLY_DISCOUNT',
-    'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOU': 'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOUNT',
-    'VITE_STRIPE_PRICE_BASIC_MONTHLY_DISCOUN': 'VITE_STRIPE_PRICE_BASIC_MONTHLY_DISCOUNT',
-    'VITE_STRIPE_PRICE_RESELLER_MONTHLY_DISC': 'VITE_STRIPE_PRICE_RESELLER_MONTHLY_DISCOUNT',
     'VITE_STRIPE_PRICE_ENTREPRENEUR_MONTHLY_D': 'VITE_STRIPE_PRICE_ENTREPRENEUR_MONTHLY_DISCOUNT',
-    'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCO': 'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOUNT'
+    'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOU': 'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCO': 'VITE_STRIPE_PRICE_RESELLER_YEARLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_RESELLER_MONTHLY_DISC': 'VITE_STRIPE_PRICE_RESELLER_MONTHLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_BASIC_MONTHLY_DISCOUN': 'VITE_STRIPE_PRICE_BASIC_MONTHLY_DISCOUNT',
+    'VITE_STRIPE_PRICE_BASIC_YEARLY_DISCOUNT': 'VITE_STRIPE_PRICE_BASIC_YEARLY_DISCOUNT', // Guard
   };
 
   Object.entries(truncatedMapping).forEach(([truncated, full]) => {
@@ -158,6 +159,16 @@ async function startServer() {
   });
 
   const priceIdKeys = Object.keys(process.env).filter(k => k.startsWith('VITE_STRIPE_PRICE_') && (process.env[k]?.length || 0) > 5);
+  
+  // Detection for "Product ID instead of Price ID" error
+  priceIdKeys.forEach(k => {
+    const val = process.env[k] || '';
+    if (val.startsWith('prod_')) {
+      console.error(`🚨 DETECTED PRODUCT ID IN PRICE FIELD: ${k} is set to a Product ID (${val}). Stripe checkout requires a PRICE ID (starting with price_).`);
+    } else if (val && !val.startsWith('price_')) {
+      console.warn(`⚠️ UNUSUAL PRICE ID: ${k} is set to ${val}. Most Stripe Price IDs start with 'price_'.`);
+    }
+  });
   const foundImportant = importantKeys.filter(k => !!process.env[k]);
   const totalUserManaged = foundImportant.length + priceIdKeys.length;
   
@@ -177,7 +188,7 @@ async function startServer() {
       console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(key, { apiVersion: '2026-05-27.dahlia' as any });
+    return new Stripe(key, { apiVersion: '2024-12-18.preview' as any });
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
@@ -401,15 +412,8 @@ async function startServer() {
           });
         });
 
-        // Special fallback for known previous test IDs if env variables aren't set
-        const hardcodedMap: Record<string, { tier: string, credits: number }> = {
-          'price_1TeaH3RCzE4WmLf5ptaXAskM': { tier: 'basic', credits: 40 },
-          'price_1TeaJ7RCzE4WmLf5GFIP8o7V': { tier: 'reseller', credits: 120 },
-          'price_1TeaL7RCzE4WmLf5xOmRk72E': { tier: 'entrepreneur', credits: 300 }
-        };
-
         const priceId = session.metadata?.priceId || session.line_items?.data[0]?.price?.id || "";
-        const mapping = priceMap[priceId] || hardcodedMap[priceId];
+        const mapping = priceMap[priceId];
         
         if (mapping) {
           tier = mapping.tier;
@@ -497,7 +501,17 @@ async function startServer() {
     const priceIds: Record<string, string> = {};
     Object.keys(process.env).forEach(key => {
       if (key.includes('STRIPE_PRICE_')) {
-        priceIds[key.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = process.env[key] || '';
+        const val = process.env[key] || '';
+        priceIds[key.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = val;
+      }
+    });
+
+    // Mirror the normalized full keys to the mapping for the frontend
+    Object.keys(truncatedMapping).forEach(truncatedKey => {
+      const fullKey = truncatedMapping[truncatedKey];
+      const val = process.env[fullKey];
+      if (val) {
+        priceIds[fullKey.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = val;
       }
     });
 
@@ -871,7 +885,7 @@ Return **JSON ONLY** with the exact schema:
       });
 
       const sessionOpts: any = {
-        automatic_payment_methods: { enabled: true },
+        payment_method_types: ['card'],
         allow_promotion_codes: true, 
         billing_address_collection: 'auto',
         line_items: [
@@ -937,7 +951,17 @@ Return **JSON ONLY** with the exact schema:
         const priceIds: Record<string, string> = {};
         Object.keys(process.env).forEach(key => {
           if (key.includes('STRIPE_PRICE_')) {
-            priceIds[key.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = process.env[key] || '';
+            const val = process.env[key] || '';
+            priceIds[key.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = val;
+          }
+        });
+
+        // Mirror the normalized full keys to the mapping for the frontend
+        Object.keys(truncatedMapping).forEach(truncatedKey => {
+          const fullKey = truncatedMapping[truncatedKey];
+          const val = process.env[fullKey];
+          if (val) {
+            priceIds[fullKey.replace('VITE_', '').replace('STRIPE_PRICE_', '')] = val;
           }
         });
 

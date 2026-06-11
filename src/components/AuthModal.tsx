@@ -34,6 +34,22 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const handleGoogleLogin = async () => {
     setError(null);
     setIsLoading(true);
+
+    const width = 600;
+    const height = 700;
+    const left = window.screenX + (window.innerWidth - width) / 2;
+    const top = window.screenY + (window.innerHeight - height) / 2;
+
+    // Open blank popup synchronously in the user click trace to bypass popup blockers
+    let popup: Window | null = null;
+    if (isSupabaseConfigured) {
+      popup = window.open(
+        'about:blank',
+        'supabase_oauth_popup',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+    }
+
     try {
       if (!isSupabaseConfigured) {
         throw new Error('OAuth is not configured in this environment.');
@@ -51,27 +67,26 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       if (error) throw error;
       
       if (data?.url) {
-        // Open authorization URL in a popup
-        const width = 600;
-        const height = 700;
-        const left = window.screenX + (window.innerWidth - width) / 2;
-        const top = window.screenY + (window.innerHeight - height) / 2;
-        
-        const popup = window.open(
-          data.url, 
-          'supabase_oauth_popup', 
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-
-        // Check if popup was blocked
-        if (!popup) {
-          setError({ message: "Popup was blocked. Please allow popups for this site.", type: 'error' });
-          setIsLoading(false);
+        if (popup) {
+          // Redirect the pre-opened popup to the OAuth URL
+          popup.location.href = data.url;
         } else {
-          // The loading state will be cleared when the message event is received in App.tsx
+          // Fallback if popup didn't launch synchronously for some reason
+          popup = window.open(
+            data.url, 
+            'supabase_oauth_popup', 
+            `width=${width},height=${height},left=${left},top=${top}`
+          );
+          if (!popup) {
+            setError({ message: "Popup was blocked. Please allow popups for this site.", type: 'error' });
+            setIsLoading(false);
+          }
         }
+      } else {
+        if (popup) popup.close();
       }
     } catch (err: any) {
+      if (popup) popup.close();
       console.error('Google OAuth Error:', err);
       setError({ message: err.message, type: 'error' });
       setIsLoading(false);
