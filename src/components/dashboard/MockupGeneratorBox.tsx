@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Layout, Sparkles, X, ChevronRight, Check, Zap } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -13,12 +13,25 @@ interface MockupGeneratorBoxProps {
 export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGeneratorBoxProps) {
   const [selected, setSelected] = useState(platforms[0] || '');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [history, setHistory] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`mockups_${scan.id}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const handleGenerate = () => {
     setIsGenerating(true);
     setTimeout(() => {
       onGenerate(selected);
       setIsGenerating(false);
+      if (!history.includes(selected)) {
+        const newHistory = [...history, selected];
+        setHistory(newHistory);
+        localStorage.setItem(`mockups_${scan.id}`, JSON.stringify(newHistory));
+      }
     }, 1500);
   };
 
@@ -38,7 +51,7 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
 
           <div className="space-y-3">
              <span className="text-[9px] font-black uppercase tracking-widest text-brand-text-muted opacity-40">Select Target Marketplace</span>
-             <div className="grid grid-cols-2 gap-2">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {platforms.map((p) => (
                   <button 
                     key={p}
@@ -50,7 +63,7 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
                   >
                     {p}
                     <div className={cn(
-                      "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                      "w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0",
                       selected === p ? "bg-brand-accent border-brand-accent" : "border-brand-border"
                     )}>
                       {selected === p && <Check className="w-2.5 h-2.5 text-brand-bg stroke-[4px]" />}
@@ -83,14 +96,38 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
           </div>
         </div>
 
-        <div className="md:w-1/2 bg-brand-bg/60 rounded-3xl border border-brand-border border-dashed flex flex-col items-center justify-center p-8 text-center relative group">
-           <div className="w-20 h-20 rounded-2xl bg-brand-bg border border-brand-border flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-500">
-              <Layout className="w-10 h-10 text-brand-accent/40" />
-           </div>
-           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-text-muted mb-2">Internal GPU Preview</p>
-           <p className="text-xs text-brand-text-muted/60 max-w-[200px]">Waiting for rendering instructions. Select a platform to proceed.</p>
-           
-           <div className="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="md:w-1/2 bg-brand-bg/60 rounded-3xl border border-brand-border border-dashed flex flex-col items-center justify-center p-6 md:p-8 relative group">
+           {history.length > 0 ? (
+             <div className="w-full h-full flex flex-col items-start justify-start">
+               <h4 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] mb-4">Generated History</h4>
+               <div className="space-y-3 w-full max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                 {history.map((p) => (
+                   <button 
+                     key={p} 
+                     onClick={() => onGenerate(p)}
+                     className="w-full bg-brand-card border border-brand-border hover:border-brand-accent p-4 rounded-xl flex items-center justify-between transition-all group/btn"
+                   >
+                     <div className="flex items-center gap-3">
+                       <div className="w-8 h-8 rounded-lg bg-brand-accent/10 flex items-center justify-center text-brand-accent shrink-0">
+                         <Layout className="w-4 h-4" />
+                       </div>
+                       <span className="text-sm font-bold text-brand-text">{p} Mockup</span>
+                     </div>
+                     <ChevronRight className="w-4 h-4 text-brand-text-muted group-hover/btn:text-brand-accent transition-colors hidden sm:block shrink-0" />
+                   </button>
+                 ))}
+               </div>
+             </div>
+           ) : (
+             <div className="flex flex-col items-center text-center">
+               <div className="w-20 h-20 rounded-2xl bg-brand-bg border border-brand-border flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-500">
+                  <Layout className="w-10 h-10 text-brand-accent/40" />
+               </div>
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-text-muted mb-2">Internal GPU Preview</p>
+               <p className="text-xs text-brand-text-muted/60 max-w-[200px]">Waiting for rendering instructions. Select a platform to proceed.</p>
+             </div>
+           )}
+           <div className="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-3xl" />
         </div>
       </div>
     </motion.div>

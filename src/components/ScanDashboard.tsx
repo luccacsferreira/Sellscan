@@ -418,7 +418,7 @@ function PlatformMockup({ platform, scan, onClose }: { platform: string, scan: S
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-brand-bg/90 backdrop-blur-2xl" onClick={onClose} />
-      <div className="glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative z-10 flex flex-col">
+      <div className="bg-brand-card border border-brand-border rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative z-10 flex flex-col">
          <div className="p-6 border-b border-brand-border flex items-center justify-between sticky top-0 bg-brand-bg/80 backdrop-blur-md z-20">
            <div className="flex items-center gap-3">
              <div className="px-3 py-1 rounded-full bg-brand-accent/10 border border-brand-accent/20 text-[10px] font-black uppercase text-brand-accent">
