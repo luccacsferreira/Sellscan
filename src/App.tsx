@@ -1029,7 +1029,7 @@ function AppContent() {
       )}
       
       <main className={cn(
-        "min-h-[calc(100vh-64px)] overflow-x-hidden pt-16 transition-all duration-300",
+        "min-h-[calc(100vh-64px)] overflow-x-clip pt-16 transition-all duration-300",
         view !== 'landing' ? "pb-32 md:pb-0" : ""
       )}>
         <AnimatePresence mode="wait">

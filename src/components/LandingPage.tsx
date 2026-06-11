@@ -28,6 +28,65 @@ import shoeImg from '../assets/612eQB-fcqL._AC_UF894,1000_QL80_.png';
 import slImg from '../assets/s-l400.png';
 import clocksImg from '../assets/antique-clocks.png';
 
+import { VerdictBox } from './dashboard/VerdictBox';
+import { IdentityBox } from './dashboard/IdentityBox';
+import { PriceInsightBox } from './dashboard/PriceInsightBox';
+import { PlatformStrategyBox } from './dashboard/PlatformStrategyBox';
+import { PracticalTipsBox } from './dashboard/PracticalTipsBox';
+import { MarketSentimentBox } from './dashboard/MarketSentimentBox';
+import { PriceTrendBox } from './dashboard/PriceTrendBox';
+import { MockupGeneratorBox } from './dashboard/MockupGeneratorBox';
+import { AssistantSidebar } from './dashboard/AssistantSidebar';
+import { ProductAnalysis, ScanResult } from '../types';
+
+const mockAnalysis: ProductAnalysis = {
+  quickVerdict: "Nike Air Jordan 1 Mid \"Gym Red/Black Toe\" (2021). Iconic colorway featuring a white leather base with black overlays and red accents. Released August 2021. High demand on major resale platforms and marketplaces.",
+  platforms: [
+    { name: "StockX", edge: "Authentication", listPrice: 120, avgPrice: 110, profit: 95 },
+    { name: "GOAT", edge: "Sneakerhead Audience", listPrice: 125, avgPrice: 115, profit: 98 },
+    { name: "eBay", edge: "Low Fees", listPrice: 110, avgPrice: 100, profit: 95 },
+    { name: "Grailed", edge: "Streetwear community", listPrice: 115, avgPrice: 105, profit: 90 },
+  ],
+  priceRange: { min: 85, max: 145, sweetSpot: 102, platformAverage: 115, currency: "GBP" },
+  worthRange: { min: 110, max: 150, sweetSpot: 125 },
+  productDetails: {
+    name: "Air Jordan 1 Mid Gym Red",
+    type: "Sneakers",
+    condition: "Excellent",
+    brand: "Nike",
+    category: "Apparel",
+    characteristics: ["Red/Black Toe", "Original Box"],
+  },
+  practicalTips: [
+    { action: "Deep clean leather", impact: "high", valueAdd: 25, description: "Adds £20-30 perceived value." },
+    { action: "Re-lace neatly", impact: "low", valueAdd: 5, description: "Clean presentation matters for primary photo." },
+    { action: "Include original box clearly", impact: "high", valueAdd: 30, description: "Major platforms require it for 'Deadstock' or pristine condition." },
+  ],
+  marketSentiment: {
+    consensus: "Positive",
+    goodThings: ["Iconic Chicago-esque colors", "High liquidity"],
+    badThings: ["Mids have slightly less prestige than Highs", "Creases easily"]
+  },
+  priceHistory: {
+    data: [
+      { date: "2023-08", price: 150 },
+      { date: "2023-11", price: 145 },
+      { date: "2024-02", price: 130 },
+      { date: "2024-05", price: 125 },
+      { date: "2024-08", price: 115 },
+    ],
+    isLive: true,
+    limitedHistory: false
+  }
+};
+
+const mockScan: ScanResult = {
+  id: "example-id",
+  timestamp: Date.now(),
+  imageUrl: af1Example,
+  analysis: mockAnalysis,
+};
+
 interface LandingPageProps {
   onStart: () => void;
   onSignIn: (tier?: string) => void;
@@ -39,6 +98,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [activeLegalModal, setActiveLegalModal] = useState<'privacy' | 'terms' | 'data' | 'cookies' | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
 
   useEffect(() => {
@@ -218,95 +278,44 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
       <motion.section 
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, margin: "-100px" }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="max-w-6xl mx-auto mb-32 px-4"
+        className="max-w-[1400px] mx-auto mb-32 px-4 md:px-10"
       >
         <div className="flex items-center gap-2 mb-6">
           <div className="w-2 h-2 rounded-full bg-brand-accent shadow-[0_0_8px_var(--color-brand-accent)]" />
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent">EXAMPLE SCAN • AIR JORDAN 1 MID</span>
         </div>
         
-        <div className="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-8 bg-brand-card/30 backdrop-blur-sm group">
-          {/* Left: Product Image (Square) */}
-          <div className="w-full md:w-[400px] flex-shrink-0 aspect-square rounded-2xl overflow-hidden shadow-2xl relative">
-            <img 
-              src={af1Example} 
-              alt="Air Jordan 1 Mid" 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-10 items-start w-full relative">
+          {/* LEFT: RESULTS DASHBOARD (8 BOXES) */}
+          <div className="flex-grow space-y-10 w-full lg:w-auto">
+            <VerdictBox verdict={mockAnalysis.quickVerdict} highlighted={false} active={true} />
+            <IdentityBox 
+              imageUrl={mockScan.imageUrl} 
+              name={mockAnalysis.productDetails.name} 
+              brand={mockAnalysis.productDetails.brand} 
+              type={mockAnalysis.productDetails.type} 
+              condition={mockAnalysis.productDetails.condition} 
+              category={mockAnalysis.productDetails.category} 
+              active={true} 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-bg/60 to-transparent pointer-events-none" />
+            <PriceInsightBox worthRange={mockAnalysis.worthRange} sellRange={mockAnalysis.priceRange} currencySymbol="£" active={true} />
+            <PlatformStrategyBox platforms={mockAnalysis.platforms} currencySymbol="£" active={true} />
+            <PracticalTipsBox tips={mockAnalysis.practicalTips} basePrice={mockAnalysis.priceRange.sweetSpot} currencySymbol="£" active={true} />
+            <MarketSentimentBox sentiment={mockAnalysis.marketSentiment} active={true} />
+            <PriceTrendBox history={mockAnalysis.priceHistory} currencySymbol="£" scanId="example-id" productName={mockAnalysis.productDetails.name} />
+            <MockupGeneratorBox scan={mockScan} platforms={mockAnalysis.platforms.map((p) => p.name)} onGenerate={() => {}} />
           </div>
 
-          {/* Right: Insights */}
-          <div className="flex-grow space-y-6">
-            {/* Quick Verdict */}
-            <div className="p-5 rounded-2xl border border-brand-accent/20 bg-brand-accent/5">
-              <div className="flex items-center gap-2 text-brand-accent text-[10px] font-bold uppercase tracking-widest mb-3">
-                <Zap className="w-3 h-3 fill-current" /> Quick Verdict
-              </div>
-              <p className="text-lg font-medium leading-relaxed">
-                Nike Air Jordan 1 Mid "Gym Red/Black Toe" (2021). Iconic colorway featuring a white leather base with black overlays and red accents. Released August 2021. High demand on major resale platforms and marketplaces. Expect £85–£115 ($110–$150).
-              </p>
-            </div>
-
-            {/* Insight Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Platforms */}
-              <div className="p-5 rounded-2xl bg-brand-bg/40 border border-brand-border">
-                <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">Best Platforms</h4>
-                <div className="space-y-3">
-                  <PlatformMiniRow name="StockX" rank={1} />
-                  <PlatformMiniRow name="GOAT" rank={2} />
-                  <PlatformMiniRow name="eBay" rank={3} />
-                  <PlatformMiniRow name="Flight Club" rank={4} />
-                  <PlatformMiniRow name="Grailed" rank={5} />
-                </div>
-              </div>
-
-              {/* Price */}
-              <div className="p-5 rounded-2xl bg-brand-bg/40 border border-brand-border h-full flex flex-col">
-                <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">Sweet Spot Price</h4>
-                <div className="mt-auto">
-                  <div className="text-4xl font-bold mb-4">£102</div>
-                  <div className="h-1.5 w-full bg-brand-border rounded-full relative">
-                    <div className="absolute h-full bg-brand-accent rounded-full w-[65%]" />
-                  </div>
-                  <div className="flex justify-between mt-2 text-[8px] text-brand-text-muted font-mono">
-                    <span>£55</span>
-                    <span>£145</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Improvements */}
-              <div className="p-5 rounded-2xl bg-brand-bg/40 border border-brand-border">
-                <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-4">What to Improve</h4>
-                <ul className="space-y-3 text-[11px] text-brand-text-muted font-medium">
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-1 flex-shrink-0" />
-                    Deep clean the white leather and midsoles
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-1 flex-shrink-0" />
-                    Re-lace neatly and use shoe trees for shape
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent mt-1 flex-shrink-0" />
-                    Include original box, tags, and proof of purchase
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Listing Title */}
-            <div className="p-5 rounded-2xl bg-brand-bg/20 border border-brand-border/40">
-              <h4 className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest mb-2">AI-Written Listing Title</h4>
-              <p className="text-sm font-bold opacity-80 leading-relaxed">
-                "Air Jordan 1 Mid 'Gym Red/Black Toe' — US 10 (UK 9) — Excellent Condition — Original Box Included"
-              </p>
-            </div>
-          </div>
+          {/* RIGHT SIDEBAR: ASSISTANT */}
+          <AssistantSidebar 
+            messages={[{ role: "assistant", content: "I've analyzed the Air Jordan 1 Mid. What would you like to refine?" }]}
+            onSendMessage={() => {}}
+            onRevert={() => {}}
+            isSending={false}
+            historyLog={[mockAnalysis]}
+          />
         </div>
       </motion.section>
 
@@ -326,36 +335,48 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
         <motion.div 
           initial="initial"
           whileInView="animate"
-          viewport={{ once: false, margin: "-100px" }}
+          viewport={{ once: true, margin: "-100px" }}
           variants={{
             animate: {
               transition: {
-                staggerChildren: 0.08
+                staggerChildren: 0.6
               }
             }
           }}
           className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-6"
         >
-          <FeatureCard 
-            icon={<Search className="w-6 h-6 text-brand-accent" />}
-            title="Market research in seconds"
-            description="Compares similar sold listings, analyses demand, and spots pricing opportunities — without you lifting a finger."
-          />
-          <FeatureCard 
-            icon={<TrendingUp className="w-6 h-6 text-brand-accent" />}
-            title="Know exactly what to fix"
-            description="Get actionable improvements that actually move the needle: cleaning, repackaging, photography tips."
-          />
-          <FeatureCard 
-            icon={<Quote className="w-6 h-6 text-brand-accent" />}
-            title="Human-sounding listings"
-            description="AI-written titles and descriptions that sound like a real seller wrote them. Optimized for your target platform."
-          />
-          <FeatureCard 
-            icon={<MessageSquare className="w-6 h-6 text-brand-accent" />}
-            title="Live AI refinements"
-            description="Chat with your scan results. Ask to shorten the description, try a different platform, or adjust the price."
-          />
+          {[
+            {
+              icon: <Search />,
+              title: "Market research in seconds",
+              description: "Compares similar sold listings, analyses demand, and spots pricing opportunities — without you lifting a finger."
+            },
+            {
+              icon: <Quote />,
+              title: "Human-sounding listings",
+              description: "AI-written titles and descriptions that sound like a real seller wrote them. Optimized for your target platform."
+            },
+            {
+              icon: <TrendingUp />,
+              title: "Know exactly what to fix",
+              description: "Get actionable improvements that actually move the needle: cleaning, repackaging, photography tips."
+            },
+            {
+              icon: <MessageSquare />,
+              title: "Live AI refinements",
+              description: "Chat with your scan results. Ask to shorten the description, try a different platform, or adjust the price."
+            }
+          ].map((feature, i) => (
+            <FeatureCard 
+              key={i}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              isSelected={selectedFeature === i}
+              isOtherSelected={selectedFeature !== null && selectedFeature !== i}
+              onClick={() => setSelectedFeature(selectedFeature === i ? null : i)}
+            />
+          ))}
         </motion.div>
       </section>
 
@@ -852,27 +873,40 @@ function PlatformMiniRow({ name, rank }: { name: string, rank: number }) {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function FeatureCard({ 
+  icon, title, description, isSelected, isOtherSelected, onClick 
+}: { 
+  icon: React.ReactNode, title: string, description: string, isSelected?: boolean, isOtherSelected?: boolean, onClick?: () => void 
+}) {
   return (
-    <motion.div 
+    <motion.button 
+      onClick={onClick}
       variants={{
         initial: { opacity: 0, y: -40 },
         animate: { 
           opacity: 1, 
           y: 0,
           transition: {
-            duration: 0.4,
-            ease: [0.23, 1, 0.32, 1]
+            duration: 0.8,
+            ease: "easeOut"
           }
         }
       }}
-      className="glass-card p-4 md:p-8 hover:border-brand-accent/50 transition-all group"
+      className={cn(
+        "glass-card p-4 md:p-8 transition-all duration-500 text-left relative focus:outline-none w-full",
+        isSelected ? "border-brand-accent shadow-[0_0_30px_rgba(var(--color-brand-accent),0.3)] scale-[1.02] z-10 bg-brand-bg/60" : "hover:border-brand-accent/30 hover:bg-brand-bg/40 border-brand-border/40",
+        isOtherSelected && !isSelected ? "blur-[4px] opacity-40 scale-[0.98]" : "",
+        !isSelected && !isOtherSelected && "hover:scale-[1.01]"
+      )}
     >
-      <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-brand-accent/10 flex items-center justify-center mb-3 md:mb-6 group-hover:scale-110 transition-transform">
-        {React.cloneElement(icon as React.ReactElement<any>, { className: "w-4 h-4 md:w-6 md:h-6 text-brand-accent" })}
+      <div className={cn(
+        "w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center mb-3 md:mb-6 transition-all duration-500",
+        isSelected ? "bg-brand-accent shadow-[0_0_20px_var(--color-brand-accent)]" : "bg-brand-accent/10"
+      )}>
+        {React.cloneElement(icon as React.ReactElement<any>, { className: cn("w-4 h-4 md:w-6 md:h-6 transition-colors duration-500", isSelected ? "text-slate-900" : "text-brand-accent") })}
       </div>
       <h3 className="text-sm md:text-xl font-bold mb-1.5 md:mb-3">{title}</h3>
       <p className="text-[10px] md:text-base text-brand-text-muted leading-relaxed line-clamp-3 md:line-clamp-none">{description}</p>
-    </motion.div>
+    </motion.button>
   );
 }
