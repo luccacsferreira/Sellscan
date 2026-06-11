@@ -188,7 +188,7 @@ async function startServer() {
       console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(key, { apiVersion: '2024-12-18.preview' as any });
+    return new Stripe(key, { apiVersion: '2024-06-20' as any });
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
