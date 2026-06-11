@@ -94,28 +94,40 @@ export function PricingPlansPage({ user, onSignIn, onStartNewScan }: PricingPlan
         </p>
         
         {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mt-8">
-          <span className={cn("text-xs font-bold transition-colors", billingCycle === 'monthly' ? "text-brand-text" : "text-brand-text-muted")}>Monthly Billing</span>
-          <button 
-            onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
-            className="w-12 h-6 rounded-full bg-brand-bg border border-brand-border relative p-1 transition-colors hover:border-brand-accent/50"
-          >
-            <motion.div 
-              animate={{ x: billingCycle === 'monthly' ? 0 : 24 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="w-4 h-4 rounded-full bg-brand-accent"
-            />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className={cn("text-xs font-bold transition-colors", billingCycle === 'yearly' ? "text-brand-text" : "text-brand-text-muted")}>Yearly Billing</span>
-            <span className={cn(
-              "text-[9px] px-2 py-0.5 rounded-md font-black tracking-normal transition-colors",
-              billingCycle === 'yearly' 
-                ? "bg-brand-accent text-slate-900 border border-brand-accent/40" 
-                : "bg-brand-border/15 text-brand-text-muted border border-brand-border/30"
-            )}>
-              -31% SAVINGS
-            </span>
+        <div className="flex justify-center mt-12 mb-6">
+          <div className="bg-brand-card/80 p-1.5 rounded-2xl border border-brand-border flex flex-col items-center gap-4 shadow-sm">
+            <div className="flex gap-1.5">
+              <button 
+                onClick={() => setBillingCycle('yearly')}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer",
+                  billingCycle === 'yearly' 
+                    ? "bg-brand-accent text-slate-900 shadow-md font-extrabold" 
+                    : "text-brand-text-muted hover:text-brand-text"
+                )}
+              >
+                Yearly Billing
+                <span className={cn(
+                  "text-[9px] px-2 py-0.5 rounded-md font-black tracking-normal transition-colors",
+                  billingCycle === 'yearly' 
+                    ? "bg-brand-bg text-brand-text shadow-sm border border-brand-border" 
+                    : "bg-brand-accent/15 text-brand-accent border border-brand-accent/10"
+                )}>
+                  -31% SAVINGS
+                </span>
+              </button>
+              <button 
+                onClick={() => setBillingCycle('monthly')}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all cursor-pointer",
+                  billingCycle === 'monthly' 
+                    ? "bg-brand-accent text-slate-950 shadow-md font-extrabold" 
+                    : "text-brand-text-muted hover:text-brand-text"
+                )}
+              >
+                Monthly
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -205,7 +217,7 @@ export function PricingPlansPage({ user, onSignIn, onStartNewScan }: PricingPlan
            credits="300 Credits / Month"
            features={[
              { text: "Gemini 2.5 + GPT 5.2 + Claude 4.6", included: true },
-             { text: "Unrestricted Landing Page Builder", included: true },
+             { text: "Unlocks Landing Page Builder", included: true },
              { text: "Batch Upload (up to 20)", included: true },
              { text: "No Daily Limits", included: true },
              { text: "Custom AI model selection", included: true },

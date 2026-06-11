@@ -411,7 +411,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
                 <span className={cn(
                   "text-[9px] px-2 py-0.5 rounded-md font-black tracking-normal transition-colors",
                   billingCycle === 'yearly' 
-                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm border border-black/5" 
+                    ? "bg-brand-bg text-brand-text shadow-sm border border-brand-border" 
                     : "bg-brand-accent/15 text-brand-accent border border-brand-accent/10"
                 )}>
                   -31% SAVINGS
@@ -528,7 +528,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
              credits="300 Credits / Month"
              features={[
                { text: "Gemini 2.5 + GPT 5.2 + Claude 4.6", included: true },
-               { text: "Unrestricted Landing Page Builder", included: true },
+               { text: "Unlocks Landing Page Builder", included: true },
                { text: "Batch Upload (up to 20)", included: true },
                { text: "No Daily Limits", included: true },
                { text: "Custom AI model selection", included: true },

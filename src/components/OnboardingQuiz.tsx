@@ -195,7 +195,7 @@ export function OnboardingQuiz({
           credits: '300 Credits / Month',
           color: 'from-amber-500/10 to-orange-600/20',
           badge: 'border-amber-500/30 text-amber-400 bg-amber-500/5',
-          features: ['Gemini 2.5 + GPT 5.2 + Claude 4.6', 'Unrestricted Landing Page Builder', 'Batch Upload (up to 20)', 'Custom AI model selection']
+          features: ['Gemini 2.5 + GPT 5.2 + Claude 4.6', 'Unlocks Landing Page Builder', 'Batch Upload (up to 20)', 'Custom AI model selection']
         };
     }
   };

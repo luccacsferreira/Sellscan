@@ -75,11 +75,11 @@ export function getPricingDisplay(tier: string, billingCycle: 'monthly' | 'yearl
     if (isDiscountActive) {
       return {
         priceLabel: '$0.99',
-        originalPrice: isMonthly ? '$3.99' : '$2.99'
+        originalPrice: isMonthly ? '$3.99' : '$2.75'
       };
     } else {
       return {
-        priceLabel: isMonthly ? '$3.99' : '$2.99',
+        priceLabel: isMonthly ? '$3.99' : '$2.75',
         originalPrice: undefined
       };
     }
@@ -89,11 +89,11 @@ export function getPricingDisplay(tier: string, billingCycle: 'monthly' | 'yearl
     if (isDiscountActive) {
       return {
         priceLabel: isMonthly ? '$3.99' : '$1.99',
-        originalPrice: isMonthly ? '$5.99' : '$4.16'
+        originalPrice: isMonthly ? '$5.99' : '$4.17'
       };
     } else {
       return {
-        priceLabel: isMonthly ? '$5.99' : '$4.16',
+        priceLabel: isMonthly ? '$5.99' : '$4.17',
         originalPrice: undefined
       };
     }
@@ -103,11 +103,11 @@ export function getPricingDisplay(tier: string, billingCycle: 'monthly' | 'yearl
     if (isDiscountActive) {
       return {
         priceLabel: isMonthly ? '$5.99' : '$2.99',
-        originalPrice: isMonthly ? '$8.99' : '$6.16'
+        originalPrice: isMonthly ? '$8.99' : '$6.06'
       };
     } else {
       return {
-        priceLabel: isMonthly ? '$8.99' : '$6.16',
+        priceLabel: isMonthly ? '$8.99' : '$6.06',
         originalPrice: undefined
       };
     }
