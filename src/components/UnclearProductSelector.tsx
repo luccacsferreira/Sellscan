@@ -91,12 +91,15 @@ export function UnclearProductSelector({
               <div>
                 <span className="text-[10px] font-black uppercase tracking-[0.25em] text-brand-accent">Item Refinement</span>
                 <h4 className="text-lg md:text-xl font-bold tracking-tight mt-1 text-brand-text leading-tight">
-                  Which item matches best?
+                  Help us refine the details
                 </h4>
+                <p className="text-brand-text-muted text-xs leading-relaxed mt-2">
+                  Select an option that best describes the item, its quantity, or condition. Or type it in if you know exactly what it is.
+                </p>
               </div>
 
               {/* Scrollable container for up to 5 choices */}
-              <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
                 {options.map((option, idx) => (
                   <motion.button
                     key={idx}
@@ -117,21 +120,41 @@ export function UnclearProductSelector({
                       </span>
                     </div>
 
-                    <ArrowRight className="w-4 h-4 text-brand-text-muted/30 group-hover:text-brand-accent group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-4 h-4 text-brand-text-muted/30 group-hover:text-brand-accent group-hover:translate-x-1 transition-all shrink-0" />
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* I Don't Know / Skip Button */}
-            <div className="mt-8 pt-6 border-t border-brand-border/10 flex flex-col sm:flex-row gap-3">
+            {/* Custom Input & I Don't Know / Skip Button */}
+            <div className="mt-8 pt-6 border-t border-brand-border/10 flex flex-col gap-3">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const val = (e.currentTarget.elements.namedItem('customInput') as HTMLInputElement).value;
+                  if (val.trim()) onSelect(val.trim());
+                }}
+                className="flex items-center gap-2"
+              >
+                <input 
+                  name="customInput"
+                  type="text" 
+                  placeholder="I know exactly what it is..." 
+                  className="flex-grow px-4 py-3 rounded-xl bg-brand-bg/40 border border-brand-border/40 text-sm text-brand-text placeholder:text-brand-text-muted focus:outline-none focus:border-brand-accent transition-colors"
+                />
+                <button
+                  type="submit"
+                  className="px-4 py-3 rounded-xl bg-brand-accent/10 text-brand-accent hover:bg-brand-accent hover:text-brand-bg font-bold transition-colors"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
               <button
                 onClick={() => onSelect(null)}
-                className="flex-grow py-4 rounded-xl md:rounded-full bg-brand-accent text-brand-bg hover:brightness-105 font-black uppercase text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-2 group shadow-lg shadow-brand-accent/15"
+                className="w-full py-4 rounded-xl text-brand-text-muted hover:text-brand-text hover:bg-brand-border/20 font-black uppercase text-[10px] tracking-[0.2em] transition-all flex items-center justify-center gap-2"
               >
                 <HelpCircle className="w-4 h-4" />
-                I don't know
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                I don't know, skip
               </button>
             </div>
           </div>
