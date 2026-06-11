@@ -34,13 +34,13 @@ export function AssistantSidebar({ messages, onSendMessage, onRevert, isSending,
   return (
     <div className={cn(
       "shrink-0 transition-all duration-500 flex flex-col items-center",
-      isChatFullscreen ? "fixed inset-0 z-[150] w-full h-full p-4 md:p-10 bg-brand-bg/95 backdrop-blur-xl" : "w-full md:w-[280px] lg:w-[320px]"
+      isChatFullscreen ? "fixed inset-0 z-[150] w-full h-full p-4 md:p-10 bg-brand-bg/95 backdrop-blur-xl" : "w-full md:w-[280px] lg:w-[320px] sticky top-24 self-start"
     )}>
       <motion.div 
         layout
         className={cn(
-          "flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md shadow-2xl transition-all duration-500",
-          isChatFullscreen ? "w-full max-w-4xl h-full" : "sticky top-24 w-full h-[500px] md:h-[calc(100vh-120px)]"
+          "flex flex-col glass-card border-brand-border/10 bg-brand-bg/30 backdrop-blur-md shadow-2xl transition-all duration-500 w-full",
+          isChatFullscreen ? "w-full max-w-4xl h-full" : "h-[500px] md:h-[calc(100vh-120px)]"
         )}
       >
         <div className="p-4 border-b border-brand-border/50 flex items-center justify-between bg-brand-bg/40">
