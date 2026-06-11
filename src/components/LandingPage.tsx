@@ -162,7 +162,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
             className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 md:mb-8 leading-[0.95] max-w-4xl mx-auto"
           >
             Scan any product. <br />
-            <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-b from-brand-accent to-brand-accent/80 pb-4 inline-block">Know exactly</span> <br />
+            <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-b from-brand-accent to-brand-accent/80 pb-2 md:pb-4 inline-block align-bottom -mb-2 md:-mb-4">Know exactly</span> <br />
             how to sell it.
           </motion.h1>
 
