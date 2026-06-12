@@ -37,6 +37,7 @@ import { MarketSentimentBox } from './dashboard/MarketSentimentBox';
 import { PriceTrendBox } from './dashboard/PriceTrendBox';
 import { MockupGeneratorBox } from './dashboard/MockupGeneratorBox';
 import { AssistantSidebar } from './dashboard/AssistantSidebar';
+import { PlatformMockup } from './dashboard/PlatformMockup';
 import { ProductAnalysis, ScanResult } from '../types';
 
 const mockAnalysis: ProductAnalysis = {
@@ -100,6 +101,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
   const [activeLegalModal, setActiveLegalModal] = useState<'privacy' | 'terms' | 'data' | 'cookies' | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
+  const [selectedMockup, setSelectedMockup] = useState<string | null>(null);
 
   useEffect(() => {
     const accepted = localStorage.getItem('sellscan_cookies_accepted');
@@ -186,6 +188,15 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
 
   return (
     <div className="pt-32 pb-20 px-4">
+      <AnimatePresence>
+        {selectedMockup && (
+          <PlatformMockup
+            platform={selectedMockup}
+            scan={{...mockScan, id: 'landing-demo'}}
+            onClose={() => setSelectedMockup(null)}
+          />
+        )}
+      </AnimatePresence>
       {/* Hero Section */}
       <section className="max-w-5xl mx-auto text-center mb-32 relative">
         {/* Abstract Background element */}
@@ -287,9 +298,9 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent">EXAMPLE SCAN • AIR JORDAN 1 MID</span>
         </div>
         
-        <div className="flex flex-col lg:flex-row gap-6 md:gap-10 items-start w-full relative">
-          {/* LEFT: RESULTS DASHBOARD (8 BOXES) */}
-          <div className="flex-grow space-y-10 w-full lg:w-auto">
+        <div className="bg-[#1a1a1a] p-4 md:p-8 rounded-[2rem] border border-brand-border/20 w-full relative">
+          {/* RESULTS DASHBOARD (8 BOXES) */}
+          <div className="flex-grow space-y-6 md:space-y-10 w-full">
             <VerdictBox verdict={mockAnalysis.quickVerdict} highlighted={false} active={true} />
             <IdentityBox 
               imageUrl={mockScan.imageUrl} 
@@ -305,17 +316,13 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
             <PracticalTipsBox tips={mockAnalysis.practicalTips} basePrice={mockAnalysis.priceRange.sweetSpot} currencySymbol="£" active={true} />
             <MarketSentimentBox sentiment={mockAnalysis.marketSentiment} active={true} />
             <PriceTrendBox history={mockAnalysis.priceHistory} currencySymbol="£" scanId="example-id" productName={mockAnalysis.productDetails.name} />
-            <MockupGeneratorBox scan={mockScan} platforms={mockAnalysis.platforms.map((p) => p.name)} onGenerate={() => {}} />
+            <MockupGeneratorBox 
+              scan={{...mockScan, id: 'landing-demo'}} 
+              platforms={mockAnalysis.platforms.map((p) => p.name)} 
+              onGenerate={(p) => setSelectedMockup(p)} 
+              preloadedHistory={mockAnalysis.platforms.map((p) => p.name)}
+            />
           </div>
-
-          {/* RIGHT SIDEBAR: ASSISTANT */}
-          <AssistantSidebar 
-            messages={[{ role: "assistant", content: "I've analyzed the Air Jordan 1 Mid. What would you like to refine?" }]}
-            onSendMessage={() => {}}
-            onRevert={() => {}}
-            isSending={false}
-            historyLog={[mockAnalysis]}
-          />
         </div>
       </motion.section>
 
@@ -894,14 +901,14 @@ function FeatureCard({
       }}
       className={cn(
         "glass-card p-4 md:p-8 transition-all duration-500 text-left relative focus:outline-none w-full",
-        isSelected ? "border-brand-accent shadow-[0_0_30px_rgba(var(--color-brand-accent),0.3)] scale-[1.02] z-10 bg-brand-bg/60" : "hover:border-brand-accent/30 hover:bg-brand-bg/40 border-brand-border/40",
-        isOtherSelected && !isSelected ? "blur-[4px] opacity-40 scale-[0.98]" : "",
-        !isSelected && !isOtherSelected && "hover:scale-[1.01]"
+        isSelected ? "border-brand-accent shadow-[0_0_30px_rgba(85,205,209,0.4)] scale-[1.05] z-10 bg-brand-bg/60" : "hover:border-brand-accent/30 hover:bg-brand-bg/40 border-brand-border/40",
+        isOtherSelected && !isSelected ? "blur-[6px] opacity-30 scale-[0.98]" : "",
+        !isSelected && !isOtherSelected && "hover:scale-[1.02]"
       )}
     >
       <div className={cn(
         "w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center mb-3 md:mb-6 transition-all duration-500",
-        isSelected ? "bg-brand-accent shadow-[0_0_20px_var(--color-brand-accent)]" : "bg-brand-accent/10"
+        isSelected ? "bg-brand-accent shadow-[0_0_20px_rgba(85,205,209,0.5)]" : "bg-brand-accent/10"
       )}>
         {React.cloneElement(icon as React.ReactElement<any>, { className: cn("w-4 h-4 md:w-6 md:h-6 transition-colors duration-500", isSelected ? "text-slate-900" : "text-brand-accent") })}
       </div>

@@ -8,12 +8,14 @@ interface MockupGeneratorBoxProps {
   scan: ScanResult;
   platforms: string[];
   onGenerate: (platform: string) => void;
+  preloadedHistory?: string[];
 }
 
-export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGeneratorBoxProps) {
+export function MockupGeneratorBox({ scan, platforms, onGenerate, preloadedHistory }: MockupGeneratorBoxProps) {
   const [selected, setSelected] = useState(platforms[0] || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<string[]>(() => {
+    if (preloadedHistory) return preloadedHistory;
     try {
       const saved = localStorage.getItem(`mockups_${scan.id}`);
       return saved ? JSON.parse(saved) : [];
@@ -32,6 +34,14 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
         setHistory(newHistory);
         localStorage.setItem(`mockups_${scan.id}`, JSON.stringify(newHistory));
       }
+    }, 1500);
+  };
+
+  const handleOpenHistoryMockup = (p: string) => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      onGenerate(p);
     }, 1500);
   };
 
@@ -104,7 +114,7 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate }: MockupGenera
                  {history.map((p) => (
                    <button 
                      key={p} 
-                     onClick={() => onGenerate(p)}
+                     onClick={() => handleOpenHistoryMockup(p)}
                      className="w-full bg-brand-card border border-brand-border hover:border-brand-accent p-4 rounded-xl flex items-center justify-between transition-all group/btn"
                    >
                      <div className="flex items-center gap-3">
