@@ -81,6 +81,7 @@ export interface ProductAnalysis {
     brand: string;
     category: string;
     characteristics: string[];
+    releaseYear?: number;
     lowConfidence?: boolean;
     unclearProduct?: boolean;
   };
@@ -90,7 +91,9 @@ export interface ProductAnalysis {
     badThings: string[];
   };
   priceHistory: {
-    data: { date: string; price: number }[];
+    month: { date: string; price: number }[];
+    year: { date: string; price: number }[];
+    allTime: { date: string; price: number }[];
     isLive: boolean;
     limitedHistory: boolean;
   };

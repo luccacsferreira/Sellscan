@@ -178,14 +178,14 @@ export function ScanDashboard({
         badThings: [],
       },
       priceHistory:
-        scan.analysis.priceHistory && "data" in scan.analysis.priceHistory
+        scan.analysis.priceHistory && "month" in scan.analysis.priceHistory
           ? scan.analysis.priceHistory
           : {
-              data: Array.isArray(scan.analysis.priceHistory)
-                ? scan.analysis.priceHistory
-                : [],
-              isLive: true,
-              limitedHistory: false,
+              month: Array.isArray(scan.analysis.priceHistory) ? scan.analysis.priceHistory : [],
+              year: [],
+              allTime: [],
+              isLive: scan.analysis.priceHistory?.isLive ?? true,
+              limitedHistory: scan.analysis.priceHistory?.limitedHistory ?? false,
             },
       platforms: (scan.analysis.platforms || []).map((p) => ({
         ...p,

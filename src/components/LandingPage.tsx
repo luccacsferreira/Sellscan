@@ -57,6 +57,7 @@ const mockAnalysis: ProductAnalysis = {
     brand: "Nike",
     category: "Apparel",
     characteristics: ["Red/Black Toe", "Original Box"],
+    releaseYear: 2021
   },
   practicalTips: [
     { action: "Deep clean leather", impact: "high", valueAdd: 25, description: "Adds £20-30 perceived value." },
@@ -69,12 +70,26 @@ const mockAnalysis: ProductAnalysis = {
     badThings: ["Mids have slightly less prestige than Highs", "Creases easily"]
   },
   priceHistory: {
-    data: [
-      { date: "2023-08", price: 150 },
-      { date: "2023-11", price: 145 },
-      { date: "2024-02", price: 130 },
-      { date: "2024-05", price: 125 },
-      { date: "2024-08", price: 115 },
+    month: [
+      { date: "Aug 01", price: 110 },
+      { date: "Aug 08", price: 108 },
+      { date: "Aug 15", price: 112 },
+      { date: "Aug 22", price: 115 },
+      { date: "Aug 29", price: 115 },
+    ],
+    year: [
+      { date: "Oct '23", price: 145 },
+      { date: "Dec '23", price: 135 },
+      { date: "Feb '24", price: 130 },
+      { date: "Apr '24", price: 125 },
+      { date: "Jun '24", price: 120 },
+      { date: "Aug '24", price: 115 }
+    ],
+    allTime: [
+      { date: "2021", price: 180 },
+      { date: "2022", price: 165 },
+      { date: "2023", price: 145 },
+      { date: "2024", price: 115 }
     ],
     isLive: true,
     limitedHistory: false
