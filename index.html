@@ -8,9 +8,73 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
     <link rel="shortcut icon" href="/favicon.png" />
+    <style>
+      .skiptranslate iframe {
+        display: none !important;
+      }
+      body {
+        top: 0px !important;
+      }
+      #google_translate_element {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 5px;
+        border-radius: 8px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .goog-te-combo {
+        background-color: #1a1a1a;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-family: inherit;
+        font-size: 12px;
+        outline: none;
+      }
+      .goog-logo-link {
+        display: none !important;
+      }
+      .goog-te-gadget {
+        color: transparent !important;
+      }
+      #goog-gt-tt {display: none !important;}
+      .goog-te-banner-frame {display: none !important;}
+      .goog-text-highlight {background-color: transparent !important; box-shadow: none !important;}
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="google_translate_element"></div>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+          pageLanguage: 'en',
+          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: true
+        }, 'google_translate_element');
+        
+        // Auto-suggestion based on region/browser language
+        setTimeout(() => {
+          const userLang = navigator.language || (navigator as any).userLanguage;
+          if (userLang && !userLang.startsWith('en')) {
+            console.log('🌍 Detected non-English language:', userLang);
+            // We don't force it immediately to avoid being annoying, 
+            // but we can ensure the widget is visible and maybe highlighted
+            const widget = document.getElementById('google_translate_element');
+            if (widget) {
+              widget.style.border = '2px solid #55cdd1';
+              widget.style.boxShadow = '0 0 20px rgba(85, 205, 209, 0.4)';
+            }
+          }
+        }, 2000);
+      }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

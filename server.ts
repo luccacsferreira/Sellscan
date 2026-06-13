@@ -885,7 +885,9 @@ Return **JSON ONLY** with the exact schema:
       });
 
       const sessionOpts: any = {
-        payment_method_types: ['card'],
+        automatic_payment_methods: {
+          enabled: true,
+        },
         allow_promotion_codes: true, 
         billing_address_collection: 'auto',
         line_items: [

@@ -211,13 +211,40 @@ function AppContent() {
           type: "Apparel",
           condition: "Vintage / Pre-owned",
           brand: "Authentic Vintage",
-          category: "Jackets"
+          category: "Jackets",
+          releaseYear: 1995
         },
         buyerSentiment: {
           overallRating: 4.8,
           summary: "Buyers love this specific era for its durability and timeless style.",
           pros: ["High-quality full-grain leather", "Classic fit", "Increasing value year-over-year"],
           cons: ["Sizing can be smaller than modern standards", "Slight vintage scent expected"]
+        },
+        priceHistory: {
+          month: [
+            { date: "May 01", price: 88 },
+            { date: "May 10", price: 92 },
+            { date: "May 20", price: 89 },
+            { date: "May 30", price: 95 }
+          ],
+          year: [
+            { date: "Jun '25", price: 82 },
+            { date: "Sep '25", price: 85 },
+            { date: "Dec '25", price: 90 },
+            { date: "Mar '26", price: 95 }
+          ],
+          allTime: [
+            { date: "1995", price: 180 },
+            { date: "2000", price: 120 },
+            { date: "2005", price: 80 },
+            { date: "2010", price: 60 },
+            { date: "2015", price: 45 },
+            { date: "2020", price: 65 },
+            { date: "2023", price: 85 },
+            { date: "2024", price: 95 }
+          ],
+          isLive: true,
+          limitedHistory: false
         }
       }
     }];
