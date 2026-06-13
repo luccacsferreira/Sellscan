@@ -188,7 +188,7 @@ async function startServer() {
       console.log("Current ENV keys (censored):", Object.keys(process.env).filter(k => !k.includes('SESSION') && !k.includes('TOKEN')));
       throw new Error("STRIPE_SECRET_KEY is not configured on the server.");
     }
-    return new Stripe(key, { apiVersion: '2024-06-20' as any });
+    return new Stripe(key, { apiVersion: '2023-10-16' as any });
   };
 
   // Supabase Admin for fulfilling orders bypassing RLS
@@ -885,9 +885,7 @@ Return **JSON ONLY** with the exact schema:
       });
 
       const sessionOpts: any = {
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        payment_method_types: ['card'],
         allow_promotion_codes: true, 
         billing_address_collection: 'auto',
         line_items: [
