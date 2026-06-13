@@ -854,6 +854,25 @@ function AppContent() {
     setView('home');
   };
 
+  const handleDeleteScan = async (id: string) => {
+    const updated = (history || []).filter(s => s && s.id !== id);
+    setHistory(updated);
+    localStorage.setItem('sellscan_history', JSON.stringify(updated));
+
+    if (user) {
+      try {
+        await dbService.deleteScan(id);
+      } catch (e) {
+        console.error("Failed to delete scan from DB", e);
+      }
+    }
+    
+    if (currentScan?.id === id) {
+      setCurrentScan(null);
+      setView('home');
+    }
+  };
+
   const activeProject = useMemo(() => 
     projects.find(p => p.id === activeProjectId)
   , [projects, activeProjectId]);
@@ -1308,6 +1327,8 @@ function AppContent() {
                 onStartNewScan={() => { setActiveProjectId(null); setView('upload'); }}
                 onCreateProject={() => setShowNewProjectModal(true)}
                 onViewProject={handleSelectProject}
+                onViewScan={(scan) => { setCurrentScan(scan); setView('dashboard'); }}
+                onDeleteScan={handleDeleteScan}
                 onViewAllScans={() => setView('history')}
                 onViewAnalytics={() => setView('analytics')}
                 onViewAffiliate={() => setView('affiliate')}
@@ -1462,7 +1483,8 @@ function AppContent() {
                  projects={projects}
                  onUpdateScan={handleUpdateScan}
                  onSelect={(scan) => { setCurrentScan(scan); setView('dashboard'); }} 
-                 onClear={() => { setHistory([]); localStorage.removeItem('sellscan_history'); }} 
+                 onDelete={handleDeleteScan}
+                  onClear={() => { setHistory([]); localStorage.removeItem('sellscan_history'); }} 
                />
              </motion.div>
           )}

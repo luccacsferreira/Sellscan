@@ -136,6 +136,18 @@ export const dbService = {
   },
 
   /**
+   * Delete a scan
+   */
+  async deleteScan(id: string) {
+    const { error } = await supabase
+      .from('scans')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  /**
    * Affiliate methods
    */
   async getAffiliateProfile() {

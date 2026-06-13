@@ -22,10 +22,11 @@ interface HistoryPageProps {
   projects: Project[];
   onSelect: (scan: ScanResult) => void;
   onUpdateScan: (scan: ScanResult) => void;
+  onDelete: (id: string) => void;
   onClear: () => void;
 }
 
-export function HistoryPage({ history, projects, onSelect, onUpdateScan, onClear }: HistoryPageProps) {
+export function HistoryPage({ history, projects, onSelect, onUpdateScan, onDelete, onClear }: HistoryPageProps) {
   const { currency } = useLocation();
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   const [assigningId, setAssigningId] = React.useState<string | null>(null);
@@ -101,6 +102,19 @@ export function HistoryPage({ history, projects, onSelect, onUpdateScan, onClear
                       title={project ? `Project: ${project.name}` : "Assign to project"}
                     >
                       <FolderRoot className="w-4 h-4" />
+                    </button>
+
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Delete this scan?')) {
+                          onDelete(scan.id);
+                        }
+                      }}
+                      className="p-2 ml-2 rounded-lg backdrop-blur-md bg-red-500/20 border border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-lg"
+                      title="Delete scan"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
 
                     {isAssigning && (

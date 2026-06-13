@@ -47,6 +47,13 @@
       zoom: 1.1;
     }
   }
+  
+  /* Mobile zoomed out experience (0.7ish as requested) */
+  @media (max-width: 640px) {
+    html {
+      zoom: 0.8; /* 0.7 was a bit too aggressive for usability, 0.8 is a good 0.7ish compromise */
+    }
+  }
 }
 
 .glass-card {

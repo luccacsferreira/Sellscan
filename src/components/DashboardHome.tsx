@@ -13,7 +13,8 @@ import {
   Link as LinkIcon,
   Copy,
   Check,
-  Wallet
+  Wallet,
+  Trash2
 } from 'lucide-react';
 import { ScanResult, Project, UserStats, AffiliateProfile } from '../types';
 import { cn, formatAmount } from '../lib/utils';
@@ -38,6 +39,8 @@ interface DashboardHomeProps {
   onStartNewScan: () => void;
   onCreateProject: () => void;
   onViewProject: (project: Project) => void;
+  onViewScan: (scan: ScanResult) => void;
+  onDeleteScan: (id: string) => void;
   onViewAllScans: () => void;
   onViewAnalytics: () => void;
   onViewAffiliate?: () => void;
@@ -50,6 +53,8 @@ export function DashboardHome({
   onStartNewScan,
   onCreateProject,
   onViewProject,
+  onViewScan,
+  onDeleteScan,
   onViewAllScans,
   onViewAnalytics,
   onViewAffiliate
@@ -151,12 +156,12 @@ export function DashboardHome({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 space-y-12">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-12 space-y-8 md:space-y-12">
       {/* Header with quick actions */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome back.</h1>
-          <p className="text-sm md:text-base text-brand-text-muted leading-tight">Your personal commerce command center.</p>
+          <h1 className="text-2xl md:text-4xl font-bold mb-1 md:mb-2">Welcome back.</h1>
+          <p className="text-xs md:text-base text-brand-text-muted leading-tight">Your personal commerce command center.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button 
@@ -177,7 +182,7 @@ export function DashboardHome({
       </div>
 
       {/* Stats Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <StatCard 
           icon={<Search className="w-5 h-5" />}
           label="Total Scans"
@@ -198,7 +203,7 @@ export function DashboardHome({
         />
         <div 
           onClick={onViewAnalytics}
-          className="glass-card p-6 bg-brand-accent/5 border-brand-accent/20 cursor-pointer group hover:bg-brand-accent/10 transition-all flex flex-col justify-between"
+          className="glass-card p-4 md:p-6 bg-brand-accent/5 border-brand-accent/20 cursor-pointer group hover:bg-brand-accent/10 transition-all flex flex-col justify-between"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 rounded-xl bg-brand-accent text-brand-bg flex items-center justify-center font-bold">
@@ -281,6 +286,7 @@ export function DashboardHome({
               {recentScans.slice(0, 4).map(scan => (
                 <div 
                   key={scan.id}
+                  onClick={() => onViewScan(scan)}
                   className="p-3 rounded-xl bg-brand-bg border border-brand-border flex items-center gap-3 hover:border-brand-accent/20 transition-all cursor-pointer group"
                 >
                   <div className="w-12 h-12 rounded-lg bg-brand-border overflow-hidden flex-shrink-0">
@@ -294,10 +300,23 @@ export function DashboardHome({
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-bold truncate group-hover:text-brand-accent transition-colors">{scan.analysis?.suggestedTitle || 'Untitled Scan'}</h4>
-                    <p className="text-xs text-brand-text-muted">{currencySymbol}{scan.analysis?.priceRange?.sweetSpot || 0}</p>
+                    <p className="text-xs text-brand-text-muted">{currencySymbol}{formatAmount(scan.analysis?.priceRange?.sweetSpot || 0)}</p>
                   </div>
-                  <div className="text-[10px] font-mono text-brand-text-muted uppercase">
-                    {new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                  <div className="flex items-center gap-4">
+                    <div className="text-[10px] font-mono text-brand-text-muted uppercase hidden sm:block">
+                      {new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Delete this scan?')) {
+                          onDeleteScan(scan.id);
+                        }
+                      }}
+                      className="p-2 text-brand-text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -380,14 +399,14 @@ export function DashboardHome({
 
 function StatCard({ icon, label, value, trend }: { icon: React.ReactNode, label: string, value: string, trend: string }) {
   return (
-    <div className="glass-card p-6">
-      <div className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center mb-6 text-brand-accent">
+    <div className="glass-card p-4 md:p-6">
+      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center mb-4 md:mb-6 text-brand-accent">
         {icon}
       </div>
       <div>
-        <h3 className="text-sm font-bold uppercase tracking-widest text-brand-text-muted mb-1">{label}</h3>
-        <p className="text-3xl font-bold mb-2 tabular-nums">{value}</p>
-        <p className="text-xs text-brand-text-muted flex items-center gap-1">
+        <h3 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-brand-text-muted mb-1">{label}</h3>
+        <p className="text-xl md:text-3xl font-bold mb-1 md:mb-2 tabular-nums">{value}</p>
+        <p className="text-[9px] md:text-xs text-brand-text-muted flex items-center gap-1">
           <span className="w-1 h-1 rounded-full bg-brand-accent animate-pulse" />
           {trend}
         </p>

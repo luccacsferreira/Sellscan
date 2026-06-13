@@ -15,11 +15,11 @@ export function cn(...inputs: ClassValue[]) {
  * e.g., 200000.01 -> "200.000,01"
  */
 export function formatAmount(value: number | string | undefined | null): string {
-  if (value === undefined || value === null) return '0,00';
+  if (value === undefined || value === null) return '0.00';
   const num = typeof value === 'string' ? parseFloat(value) : value;
-  if (isNaN(num)) return '0,00';
+  if (isNaN(num)) return '0.00';
   
-  return new Intl.NumberFormat('de-DE', {
+  return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   }).format(num);
