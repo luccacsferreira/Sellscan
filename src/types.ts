@@ -81,6 +81,7 @@ export interface ProductAnalysis {
     brand: string;
     category: string;
     characteristics: string[];
+    detectedOrigin?: string; // e.g. "Brazil", "USA", "Europe"
     releaseYear?: number;
     lowConfidence?: boolean;
     unclearProduct?: boolean;

@@ -145,7 +145,19 @@ export function ScanDashboard({
     setAnimationStage(6);
   };
 
-  const { currency } = useLocation();
+  const { currency, setCurrency } = useLocation();
+  const [showCurrencySuggestion, setShowCurrencySuggestion] = useState(false);
+
+  useEffect(() => {
+    // Logic for suggesting currency switch only for Brazilian items if user is on USD/GBP
+    const detectedOrigin = scan.analysis.productDetails.detectedOrigin;
+    if (detectedOrigin === 'Brazil' && currency !== 'BRL') {
+      setShowCurrencySuggestion(true);
+    } else {
+      setShowCurrencySuggestion(false);
+    }
+  }, [scan.id, scan.analysis.productDetails.detectedOrigin, currency]);
+
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
 
   const currentProject = projects.find((p) => p.id === scan.projectId);
@@ -266,6 +278,47 @@ export function ScanDashboard({
             scan={scan}
             onClose={() => setSelectedMockup(null)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* CURRENCY SUGGESTION BANNER */}
+      <AnimatePresence>
+        {showCurrencySuggestion && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mb-4"
+          >
+            <div className="bg-brand-accent/10 border border-brand-accent/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent">
+                   <TrendingUp className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-brand-text">Localized Pricing detected</p>
+                  <p className="text-[10px] text-brand-text-muted font-medium">This product originates from <b>Brazil</b>. Would you like to switch to Real (R$) for more accurate insights?</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setShowCurrencySuggestion(false)}
+                  className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-brand-text-muted hover:text-brand-text transition-colors"
+                >
+                  Dismiss
+                </button>
+                <button 
+                  onClick={() => {
+                    setCurrency('BRL');
+                    setShowCurrencySuggestion(false);
+                  }}
+                  className="px-6 py-2 bg-brand-accent text-brand-bg rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-brand-accent/20"
+                >
+                  Switch to BRL
+                </button>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

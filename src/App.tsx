@@ -988,7 +988,7 @@ function AppContent() {
         onViewAffiliate={() => setView('affiliate')}
         onViewPricing={() => setView('pricing')}
         onSignInClick={() => setShowAuthModal(true)}
-        onGetStartedClick={() => setView('quiz')}
+        onGetStartedClick={() => setView('upload')}
         isLoggedIn={!!user}
         currentView={view}
         userEmail={user?.email}
@@ -1303,7 +1303,7 @@ function AppContent() {
               transition={{ duration: 0.3 }}
             >
               <LandingPage 
-                onStart={() => setView('quiz')} 
+                onStart={() => setView('upload')} 
                 onSignIn={(tier) => {
                   if (tier) setPendingCheckout(tier);
                   setShowAuthModal(true);

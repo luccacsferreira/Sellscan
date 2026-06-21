@@ -84,10 +84,6 @@ export function MockupGeneratorBox({ scan, platforms, onGenerate, preloadedHisto
           </div>
 
           <div className="pt-4 border-t border-brand-border/50">
-             <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold text-brand-text-muted uppercase">Generation Cost</span>
-                <span className="text-xs font-bold text-brand-text">0.5 Credits</span>
-             </div>
              <button 
                 onClick={handleGenerate}
                 disabled={isGenerating}

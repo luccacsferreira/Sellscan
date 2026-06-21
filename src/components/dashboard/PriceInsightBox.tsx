@@ -75,9 +75,6 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
           <h3 className="text-[10px] font-extrabold uppercase text-brand-text-muted tracking-[0.2em] opacity-60 mb-1">{title}</h3>
           <p className="text-xs text-brand-text-muted font-medium italic">{subtitle}</p>
         </div>
-        <div className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-wider text-brand-text-muted">
-          {credits} Credits
-        </div>
       </div>
 
       <div className="flex flex-col mb-8">
