@@ -140,24 +140,44 @@ export function LanguageModal({ isOpen, onClose }: LanguageModalProps) {
     setCurrentLang(code);
     
     // Set the cookie directly as a fallback
-    document.cookie = `googtrans=/en/${code}; path=/`;
-    if (window.location.hostname !== 'localhost') {
-      document.cookie = `googtrans=/en/${code}; domain=${window.location.hostname}; path=/`;
-      document.cookie = `googtrans=/en/${code}; domain=.${window.location.hostname}; path=/`;
-    }
+    const setCookie = (name: string, value: string) => {
+      // Clear previous cookies first
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      if (window.location.hostname !== 'localhost') {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${window.location.hostname}; path=/;`;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${window.location.hostname}; path=/;`;
+      }
+      
+      // Set new cookie
+      document.cookie = `${name}=${value}; path=/`;
+      if (window.location.hostname !== 'localhost') {
+        document.cookie = `${name}=${value}; domain=${window.location.hostname}; path=/`;
+        document.cookie = `${name}=${value}; domain=.${window.location.hostname}; path=/`;
+      }
+    };
+
+    setCookie('googtrans', `/en/${code}`);
     
     const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     if (select) {
       select.value = code;
-      select.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-      // Some versions of Google Translate listen to the change event differently
+      select.dispatchEvent(new Event('change'));
+      
+      try {
+        if (typeof (select as any).onchange === 'function') {
+            (select as any).onchange();
+        }
+      } catch(e) {}
+      
+      // Also try to dispatch using older event model just in case
       try {
         const evt = document.createEvent('HTMLEvents');
-        evt.initEvent('change', true, true);
+        evt.initEvent('change', false, true);
         select.dispatchEvent(evt);
       } catch (e) {}
+      
     } else {
-      // Reload the page to force Google Translate to apply the new cookie
+      // Fallback reload
       window.location.reload();
     }
     

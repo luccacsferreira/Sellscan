@@ -16,17 +16,10 @@
         top: 0px !important;
       }
       #google_translate_element {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border-width: 0;
-        opacity: 0;
-        pointer-events: none;
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        z-index: -1;
       }
       .goog-te-combo {
         background-color: #1a1a1a;
@@ -55,9 +48,7 @@
     <script type="text/javascript">
       function googleTranslateElementInit() {
         new google.translate.TranslateElement({
-          pageLanguage: 'en',
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: true
+          pageLanguage: 'en'
         }, 'google_translate_element');
       }
     </script>
