@@ -180,10 +180,6 @@ export function LanguageModal({ isOpen, onClose }: LanguageModalProps) {
       // Fallback reload
       window.location.reload();
     }
-    
-    setTimeout(() => {
-      onClose();
-    }, 300);
   };
 
   const filteredLanguages = useMemo(() => {
@@ -214,7 +210,7 @@ export function LanguageModal({ isOpen, onClose }: LanguageModalProps) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-brand-card border border-brand-border rounded-2xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden flex flex-col max-h-[85vh]"
+            className="notranslate bg-brand-card border border-brand-border rounded-2xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden flex flex-col max-h-[85vh]"
           >
             <div className="p-6 border-b border-brand-border flex flex-col gap-4 bg-brand-bg/50">
               <div className="flex items-center justify-between">
