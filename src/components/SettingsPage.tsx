@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap, Sun, Moon, X, Sparkles } from 'lucide-react';
+import { User, Bell, Shield, CreditCard, LogOut, ChevronRight, MapPin, RefreshCcw, Zap, Sun, Moon, X, Sparkles, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
@@ -12,6 +12,8 @@ import { supabase } from '../lib/supabase';
 
 import { AIModelId, AIPipelineConfig, AIPlan } from '../types';
 import { AI_MODELS, calculateScanCost, DEFAULT_PIPELINES } from '../lib/ai-config';
+
+import { LanguageModal } from './LanguageModal';
 
 export function SettingsPage({ 
   pipeline,
@@ -33,6 +35,7 @@ export function SettingsPage({
   const { location, setLocation, requestLocation, isLoading } = useLocation();
   const [secretsStatus, setSecretsStatus] = React.useState({ gemini: false, openai: false });
   const [isAICoreOpen, setIsAICoreOpen] = React.useState(false);
+  const [isLangModalOpen, setIsLangModalOpen] = React.useState(false);
 
   const costPerScan = calculateScanCost(pipeline);
 
@@ -45,6 +48,8 @@ export function SettingsPage({
 
   return (
     <div className="pt-32 pb-20 px-4 max-w-3xl mx-auto">
+      <LanguageModal isOpen={isLangModalOpen} onClose={() => setIsLangModalOpen(false)} />
+      
       <h1 className="text-4xl font-bold mb-12">Settings</h1>
       
       <div className="space-y-4">
@@ -55,6 +60,21 @@ export function SettingsPage({
             <SettingsItem icon={<Shield className="text-green-500" />} label="Security" value="MFA Active" />
           </SettingsGroup>
         )}
+
+        <SettingsGroup title="Preferences">
+          <div className="p-4 flex items-center justify-between hover:bg-brand-bg group cursor-pointer transition-all" onClick={() => setIsLangModalOpen(true)}>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-brand-bg border border-brand-border flex items-center justify-center">
+                <Globe className="text-brand-accent" />
+              </div>
+              <div>
+                <p className="text-sm font-bold">App Language</p>
+                <p className="text-xs text-brand-text-muted">Global Translation</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-brand-text-muted group-hover:translate-x-1 transition-transform" />
+          </div>
+        </SettingsGroup>
 
         <SettingsGroup title="Appearance">
           <div className="p-6 bg-brand-bg/50">

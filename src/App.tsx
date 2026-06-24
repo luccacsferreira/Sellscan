@@ -39,6 +39,7 @@ import { UnclearProductSelector } from './components/UnclearProductSelector';
 import { OnboardingQuiz } from './components/OnboardingQuiz';
 import { CreditUsagePage } from './components/CreditUsagePage';
 import { getPriceId } from './lib/stripe';
+import { LanguageModal } from './components/LanguageModal';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz' | 'credit-usage';
 
@@ -70,6 +71,7 @@ function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthInitializing, setIsAuthInitializing] = useState(true);
   const [loadingUserInfo, setLoadingUserInfo] = useState<{ email?: string, name?: string, avatar?: string } | null>(null);
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
   
   useEffect(() => {
     const initAuth = async () => {
@@ -994,12 +996,15 @@ function AppContent() {
         userEmail={user?.email}
         theme={resolvedTheme}
         onToggleTheme={toggleTheme}
+        onToggleLanguage={() => setIsLanguageModalOpen(true)}
         rightElement={user && <DiscountTimer variant="compact" onClaimDiscount={() => setView('pricing')} />}
         currentScan={currentScan}
         plan={plan}
         spentCredits={spentCredits}
         onViewCredits={() => setView('credit-usage')}
       />
+
+      <LanguageModal isOpen={isLanguageModalOpen} onClose={() => setIsLanguageModalOpen(false)} />
 
       {/* Discount Modal Overlay */}
       <AnimatePresence>

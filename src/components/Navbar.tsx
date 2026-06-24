@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X, Sparkles, Info, Settings, CreditCard, Gift, BookOpen, HelpCircle } from 'lucide-react';
+import { Camera, Search, User, LogIn, Menu, Sun, Moon, Zap, X, Sparkles, Info, Settings, CreditCard, Gift, BookOpen, HelpCircle, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import sellscanLogo from '../assets/sellscan_logo_transparent.png';
@@ -28,6 +28,7 @@ interface NavbarProps {
   userEmail?: string;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  onToggleLanguage?: () => void;
   rightElement?: React.ReactNode;
   
   // Credit specific props
@@ -57,6 +58,7 @@ export function Navbar({
   userEmail,
   theme, 
   onToggleTheme,
+  onToggleLanguage,
   rightElement,
   currentScan,
   plan = 'free',
@@ -297,6 +299,15 @@ export function Navbar({
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </button>
+              {onToggleLanguage && (
+                <button 
+                  onClick={onToggleLanguage}
+                  className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted hover:text-brand-text"
+                  aria-label="Toggle language"
+                >
+                  <Globe className="w-5 h-5" />
+                </button>
+              )}
 
               {isLoggedIn ? (
                 <div className="flex items-center gap-3">
@@ -344,6 +355,15 @@ export function Navbar({
           </div>
 
           <div className="md:hidden flex items-center gap-2">
+            {onToggleLanguage && (
+              <button 
+                onClick={onToggleLanguage}
+                className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted"
+                aria-label="Toggle language"
+              >
+                <Globe className="w-5 h-5" />
+              </button>
+            )}
             <button 
               onClick={onToggleTheme}
               className="p-2 rounded-full hover:bg-brand-card transition-colors text-brand-text-muted"
