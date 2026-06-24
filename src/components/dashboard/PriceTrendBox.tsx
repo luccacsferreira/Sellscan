@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Check } from 'lucide-react';
 import { cn, formatAmount } from '../../lib/utils';
 
 interface PricePoint {

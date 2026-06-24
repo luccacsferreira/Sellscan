@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { ArrowLeft, FolderRoot, ChevronDown, Check, X } from "lucide-react";
+import { ArrowLeft, FolderRoot, ChevronDown, Check, X, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ProductAnalysis,

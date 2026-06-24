@@ -60,7 +60,7 @@
         
         // Auto-suggestion based on region/browser language
         setTimeout(() => {
-          const userLang = navigator.language || (navigator as any).userLanguage;
+          const userLang = navigator.language || navigator.userLanguage;
           if (userLang && !userLang.startsWith('en')) {
             console.log('🌍 Detected non-English language:', userLang);
             // We don't force it immediately to avoid being annoying, 
