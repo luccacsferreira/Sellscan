@@ -91,6 +91,8 @@ export interface ProductAnalysis {
     goodThings: string[];
     badThings: string[];
   };
+  tutorial?: string;
+  researchedUrls?: string[];
   priceHistory: {
     month: { date: string; price: number }[];
     year: { date: string; price: number }[];

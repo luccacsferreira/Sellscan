@@ -175,10 +175,23 @@ export function PlatformMockup({
                     {copiedField === 'desc' ? <><Check className="w-3 h-3" /> Copied</> : <><Copy className="w-3 h-3" /> Copy All</>}
                   </button>
                 </div>
-                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-medium h-[200px] overflow-y-auto pr-2 custom-scrollbar-light">
+                <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-medium max-h-[200px] overflow-y-auto pr-2 custom-scrollbar-light">
                   {scan.analysis.suggestedDescription}
                 </div>
               </div>
+
+              {scan.analysis.tutorial && (
+                <div className="space-y-4 border-t border-gray-100 pt-8 relative">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-indigo-500 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Listing Tutorial
+                    </h3>
+                  </div>
+                  <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-medium p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                    {scan.analysis.tutorial}
+                  </div>
+                </div>
+              )}
               
               <div className="pt-4 flex items-center justify-center gap-6">
                 <div className="flex flex-col items-center">
@@ -191,6 +204,17 @@ export function PlatformMockup({
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Optimized</span>
                 </div>
               </div>
+
+              {scan.analysis.researchedUrls && scan.analysis.researchedUrls.length > 0 && (
+                <div className="pt-4 border-t border-gray-100 flex flex-wrap gap-2 items-center justify-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-2">Researched via:</span>
+                  {scan.analysis.researchedUrls.slice(0, 5).map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="w-6 h-6 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-gray-100 transition-colors" title={url}>
+                      <img src={`https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`} alt="" className="w-3.5 h-3.5 object-contain" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

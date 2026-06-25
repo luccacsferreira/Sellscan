@@ -33,14 +33,11 @@
 }
 
 @layer base {
-  *, ::before, ::after {
-    @apply transition-colors duration-75;
-  }
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-brand-bg text-brand-text font-sans antialiased transition-colors duration-75;
+    @apply bg-brand-bg text-brand-text font-sans antialiased;
   }
   @media (min-width: 1920px) {
     html {

@@ -1016,7 +1016,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg transition-colors duration-75">
+    <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg">
       <Navbar 
         onGoHome={handleGoHome}
         onNewScan={() => setView('upload')}
@@ -1228,9 +1228,35 @@ function AppContent() {
                           </div>
                        </div>
 
-                       <div className="absolute bottom-4 left-4 right-4 p-2.5 px-5 rounded-xl md:rounded-full bg-brand-bg/85 border border-brand-border/50 backdrop-blur-md flex items-center gap-3 shadow-xl">
-                          <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
-                          <span className="text-[9px] md:text-[10px] font-black text-brand-text/80 uppercase tracking-widest truncate">{LOADING_STAGE_TEXT[loadingStage]}</span>
+                       <div className="absolute bottom-4 left-4 right-4 p-2.5 px-5 rounded-xl md:rounded-full bg-brand-bg/85 border border-brand-border/50 backdrop-blur-md flex items-center gap-3 shadow-xl overflow-hidden">
+                          <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse shrink-0" />
+                          <span className="text-[9px] md:text-[10px] font-black text-brand-text/80 uppercase tracking-widest truncate flex-grow">{LOADING_STAGE_TEXT[loadingStage]}</span>
+                          
+                          <AnimatePresence>
+                            {(loadingStage === 'searching' || loadingStage === 'analyzing_reviews') && (
+                              <motion.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex items-center"
+                              >
+                                <div className="flex -space-x-2">
+                                  <div className="w-6 h-6 rounded-full bg-white border-2 border-brand-bg flex items-center justify-center shadow-sm overflow-hidden z-30">
+                                    <img src="https://www.google.com/s2/favicons?domain=ebay.com&sz=64" alt="eBay" className="w-4 h-4 object-contain" />
+                                  </div>
+                                  <div className="w-6 h-6 rounded-full bg-white border-2 border-brand-bg flex items-center justify-center shadow-sm overflow-hidden z-20">
+                                    <img src="https://www.google.com/s2/favicons?domain=stockx.com&sz=64" alt="StockX" className="w-4 h-4 object-contain" />
+                                  </div>
+                                  <div className="w-6 h-6 rounded-full bg-white border-2 border-brand-bg flex items-center justify-center shadow-sm overflow-hidden z-10">
+                                    <img src="https://www.google.com/s2/favicons?domain=grailed.com&sz=64" alt="Grailed" className="w-4 h-4 object-contain" />
+                                  </div>
+                                </div>
+                                <div className="ml-2 text-[10px] font-bold text-brand-text-muted bg-brand-border/50 px-1.5 py-0.5 rounded-md">
+                                  +6
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                        </div>
                     </div>
 

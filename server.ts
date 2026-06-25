@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import OpenAI from "openai";
 import { GoogleGenerativeAI as GoogleGenAI } from "@google/generative-ai";
+import { GoogleGenAI as NewGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import Stripe from "stripe";
 import bodyParser from "body-parser";
@@ -646,23 +647,44 @@ async function startServer() {
 
           return res.json({ text, updatedAnalysis });
         } else {
-          // Analysis mode
+          // Analysis mode using new SDK for googleSearch tool
+          const ai = new NewGenAI({ apiKey: process.env.GEMINI_API_KEY });
           const parts: any[] = [{ text: userPrompt }];
+          
+          let contents = [];
           if (image) {
             const [meta, data] = image.split(',');
             const mimeType = meta.split(':')[1].split(';')[0];
-            parts.push({ inlineData: { data, mimeType } });
+            contents = [{ role: 'user', parts: [{ inlineData: { data, mimeType } }, { text: userPrompt }] }];
+          } else {
+            contents = [{ role: 'user', parts: [{ text: userPrompt }] }];
           }
 
-          const result = await model.generateContent(parts);
-          const response = await result.response;
-          const text = response.text();
+          const response = await ai.models.generateContent({
+            model: "gemini-1.5-pro",
+            contents,
+            config: {
+              tools: [{ googleSearch: {} }]
+            }
+          });
+          
+          const text = response.text || "";
+          const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
           
           try {
             // Robust JSON extraction for cases where AI adds markdown or conversational fluff
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error("No JSON found in AI response");
-            return res.json(JSON.parse(jsonMatch[0]));
+            const resultObj = JSON.parse(jsonMatch[0]);
+            
+            // Attach grounding urls if available
+            if (groundingMetadata?.groundingChunks) {
+              resultObj.researchedUrls = groundingMetadata.groundingChunks
+                .filter(chunk => chunk.web?.uri)
+                .map(chunk => chunk.web.uri);
+            }
+            
+            return res.json(resultObj);
           } catch (parseError) {
             console.error("JSON Parse Error. Raw Text:", text);
             throw new Error("Analysis failed. The image might be too complex or unclear for current detection agents.");

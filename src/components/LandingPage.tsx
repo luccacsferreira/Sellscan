@@ -64,6 +64,8 @@ const mockAnalysis: ProductAnalysis = {
     { action: "Re-lace neatly", impact: "low", valueAdd: 5, description: "Clean presentation matters for primary photo." },
     { action: "Include original box clearly", impact: "high", valueAdd: 30, description: "Major platforms require it for 'Deadstock' or pristine condition." },
   ],
+  tutorial: "1. Take 5 well-lit photos: Front, back, soles, size tag, and any flaws.\n2. In StockX: Select 'Sell', search 'Jordan 1 Mid Gym Red', choose your size.\n3. On eBay: Use 'Sell one like this' from an active listing to pre-fill item specifics. Ensure condition is 'Pre-owned'.",
+  researchedUrls: ["https://stockx.com", "https://ebay.com", "https://goat.com"],
   marketSentiment: {
     consensus: "Positive",
     goodThings: ["Iconic Chicago-esque colors", "High liquidity"],
@@ -245,7 +247,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
               animate: { opacity: 1, y: 0 }
             }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 md:mb-8 leading-[0.95] max-w-4xl mx-auto transition-colors duration-75"
+            className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-6 md:mb-8 leading-[0.95] max-w-4xl mx-auto text-brand-text"
           >
             Scan any product. <br />
             <span className="text-brand-accent bg-clip-text text-transparent bg-gradient-to-b from-brand-accent to-brand-accent/80 pb-2 md:pb-4 inline-block align-bottom -mb-2 md:-mb-4">Know exactly</span> <br />
