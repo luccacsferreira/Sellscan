@@ -979,7 +979,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg transition-colors duration-300">
+    <div className="min-h-screen bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-bg transition-colors duration-75">
       <Navbar 
         onGoHome={handleGoHome}
         onNewScan={() => setView('upload')}
