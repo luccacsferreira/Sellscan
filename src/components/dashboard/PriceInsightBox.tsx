@@ -100,8 +100,8 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             />
           )}
         </div>
-        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-brand-text-muted">
-          <div className="flex flex-col items-start">
+        <div className="relative h-10 w-full mt-2 text-[10px] font-black uppercase tracking-widest text-brand-text-muted">
+          <div className="absolute left-0 top-0 flex flex-col items-start">
             <span className="opacity-40 mb-1">Bottom</span>
             <span className="text-brand-text/80">
               {isStageActive ? (
@@ -111,7 +111,13 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
               )}
             </span>
           </div>
-          <div className="flex flex-col items-center text-brand-accent">
+          <motion.div 
+            initial={{ left: "0%" }}
+            animate={{ left: isStageActive ? `clamp(15%, ${percentage}%, 85%)` : '0%' }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="absolute top-0 flex flex-col items-center text-brand-accent"
+            style={{ transform: 'translateX(-50%)' }}
+          >
             <span className="opacity-40 mb-1">Sweet Spot</span>
             <span className="text-brand-accent">
               {isStageActive ? (
@@ -120,8 +126,8 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
                 <span className="opacity-25 blur-[1px]">{currency}00,00</span>
               )}
             </span>
-          </div>
-          <div className="flex flex-col items-end">
+          </motion.div>
+          <div className="absolute right-0 top-0 flex flex-col items-end">
             <span className="opacity-40 mb-1">Peak</span>
             <span className="text-brand-text/80">
               {isStageActive ? (
