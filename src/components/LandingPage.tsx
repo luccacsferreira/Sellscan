@@ -313,7 +313,7 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent">EXAMPLE SCAN • AIR JORDAN 1 MID</span>
         </div>
         
-        <div className="bg-[#1a1a1a] p-4 md:p-8 rounded-[2rem] border border-brand-border/20 w-full relative">
+        <div className="bg-[#1a1a1a] [.light_&]:bg-white p-4 md:p-8 rounded-[2rem] border border-brand-border/20 w-full relative">
           {/* RESULTS DASHBOARD (8 BOXES) */}
           <div className="flex-grow space-y-6 md:space-y-10 w-full">
             <VerdictBox verdict={mockAnalysis.quickVerdict} highlighted={false} active={true} />

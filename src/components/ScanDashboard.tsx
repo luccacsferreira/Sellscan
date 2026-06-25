@@ -420,7 +420,7 @@ export function ScanDashboard({
       {/* TWO COLUMNS */}
       <div className="flex flex-col lg:flex-row gap-6 md:gap-10 items-start w-full relative">
         {/* LEFT: RESULTS DASHBOARD (8 BOXES) */}
-        <div className="flex-grow space-y-10 w-full lg:w-auto bg-[#1b1b1b]/50 p-4 md:p-10 rounded-[3rem] border border-white/[0.02] shadow-inner">
+        <div className="flex-grow space-y-10 w-full lg:w-auto">
           {/* BOX 1: QUICK VERDICT */}
           <div ref={box1Ref} className="px-1 md:px-0">
             <VerdictBox
