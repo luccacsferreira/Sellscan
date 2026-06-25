@@ -113,8 +113,8 @@ export function AuthCallback() {
             try { window.close(); } catch (e) { window.location.href = '/'; }
           }, 500);
         } else {
-          addLog('Redirecting to home');
-          window.location.href = '/';
+          addLog('Redirecting back to original path');
+          window.location.href = window.location.pathname;
         }
       }, 1500);
     };

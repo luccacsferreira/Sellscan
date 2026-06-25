@@ -59,8 +59,11 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
-          skipBrowserRedirect: true // CRITICAL: Gives us the URL to open in popup
+          redirectTo: window.location.href,
+          skipBrowserRedirect: true, // CRITICAL: Gives us the URL to open in popup
+          queryParams: {
+            prompt: 'select_account'
+          }
         }
       });
 

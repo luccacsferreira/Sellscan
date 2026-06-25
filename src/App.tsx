@@ -361,15 +361,41 @@ function AppContent() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
   const [scanError, setScanError] = useState<{ title: string; message: string } | null>(null);
-  const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(null);
-  const [pendingCheckout, setPendingCheckout] = useState<string | null>(null);
+  const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(() => {
+    const saved = sessionStorage.getItem('sellscan_pending_scan');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  useEffect(() => {
+    if (pendingScan) sessionStorage.setItem('sellscan_pending_scan', JSON.stringify(pendingScan));
+    else sessionStorage.removeItem('sellscan_pending_scan');
+  }, [pendingScan]);
+  const [pendingCheckout, setPendingCheckout] = useState<string | null>(() => sessionStorage.getItem('sellscan_pending_checkout') || null);
+
+  useEffect(() => {
+    if (pendingCheckout) sessionStorage.setItem('sellscan_pending_checkout', pendingCheckout);
+    else sessionStorage.removeItem('sellscan_pending_checkout');
+  }, [pendingCheckout]);
   const [manualCountry, setManualCountry] = useState('');
   const [manualState, setManualState] = useState('');
   
   // Persisted inputs for the ImageUpload scan page
-  const [unsavedImage, setUnsavedImage] = useState<string | null>(null);
-  const [unsavedTitle, setUnsavedTitle] = useState<string>('');
-  const [unsavedDescription, setUnsavedDescription] = useState<string>('');
+  const [unsavedImage, setUnsavedImage] = useState<string | null>(() => sessionStorage.getItem('sellscan_unsaved_image') || null);
+  const [unsavedTitle, setUnsavedTitle] = useState<string>(() => sessionStorage.getItem('sellscan_unsaved_title') || '');
+  const [unsavedDescription, setUnsavedDescription] = useState<string>(() => sessionStorage.getItem('sellscan_unsaved_description') || '');
+
+  useEffect(() => {
+    if (unsavedImage) sessionStorage.setItem('sellscan_unsaved_image', unsavedImage);
+    else sessionStorage.removeItem('sellscan_unsaved_image');
+  }, [unsavedImage]);
+
+  useEffect(() => {
+    sessionStorage.setItem('sellscan_unsaved_title', unsavedTitle);
+  }, [unsavedTitle]);
+
+  useEffect(() => {
+    sessionStorage.setItem('sellscan_unsaved_description', unsavedDescription);
+  }, [unsavedDescription]);
 
   const triggerCheckout = async (tier: string, activeUser: User, billingCycle: 'monthly' | 'yearly' = 'yearly') => {
     try {
@@ -433,27 +459,32 @@ function AppContent() {
   const handleAuthSuccess = (authenticatedUser: User) => {
     setShowAuthModal(false);
     setUser(authenticatedUser);
-
-    // Initial discount modal check
-    const hasSeenDiscount = localStorage.getItem('sellscan_seen_discount');
-    if (!hasSeenDiscount) {
-      setTimeout(() => {
-        setShowDiscountModal(true);
-        localStorage.setItem('sellscan_seen_discount', 'true');
-      }, 1000);
-    }
-
-    if (pendingScan) {
-      handleAnalyze(pendingScan.image, pendingScan.description, false, authenticatedUser);
-      setPendingScan(null);
-    } else if (pendingCheckout) {
-      const tierToCheckout = pendingCheckout;
-      setPendingCheckout(null);
-      triggerCheckout(tierToCheckout, authenticatedUser);
-    } else if (view === 'landing') {
-      setView('home');
-    }
   };
+
+  useEffect(() => {
+    if (user && !isAuthInitializing) {
+      // Initial discount modal check
+      const discountKey = `sellscan_seen_discount_${user.id}`;
+      const hasSeenDiscount = localStorage.getItem(discountKey);
+      if (!hasSeenDiscount) {
+        setTimeout(() => {
+          setShowDiscountModal(true);
+          localStorage.setItem(discountKey, 'true');
+        }, 1000);
+      }
+
+      if (pendingScan) {
+        handleAnalyze(pendingScan.image, pendingScan.description, false, user);
+        setPendingScan(null);
+      } else if (pendingCheckout) {
+        const tierToCheckout = pendingCheckout;
+        setPendingCheckout(null);
+        triggerCheckout(tierToCheckout, user);
+      } else if (view === 'landing') {
+        setView('home');
+      }
+    }
+  }, [user, isAuthInitializing]);
 
   // Handle OAuth Callback from Popup
   useEffect(() => {
