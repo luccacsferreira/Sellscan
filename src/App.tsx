@@ -269,7 +269,13 @@ function AppContent() {
   const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'system'>(() => {
     return (localStorage.getItem('sellscan_theme_mode') as 'dark' | 'light' | 'system') || 'system';
   });
-  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>(() => {
+    const mode = localStorage.getItem('sellscan_theme_mode') as 'dark' | 'light' | 'system' || 'system';
+    if (mode === 'system') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return mode;
+  });
 
   // Logic to resolve theme based on mode
   useEffect(() => {

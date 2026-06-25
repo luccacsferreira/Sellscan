@@ -47,6 +47,20 @@
       .goog-te-banner-frame {display: none !important;}
       .goog-text-highlight {background-color: transparent !important; box-shadow: none !important;}
     </style>
+    <script>
+      (function() {
+        try {
+          var mode = localStorage.getItem('sellscan_theme_mode');
+          var isDark = mode === 'dark' || (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
