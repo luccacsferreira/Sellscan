@@ -357,13 +357,14 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           <p className="text-brand-text-muted text-lg">From market research to copy — one scan does it all.</p>
         </motion.div>
         <motion.div 
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.1 }}
           variants={{
-            animate: {
+            hidden: {},
+            visible: {
               transition: {
-                staggerChildren: 0.6
+                staggerChildren: 0.1
               }
             }
           }}
@@ -906,13 +907,19 @@ function FeatureCard({
     <motion.button 
       onClick={onClick}
       variants={{
-        initial: { opacity: 0, y: -40 },
-        animate: { 
+        hidden: { 
+          opacity: 0, 
+          y: 40,
+          scale: 0.95
+        },
+        visible: { 
           opacity: 1, 
           y: 0,
+          scale: 1,
           transition: {
-            duration: 0.8,
-            ease: "easeOut"
+            type: "spring",
+            damping: 20,
+            stiffness: 150
           }
         }
       }}

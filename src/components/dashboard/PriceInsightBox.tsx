@@ -118,7 +118,7 @@ function PriceCard({ title, subtitle, range, currency, gradient, active, credits
             className="absolute top-0 flex flex-col items-center text-brand-accent"
             style={{ transform: 'translateX(-50%)' }}
           >
-            <span className="opacity-40 mb-1">Sweet Spot</span>
+            <span className="text-brand-accent mb-1 font-medium">Sweet Spot</span>
             <span className="text-brand-accent">
               {isStageActive ? (
                 <span>{formatPrice(range.sweetSpot, currency)}</span>
