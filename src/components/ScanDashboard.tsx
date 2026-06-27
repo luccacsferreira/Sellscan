@@ -113,33 +113,28 @@ export function ScanDashboard({
     };
   }, []);
 
-  // Continuous smooth scrolling while AI is actively typing (animationStage < 6)
+  // Smooth scroll when a new box appears
   useEffect(() => {
-    if (animationStage >= 6 || isInterfered) return;
+    if (animationStage >= 7 || isInterfered) return;
 
-    const scrollActiveIntoView = () => {
-      if (isInterfered || animationStage >= 6) return;
+    let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
+    if (animationStage === 0) targetRef = box1Ref;
+    else if (animationStage === 1) targetRef = box2Ref;
+    else if (animationStage === 2) targetRef = box3Ref;
+    else if (animationStage === 3) targetRef = box4Ref;
+    else if (animationStage === 4) targetRef = box5Ref;
+    else if (animationStage === 5) targetRef = box6Ref;
+    else if (animationStage === 6) targetRef = box7Ref;
 
-      let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
-      if (animationStage === 0) targetRef = box1Ref;
-      else if (animationStage === 1) targetRef = box2Ref;
-      else if (animationStage === 2) targetRef = box3Ref;
-      else if (animationStage === 3) targetRef = box4Ref;
-      else if (animationStage === 4) targetRef = box5Ref;
-      else if (animationStage === 5) targetRef = box6Ref;
-
-      if (targetRef && targetRef.current) {
-        targetRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end", // continuous scroll to the bottom of the writing container
-        });
-      }
-    };
-
-    // Keep scrolling to follow typwriter increments as text height grows
-    const interval = setInterval(scrollActiveIntoView, 150);
-    return () => clearInterval(interval);
-  }, [animationStage, isInterfered]);
+    if (targetRef && targetRef.current) {
+      setTimeout(() => {
+        if (!isInterfered && targetRef && targetRef.current) {
+          const y = targetRef.current.getBoundingClientRect().top + window.scrollY - 100;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [animationStage]);
 
   const skipAnimation = () => {
     setAnimationStage(6);
