@@ -20,6 +20,20 @@ export interface PracticalTip {
 
 export type AIPlan = 'free' | 'basic' | 'reseller' | 'entrepreneur';
 
+export const PLAN_LIMITS: Record<AIPlan, { scans: number; messages: number; integration: number }> = {
+  free: { scans: 10, messages: 25, integration: 100 },
+  basic: { scans: 50, messages: 150, integration: 500 },
+  reseller: { scans: 200, messages: 1000, integration: 2500 },
+  entrepreneur: { scans: 1000, messages: 5000, integration: 10000 }
+};
+
+export const PLAN_NAMES: Record<AIPlan, string> = {
+  free: 'Explorer / Free',
+  basic: 'Basic Pro',
+  reseller: 'High Professional Reseller',
+  entrepreneur: 'Entrepreneur'
+};
+
 export type AIModelId = 
   | 'gemini-1.5-flash' 
   | 'gemini-1.5-pro' 

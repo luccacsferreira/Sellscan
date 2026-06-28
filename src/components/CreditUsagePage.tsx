@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { cn, formatAmount } from '../lib/utils';
-import { AIPlan } from '../types';
+import { AIPlan, PLAN_LIMITS, PLAN_NAMES } from '../types';
 
 interface CreditUsagePageProps {
   plan: AIPlan;
@@ -25,28 +25,16 @@ interface CreditUsagePageProps {
     messages: number;
     integration: number;
   };
+  boosterCredits: number;
   onBack: () => void;
   onUpgradePlan: () => void;
   onAddBoosterCredits: (amount: number) => void;
 }
 
-const PLAN_LIMITS: Record<AIPlan, { scans: number; messages: number; integration: number }> = {
-  free: { scans: 10, messages: 25, integration: 100 },
-  basic: { scans: 50, messages: 150, integration: 500 },
-  reseller: { scans: 200, messages: 1000, integration: 2500 },
-  entrepreneur: { scans: 1000, messages: 5000, integration: 10000 }
-};
-
-const PLAN_NAMES: Record<AIPlan, string> = {
-  free: 'Explorer / Free',
-  basic: 'Basic Pro',
-  reseller: 'High Professional Reseller',
-  entrepreneur: 'Entrepreneur Enterprise'
-};
-
 export function CreditUsagePage({ 
   plan, 
   spentCredits, 
+  boosterCredits,
   onBack, 
   onUpgradePlan,
   onAddBoosterCredits
@@ -57,21 +45,11 @@ export function CreditUsagePage({
 
   // Active plan limits
   const limits = PLAN_LIMITS[plan];
-  
-  // Total available booster credits added simulated
-  const [boosterCredits, setBoosterCredits] = useState<number>(() => {
-    return Number(localStorage.getItem('sellscan_booster_credits') || '0');
-  });
 
   const handleBuyBooster = (amount: number) => {
     setPurchasingBooster(amount);
     setTimeout(() => {
       onAddBoosterCredits(amount);
-      setBoosterCredits(prev => {
-        const next = prev + amount;
-        localStorage.setItem('sellscan_booster_credits', next.toString());
-        return next;
-      });
       setPurchasingBooster(null);
       setSuccessMsg(`Successfully credited +${amount} Scan Credits to your balance!`);
       setTimeout(() => setSuccessMsg(null), 4000);

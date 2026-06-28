@@ -28,6 +28,7 @@ interface ProjectDetailProps {
   onDelete: () => void;
   onNewScan: () => void;
   onSelectScan: (scan: ScanResult) => void;
+  onDeleteScan: (id: string) => void;
 }
 
 export function ProjectDetail({ 
@@ -37,7 +38,8 @@ export function ProjectDetail({
   onEdit, 
   onDelete,
   onNewScan,
-  onSelectScan
+  onSelectScan,
+  onDeleteScan
 }: ProjectDetailProps) {
   const { currency } = useLocation();
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
@@ -107,8 +109,22 @@ export function ProjectDetail({
                     <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
                   </div>
                 )}
-                <div className="absolute top-3 right-3 px-2 py-1 bg-brand-bg/80 backdrop-blur-md border border-brand-border rounded text-[10px] font-bold uppercase tracking-widest">
-                  {scan.analysis?.productDetails?.category || 'Other'}
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                  <div className="px-2 py-1 bg-brand-bg/80 backdrop-blur-md border border-brand-border rounded text-[10px] font-bold uppercase tracking-widest">
+                    {scan.analysis?.productDetails?.category || 'Other'}
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm('Delete this scan?')) {
+                        onDeleteScan(scan.id);
+                      }
+                    }}
+                    className="p-1.5 rounded bg-red-500/80 backdrop-blur-md border border-red-500/50 text-white hover:bg-red-500 hover:scale-105 transition-all shadow-sm"
+                    title="Delete scan"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
               <div className="p-5 flex-1 flex flex-col">

@@ -26,6 +26,7 @@ import { PracticalTipsBox } from "./dashboard/PracticalTipsBox";
 import { MarketSentimentBox } from "./dashboard/MarketSentimentBox";
 import { PriceTrendBox } from "./dashboard/PriceTrendBox";
 import { MockupGeneratorBox } from "./dashboard/MockupGeneratorBox";
+import { TutorialBox } from "./dashboard/TutorialBox";
 import { AssistantSidebar } from "./dashboard/AssistantSidebar";
 import { PlatformMockup } from "./dashboard/PlatformMockup";
 
@@ -461,7 +462,7 @@ export function ScanDashboard({
 
           {/* BOX 4: PLATFORM STRATEGY */}
           {animationStage >= 3 && (
-            <div ref={box4Ref}>
+            <div ref={box4Ref} className="space-y-4">
               <PlatformStrategyBox
                 platforms={analysis.platforms}
                 currencySymbol={currencySymbol}
@@ -470,6 +471,13 @@ export function ScanDashboard({
                   setAnimationStage((prev) => Math.max(prev, 4))
                 }
               />
+              
+              {analysis.tutorial && (
+                <TutorialBox
+                  tutorial={analysis.tutorial}
+                  active={animationStage >= 3}
+                />
+              )}
             </div>
           )}
 

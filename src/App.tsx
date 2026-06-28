@@ -20,7 +20,7 @@ import { BottomNav } from './components/BottomNav';
 import { AuthModal } from './components/AuthModal';
 import { analyzeProduct } from './services/aiService';
 import { DEFAULT_PIPELINES } from './lib/ai-config';
-import { ScanResult, Project, UserStats, ProductAnalysis, AIPipelineConfig, AIPlan } from './types';
+import { ScanResult, Project, UserStats, ProductAnalysis, AIPipelineConfig, AIPlan, PLAN_LIMITS } from './types';
 import { cn } from './lib/utils';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { dbService } from './services/dbService';
@@ -40,6 +40,7 @@ import { OnboardingQuiz } from './components/OnboardingQuiz';
 import { CreditUsagePage } from './components/CreditUsagePage';
 import { getPriceId } from './lib/stripe';
 import { LanguageModal } from './components/LanguageModal';
+import { NoCreditsModal } from './components/NoCreditsModal';
 
 type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz' | 'credit-usage';
 
@@ -332,8 +333,16 @@ function AppContent() {
     });
   };
 
+  const [boosterCredits, setBoosterCredits] = useState<number>(() => {
+    return Number(localStorage.getItem('sellscan_booster_credits') || '0');
+  });
+
   const handleAddBoosterCredits = (amount: number) => {
-    // Just a clean tracker to trigger reactivity
+    setBoosterCredits(prev => {
+      const next = prev + amount;
+      localStorage.setItem('sellscan_booster_credits', next.toString());
+      return next;
+    });
   };
 
   const [pipeline, setPipeline] = useState<AIPipelineConfig>(() => {
@@ -366,6 +375,7 @@ function AppContent() {
   const [showCurrencyModal, setShowCurrencyModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [scanError, setScanError] = useState<{ title: string; message: string } | null>(null);
   const [pendingScan, setPendingScan] = useState<{ image?: string, description?: string } | null>(() => {
     const saved = sessionStorage.getItem('sellscan_pending_scan');
@@ -465,6 +475,13 @@ function AppContent() {
   const handleAuthSuccess = (authenticatedUser: User) => {
     setShowAuthModal(false);
     setUser(authenticatedUser);
+    
+    // Check if onboarding completed
+    const onboardingKey = `sellscan_onboarding_completed_${authenticatedUser.id}`;
+    if (!localStorage.getItem(onboardingKey)) {
+      localStorage.setItem(onboardingKey, 'true');
+      setView('quiz');
+    }
   };
 
   useEffect(() => {
@@ -730,6 +747,15 @@ function AppContent() {
       setPendingScan({ image, description });
       setShowAuthModal(true);
       return;
+    }
+    
+    // Check credits before scanning
+    if (!isDemo) {
+       const allowedScans = PLAN_LIMITS[plan].scans + boosterCredits;
+       if (spentCredits.scans >= allowedScans) {
+         setShowNoCreditsModal(true);
+         return;
+       }
     }
 
     setIsLoading(true);
@@ -1488,6 +1514,7 @@ function AppContent() {
                  onDelete={() => setProjectToDelete(activeProject)}
                  onNewScan={() => setView('upload')}
                  onSelectScan={(scan) => { setCurrentScan(scan); setView('dashboard'); }}
+                 onDeleteScan={handleDeleteScan}
                />
              </motion.div>
           )}
@@ -1513,6 +1540,7 @@ function AppContent() {
                 <CreditUsagePage 
                   plan={plan}
                   spentCredits={spentCredits}
+                  boosterCredits={boosterCredits}
                   onBack={() => setView('home')}
                   onUpgradePlan={() => setView('pricing')}
                   onAddBoosterCredits={handleAddBoosterCredits}
@@ -1905,6 +1933,15 @@ function AppContent() {
         imageUrl={unclearImageToReanalyze}
         options={unclearOptions || []}
         onSelect={handleUnclearChoice}
+      />
+
+      <NoCreditsModal 
+        isOpen={showNoCreditsModal}
+        onClose={() => setShowNoCreditsModal(false)}
+        plan={plan}
+        onUpgrade={() => {
+          setView('pricing');
+        }}
       />
     </div>
   );

@@ -105,6 +105,8 @@ const mockScan: ScanResult = {
   analysis: mockAnalysis,
 };
 
+import { Footer } from './Footer';
+
 interface LandingPageProps {
   onStart: () => void;
   onSignIn: (tier?: string) => void;
@@ -835,6 +837,8 @@ export function LandingPage({ onStart, onSignIn, isLoggedIn }: LandingPageProps)
           </motion.div>
         )}
       </AnimatePresence>
+
+      <Footer />
     </div>
   );
 }
