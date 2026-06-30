@@ -25,6 +25,8 @@ import { PricingCard } from './PricingCard';
 import { Zap } from 'lucide-react';
 import { getPriceId, getPricingDisplay } from '../lib/stripe';
 
+import { ConfirmModal } from './ConfirmModal';
+
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
   'USD': '$',
@@ -70,6 +72,7 @@ export function DashboardHome({
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [scanToDelete, setScanToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPartnerData = async () => {
@@ -309,9 +312,7 @@ export function DashboardHome({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm('Delete this scan?')) {
-                          onDeleteScan(scan.id);
-                        }
+                        setScanToDelete(scan.id);
                       }}
                       className="p-2 text-brand-text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all"
                     >
@@ -390,9 +391,63 @@ export function DashboardHome({
               </div>
             </motion.div>
           )}
+
+          {/* Quick Analytics Widget */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-6 border-brand-border space-y-4 relative overflow-hidden group"
+          >
+            {/* Background glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none group-hover:bg-brand-accent/10 transition-colors" />
+
+            <div className="flex items-center justify-between relative z-10">
+              <div className="flex items-center gap-1.5 text-brand-text">
+                <BarChart3 className="w-4 h-4" />
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted">Analytics</h3>
+              </div>
+              <button 
+                onClick={onViewAnalytics}
+                className="text-[10px] font-bold uppercase tracking-widest text-brand-accent hover:text-brand-accent/80 transition-colors flex items-center gap-1"
+              >
+                View full report <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 relative z-10">
+              <div className="p-3 rounded-xl bg-brand-bg border border-brand-border">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted mb-1">Total Scans</p>
+                <p className="text-xl font-bold tabular-nums text-brand-text">{stats.totalScans}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-brand-bg border border-brand-border">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted mb-1">Total Value</p>
+                <p className="text-xl font-bold tabular-nums text-brand-accent">{currencySymbol}{formatAmount(stats.totalValue)}</p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={onViewAnalytics}
+              className="w-full py-3 rounded-xl bg-brand-accent/10 text-brand-accent font-bold text-sm hover:bg-brand-accent hover:text-brand-bg transition-colors mt-2"
+            >
+              Open Analytics Dashboard
+            </button>
+          </motion.div>
+
         </div>
       </div>
 
+      <ConfirmModal
+        isOpen={!!scanToDelete}
+        onClose={() => setScanToDelete(null)}
+        onConfirm={() => {
+          if (scanToDelete) {
+            onDeleteScan(scanToDelete);
+          }
+        }}
+        title="Delete Scan"
+        message="Are you sure you want to delete this scan? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 }

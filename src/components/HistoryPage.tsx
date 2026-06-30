@@ -9,6 +9,7 @@ import { Clock, ExternalLink, ArrowRight, Search, Trash2, FolderRoot, ChevronDow
 import { ScanResult, Project } from '../types';
 import { cn, formatAmount } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
+import { ConfirmModal } from './ConfirmModal';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
@@ -30,6 +31,7 @@ export function HistoryPage({ history, projects, onSelect, onUpdateScan, onDelet
   const { currency } = useLocation();
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
   const [assigningId, setAssigningId] = React.useState<string | null>(null);
+  const [scanToDelete, setScanToDelete] = React.useState<string | null>(null);
 
   const handleAssignToProject = (e: React.MouseEvent, scan: ScanResult, projectId: string | null) => {
     e.stopPropagation();
@@ -107,9 +109,7 @@ export function HistoryPage({ history, projects, onSelect, onUpdateScan, onDelet
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm('Delete this scan?')) {
-                          onDelete(scan.id);
-                        }
+                        setScanToDelete(scan.id);
                       }}
                       className="p-2 ml-2 rounded-lg backdrop-blur-md bg-red-500/20 border border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-lg"
                       title="Delete scan"
@@ -179,6 +179,19 @@ export function HistoryPage({ history, projects, onSelect, onUpdateScan, onDelet
           })}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!scanToDelete}
+        onClose={() => setScanToDelete(null)}
+        onConfirm={() => {
+          if (scanToDelete) {
+            onDelete(scanToDelete);
+          }
+        }}
+        title="Delete Scan"
+        message="Are you sure you want to delete this scan? This action cannot be undone."
+        confirmText="Delete"
+      />
     </div>
   );
 }

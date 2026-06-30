@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { 
   ArrowLeft, 
@@ -12,6 +12,7 @@ import {
 import { Project, ScanResult } from '../types';
 import { cn, formatAmount } from '../lib/utils';
 import { useLocation } from '../lib/LocationContext';
+import { ConfirmModal } from './ConfirmModal';
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
   'GBP': '£',
@@ -44,6 +45,9 @@ export function ProjectDetail({
   const { currency } = useLocation();
   const currencySymbol = CURRENCY_SYMBOLS[currency] || currency;
 
+  const [scanToDelete, setScanToDelete] = useState<string | null>(null);
+  const [showDeleteProject, setShowDeleteProject] = useState(false);
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 space-y-12">
       {/* Header */}
@@ -73,7 +77,7 @@ export function ProjectDetail({
             <Edit3 className="w-5 h-5" />
           </button>
           <button 
-            onClick={onDelete}
+            onClick={() => setShowDeleteProject(true)}
             className="p-3 rounded-xl bg-brand-bg border border-brand-border hover:border-red-500/50 hover:text-red-500 transition-all"
             title="Delete Project"
           >
@@ -116,9 +120,7 @@ export function ProjectDetail({
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm('Delete this scan?')) {
-                        onDeleteScan(scan.id);
-                      }
+                      setScanToDelete(scan.id);
                     }}
                     className="p-1.5 rounded bg-red-500/80 backdrop-blur-md border border-red-500/50 text-white hover:bg-red-500 hover:scale-105 transition-all shadow-sm"
                     title="Delete scan"
@@ -162,6 +164,28 @@ export function ProjectDetail({
           </div>
         )}
       </div>
+      
+      <ConfirmModal
+        isOpen={!!scanToDelete}
+        onClose={() => setScanToDelete(null)}
+        onConfirm={() => {
+          if (scanToDelete) {
+            onDeleteScan(scanToDelete);
+          }
+        }}
+        title="Delete Scan"
+        message="Are you sure you want to delete this scan? This action cannot be undone."
+        confirmText="Delete"
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteProject}
+        onClose={() => setShowDeleteProject(false)}
+        onConfirm={onDelete}
+        title="Delete Project"
+        message={`Are you sure you want to delete the project "${project.name}"? This action cannot be undone and all scans in it will be unassigned.`}
+        confirmText="Delete Project"
+      />
     </div>
   );
 }
