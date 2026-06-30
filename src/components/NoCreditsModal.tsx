@@ -60,16 +60,6 @@ export function NoCreditsModal({ isOpen, onClose, onUpgrade, plan }: NoCreditsMo
                   <Zap className="w-5 h-5" />
                   Upgrade Plan
                 </button>
-                <button
-                  onClick={() => {
-                    onClose();
-                    onUpgrade();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border border-brand-border text-brand-text hover:bg-white/5 transition-all"
-                >
-                  <CreditCard className="w-5 h-5" />
-                  Buy Booster Credits
-                </button>
               </div>
             </div>
           </motion.div>

@@ -450,7 +450,7 @@ export const AffiliatePage: React.FC = () => {
               <button 
                 type="submit" 
                 disabled={isGenerating}
-                className="bg-brand-accent text-brand-bg hover:bg-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl flex items-center gap-1.5 transition-all"
+                className="bg-brand-accent text-brand-bg hover:opacity-90 text-xs font-black uppercase tracking-widest px-5 py-3 rounded-xl flex items-center gap-1.5 transition-all"
               >
                 {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Add Link
@@ -460,7 +460,7 @@ export const AffiliatePage: React.FC = () => {
             {/* List generated links */}
             <div className="space-y-3">
               {partnerLinks.map(link => (
-                <div key={link.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.04] border border-brand-border/50 rounded-xl gap-4 transition-all">
+                <div key={link.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-brand-text/5 hover:bg-brand-text/10 border border-brand-border/50 rounded-xl gap-4 transition-all">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-brand-text truncate">{link.label}</span>
@@ -622,10 +622,10 @@ export const AffiliatePage: React.FC = () => {
               </span>
             </div>
             
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-brand-border/50">
               {referrals.length > 0 ? (
                 referrals.map((referral) => (
-                  <div key={referral.id} className="p-4 hover:bg-white/[0.02] transition-colors flex items-center justify-between group">
+                  <div key={referral.id} className="p-4 hover:bg-brand-text/5 transition-colors flex items-center justify-between group">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center text-brand-accent">
                         <DollarSign className="w-5 h-5" />

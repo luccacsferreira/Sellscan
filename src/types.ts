@@ -20,11 +20,11 @@ export interface PracticalTip {
 
 export type AIPlan = 'free' | 'basic' | 'reseller' | 'entrepreneur';
 
-export const PLAN_LIMITS: Record<AIPlan, { scans: number; messages: number; integration: number }> = {
-  free: { scans: 10, messages: 25, integration: 100 },
-  basic: { scans: 50, messages: 150, integration: 500 },
-  reseller: { scans: 200, messages: 1000, integration: 2500 },
-  entrepreneur: { scans: 1000, messages: 5000, integration: 10000 }
+export const PLAN_LIMITS: Record<AIPlan, { scans: number; dailyScans: number; messages: number; integration: number }> = {
+  free: { scans: 3, dailyScans: 3, messages: 25, integration: 100 },
+  basic: { scans: 40, dailyScans: 15, messages: 150, integration: 500 },
+  reseller: { scans: 120, dailyScans: 45, messages: 1000, integration: 2500 },
+  entrepreneur: { scans: 300, dailyScans: Infinity, messages: 5000, integration: 10000 }
 };
 
 export const PLAN_NAMES: Record<AIPlan, string> = {
@@ -44,6 +44,7 @@ export type AIModelId =
   | 'claude-3.5-opus'
   | 'gemini-1.5-lite'
   | 'gemini-2.5-pro'
+  | 'gemini-pro-latest'
   | 'gpt-4.1'
   | 'gpt-5.0'
   | 'gpt-5.2'

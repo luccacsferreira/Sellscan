@@ -13,6 +13,7 @@ import { ImageUpload } from './components/ImageUpload';
 import { ScanDashboard } from './components/ScanDashboard';
 import { HistoryPage } from './components/HistoryPage';
 import { SettingsPage } from './components/SettingsPage';
+import { AICustomizationPage } from './components/AICustomizationPage';
 import { DashboardHome } from './components/DashboardHome';
 import { ProjectDetail } from './components/ProjectDetail';
 import { AnalyticsPage } from './components/AnalyticsPage';
@@ -42,7 +43,7 @@ import { getPriceId } from './lib/stripe';
 import { LanguageModal } from './components/LanguageModal';
 import { NoCreditsModal } from './components/NoCreditsModal';
 
-type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz' | 'credit-usage';
+type View = 'landing' | 'upload' | 'dashboard' | 'history' | 'settings' | 'home' | 'project-detail' | 'analytics' | 'auth-callback' | 'docs' | 'affiliate' | 'pricing' | 'quiz' | 'credit-usage' | 'aicustomization';
 
 type LoadingStage = 
   | 'identifying' 
@@ -160,6 +161,7 @@ function AppContent() {
       history: '/History',
       analytics: '/Analytics',
       settings: '/Settings',
+      aicustomization: '/AICustomization',
       docs: '/Docs',
       'project-detail': '/Projects',
       'dashboard': '/Dashboard',
@@ -313,16 +315,23 @@ function AppContent() {
     return (localStorage.getItem('sellscan_plan') as AIPlan) || 'free';
   });
 
-  const [spentCredits, setSpentCredits] = useState<{ scans: number; messages: number; integration: number }>(() => {
+  const [spentCredits, setSpentCredits] = useState<{ scans: number; dailyScans: number; messages: number; integration: number; lastReset: string }>(() => {
     const saved = localStorage.getItem('sellscan_spent_credits');
+    const today = new Date().toDateString();
+    let current = { scans: 0, dailyScans: 0, messages: 0, integration: 0, lastReset: today };
     if (saved) {
       try {
-        return JSON.parse(saved);
-      } catch (e) {
-        // fallback
-      }
+        current = { ...current, ...JSON.parse(saved) };
+      } catch (e) {}
     }
-    return { scans: 14, messages: 6, integration: 15 };
+    
+    if (current.lastReset !== today) {
+       current.dailyScans = 0;
+       current.lastReset = today;
+       localStorage.setItem('sellscan_spent_credits', JSON.stringify(current));
+    }
+    
+    return current;
   });
 
   const handleMessageSpent = () => {
@@ -672,8 +681,15 @@ function AppContent() {
     setCurrentScan(newScan);
     saveToHistory(newScan);
 
+    const baseCost = calculateScanCost(pipeline);
+    const finalCost = baseCost; // Ready for multi-image/bulk logic if implemented in the UI later
+
     setSpentCredits(prev => {
-      const next = { ...prev, scans: prev.scans + 1 };
+      const next = { 
+        ...prev, 
+        scans: prev.scans + finalCost,
+        dailyScans: prev.dailyScans + finalCost
+      };
       localStorage.setItem('sellscan_spent_credits', JSON.stringify(next));
       return next;
     });
@@ -751,8 +767,15 @@ function AppContent() {
     
     // Check credits before scanning
     if (!isDemo) {
+       const cost = calculateScanCost(pipeline);
        const allowedScans = PLAN_LIMITS[plan].scans + boosterCredits;
-       if (spentCredits.scans >= allowedScans) {
+       if (spentCredits.scans + cost > allowedScans) {
+         setShowNoCreditsModal(true);
+         return;
+       }
+       
+       const dailyLimit = PLAN_LIMITS[plan].dailyScans;
+       if (spentCredits.dailyScans + cost > dailyLimit) {
          setShowNoCreditsModal(true);
          return;
        }
@@ -1600,6 +1623,23 @@ function AppContent() {
                  userEmail={user?.email || undefined}
                  themeMode={themeMode}
                  setThemeMode={setThemeMode}
+                 setView={setView}
+               />
+             </motion.div>
+          )}
+
+          {view === 'aicustomization' && (
+             <motion.div
+               key="aicustomization"
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+             >
+               <AICustomizationPage
+                 pipeline={pipeline}
+                 setPipeline={setPipeline}
+                 plan={plan}
+                 onBack={() => setView('settings')}
                />
              </motion.div>
           )}

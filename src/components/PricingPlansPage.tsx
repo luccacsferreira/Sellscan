@@ -193,7 +193,7 @@ export function PricingPlansPage({ user, onSignIn, onStartNewScan }: PricingPlan
            features={[
              { text: "Gemini 2.5 Pro + GPT 5.0", included: true },
              { text: "Unlimited Chatbot usage", included: true },
-             { text: "Batch Upload (up to 5)", included: true },
+             { text: "Bulk Scan Capability", included: true },
              { text: "Mock-up Generator", included: true },
              { text: "Faster Processing speeds", included: true },
              { text: "Everything in Basic", included: true },
@@ -218,7 +218,7 @@ export function PricingPlansPage({ user, onSignIn, onStartNewScan }: PricingPlan
            features={[
              { text: "Gemini 2.5 + GPT 5.2 + Claude 4.6", included: true },
              { text: "Unlocks Landing Page Builder", included: true },
-             { text: "Batch Upload (up to 20)", included: true },
+             { text: "Bulk Scan Capability", included: true },
              { text: "No Daily Limits", included: true },
              { text: "Custom AI model selection", included: true },
              { text: "Everything in Reseller", included: true },

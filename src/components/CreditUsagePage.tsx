@@ -39,7 +39,7 @@ export function CreditUsagePage({
   onUpgradePlan,
   onAddBoosterCredits
 }: CreditUsagePageProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'booster' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
   const [purchasingBooster, setPurchasingBooster] = useState<number | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -183,7 +183,7 @@ export function CreditUsagePage({
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-brand-text">Scan Credits</span>
                 <span className="text-brand-text-muted">
-                  <strong className="text-brand-accent font-black text-sm">{spentCredits.scans}</strong> / {totalScansAllowed} {boosterCredits > 0 && <span className="text-[9px] text-green-400 font-bold">(+{boosterCredits} booster)</span>}
+                  <strong className="text-brand-accent font-black text-sm">{spentCredits.scans.toFixed(2)}</strong> / {totalScansAllowed} {boosterCredits > 0 && <span className="text-[9px] text-green-400 font-bold">(+{boosterCredits} booster)</span>}
                 </span>
               </div>
               <div className="h-2 w-full rounded-full bg-brand-border/30 overflow-hidden">
@@ -243,12 +243,11 @@ export function CreditUsagePage({
           <div className="flex gap-2 border-b border-brand-border/40 p-1 bg-brand-bg/50 rounded-full w-fit">
             {[
               { id: 'overview', name: 'Credit Activity Map' },
-              { id: 'booster', name: 'On-Demand Booster Packs' },
               { id: 'history', name: 'Consumption Log' }
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'overview' | 'history')}
                 className={cn(
                   "px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
                   activeTab === tab.id 
@@ -256,9 +255,6 @@ export function CreditUsagePage({
                     : "text-brand-text-muted hover:text-brand-text"
                 )}
               >
-                {tab.id === 'booster' && boosterCredits > 0 && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block mr-1.5 animate-pulse" />
-                )}
                 {tab.name}
               </button>
             ))}
@@ -356,76 +352,6 @@ export function CreditUsagePage({
             </div>
           )}
 
-          {/* TAB 2: BOOSTER PACKS */}
-          {activeTab === 'booster' && (
-            <div className="glass-card p-6 border-brand-border/30 bg-brand-card/10 rounded-3xl space-y-6">
-              <div>
-                <h3 className="text-lg font-black text-brand-text uppercase leading-tight">Instant Booster Refills</h3>
-                <p className="text-brand-text-muted text-xs">Running low on storage slots or calculation frames? Boost instantly with one-time credit bundles.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { id: 10, amount: 10, price: '$2.99', popular: false, desc: 'Starter refill for casual flips' },
-                  { id: 50, amount: 50, price: '$9.99', popular: true, desc: 'Reseller choice — locks in savings' },
-                  { id: 200, amount: 200, price: '$29.99', popular: false, desc: 'Store conqueror big refill pack' }
-                ].map((pack) => (
-                  <div 
-                    key={pack.id} 
-                    className={cn(
-                      "p-5 rounded-3xl border flex flex-col justify-between h-56 transition-all group relative overflow-hidden",
-                      pack.popular 
-                        ? "bg-brand-accent/[0.04] border-brand-accent/30 shadow-[0_4px_25px_-5px_rgba(85,205,209,0.1)]" 
-                        : "bg-brand-border/5 border-brand-border/20"
-                    )}
-                  >
-                    {pack.popular && (
-                      <div className="absolute top-0 right-0 bg-brand-accent text-brand-bg text-[7.5px] font-black uppercase px-2.5 py-1 rounded-bl-xl tracking-widest">
-                        Best Value
-                      </div>
-                    )}
-                    
-                    <div>
-                      <div className="w-8 h-8 rounded-xl bg-brand-accent/15 border border-brand-accent/20 flex items-center justify-center mb-3">
-                        <Plus className="w-4 h-4 text-brand-accent" />
-                      </div>
-                      <h4 className="text-xl font-black text-brand-text uppercase">{pack.amount} Scans</h4>
-                      <p className="text-[10px] text-brand-text-muted mt-1 leading-tight">{pack.desc}</p>
-                    </div>
-
-                    <div className="pt-4 border-t border-brand-border/10 flex items-center justify-between">
-                      <span className="text-xl font-black text-brand-text">{pack.price}</span>
-                      <button 
-                        onClick={() => handleBuyBooster(pack.amount)}
-                        disabled={purchasingBooster !== null}
-                        className={cn(
-                          "px-4 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-wider transition-all cursor-pointer",
-                          pack.popular 
-                            ? "bg-brand-accent text-brand-bg hover:brightness-115"
-                            : "bg-brand-border/20 text-brand-text hover:bg-brand-border/40"
-                        )}
-                      >
-                        {purchasingBooster === pack.amount ? (
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
-                        ) : 'Purchase'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {boosterCredits > 0 && (
-                <div className="p-4 rounded-2xl bg-brand-accent/5 border border-brand-accent/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 text-xs text-brand-text-muted">
-                    <CheckCircle className="w-4.5 h-4.5 text-brand-accent" />
-                    <span>Total active simulated booster balance remaining:</span>
-                  </div>
-                  <span className="font-extrabold text-brand-accent text-sm">+{boosterCredits} Scan Credits</span>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* TAB 3: CONSUMPTION LOG */}
           {activeTab === 'history' && (
             <div className="glass-card p-6 border-brand-border/30 bg-brand-card/10 rounded-3xl space-y-4">
@@ -436,12 +362,12 @@ export function CreditUsagePage({
 
               <div className="divide-y divide-brand-border/30 max-h-[300px] overflow-y-auto pr-2 scrollbar-none">
                 {[
-                  { action: 'Full Multi-Category Sweep', time: '10 mins ago', cost: '1.0 Credit', item: 'Vintage 1990s Leather Biker Jacket' },
-                  { action: 'AI Chat Listing Refinement', time: '1 hr ago', cost: '0.25 Credits', item: 'Vintage 1990s Leather Biker Jacket' },
-                  { action: 'API Pricing Validation', time: '5 hrs ago', cost: '0.4 Credits', item: 'Nintendo Switch Console OLED' },
-                  { action: 'eBay Listing sync export', time: '1 day ago', cost: '1.0 Credit', item: 'Nintendo Switch Console OLED' },
-                  { action: 'Platform verification', time: '3 days ago', cost: '1.0 Credit', item: 'Apple iPad Pro M4' },
-                  { action: 'AI Chat prompt update', time: '4 days ago', cost: '0.25 Credits', item: 'Nike Dunk Low Retro' }
+                  { action: 'Single Image Scan', time: '10 mins ago', cost: '1.0 Credit', item: 'Vintage 1990s Leather Biker Jacket' },
+                  { action: 'Multi Image Scan (3 images)', time: '1 hr ago', cost: '2.4 Credits', item: 'Vintage 1990s Leather Biker Jacket' },
+                  { action: 'Bulk Scan (5 items)', time: '5 hrs ago', cost: '4.6 Credits', item: 'Nintendo Switch Console OLED' },
+                  { action: 'Single Image Scan', time: '1 day ago', cost: '1.0 Credit', item: 'Nintendo Switch Console OLED' },
+                  { action: 'Single Image Scan', time: '3 days ago', cost: '1.0 Credit', item: 'Apple iPad Pro M4' },
+                  { action: 'Single Image Scan', time: '4 days ago', cost: '1.0 Credit', item: 'Nike Dunk Low Retro' }
                 ].map((log, idx) => (
                   <div key={idx} className="py-3 flex items-center justify-between text-xs font-medium">
                     <div className="flex flex-col">
@@ -453,6 +379,11 @@ export function CreditUsagePage({
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="pt-4 border-t border-brand-border/10">
+                <p className="text-[10px] text-brand-text-muted italic leading-relaxed">
+                  * Disclaimer: These are the usual usages (1 credit for single image, 1 + 0.7 per extra for multi-image, 1 + 0.9 per extra for bulk). However, depending on how much work the AI needs to do, or which model is selected for the role in Settings, actual credit consumption can impact and make it use more or less credits.
+                </p>
               </div>
             </div>
           )}
